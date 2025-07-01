@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package ros2bridge.v1;
+
+option go_package = "github.com/proto_api/services/ros2-bridge/gen/ros2bridge/v1;ros2bridgev1";
+
+service ROS2BridgeService {
+  rpc GetTopicData(GetTopicDataRequest) returns (GetTopicDataResponse);
+  rpc CallService(CallServiceRequest) returns (CallServiceResponse);
+  rpc SubscribeToTopic(SubscribeToTopicRequest) returns (stream TopicDataUpdate);
+}
+
+message GetTopicDataRequest {
+  string topic_name = 1;
+}
+
+message GetTopicDataResponse {
+  bool success = 1;
+  string message = 2;
+  google.protobuf.Any data = 3;
+  string topic_type = 4;
+}
+
+message CallServiceRequest {
+  string service_name = 1;
+  google.protobuf.Any request_data = 2;
+}
+
+message CallServiceResponse {
+  bool success = 1;
+  string message = 2;
+  google.protobuf.Any response_data = 3;
+}
+
+message SubscribeToTopicRequest {
+  string topic_name = 1;
+  int32 queue_size = 2;
+}
+
+message TopicDataUpdate {
+  string topic_name = 1;
+  google.protobuf.Any data = 2;
+  int64 timestamp_ns = 3;
+}
+
+// Example message types for demo topics
+message Twist {
+  Vector3 linear = 1;
+  Vector3 angular = 2;
+}
+
+message Vector3 {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message PointCloud2 {
+  bytes data = 1;
+  uint32 height = 2;
+  uint32 width = 3;
+  repeated PointField fields = 4;
+  bool is_bigendian = 5;
+  uint32 point_step = 6;
+  uint32 row_step = 7;
+  bool is_dense = 8;
+}
+
+message PointField {
+  string name = 1;
+  uint32 offset = 2;
+  uint32 datatype = 3;
+  uint32 count = 4;
+}
+
+// Import Well-Known Types
+import "google/protobuf/any.proto";

@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package system.v1;
+
+option go_package = "github.com/proto_api/services/system-manager/gen/system/v1;systemv1";
+
+service SystemService {
+  rpc Reboot(RebootRequest) returns (RebootResponse);
+  rpc Shutdown(ShutdownRequest) returns (ShutdownResponse);
+  rpc ManageDrsService(ManageDrsServiceRequest) returns (ManageDrsServiceResponse);
+  rpc ManageRecorderService(ManageRecorderServiceRequest) returns (ManageRecorderServiceResponse);
+  rpc GetDiskUsage(GetDiskUsageRequest) returns (GetDiskUsageResponse);
+}
+
+message RebootRequest {
+  int32 delay_seconds = 1;
+}
+
+message RebootResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ShutdownRequest {
+  int32 delay_seconds = 1;
+}
+
+message ShutdownResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ManageDrsServiceRequest {
+  ServiceAction action = 1;
+  
+  enum ServiceAction {
+    SERVICE_ACTION_UNSPECIFIED = 0;
+    SERVICE_ACTION_STOP = 1;
+    SERVICE_ACTION_RESTART = 2;
+    SERVICE_ACTION_STATUS = 3;
+  }
+}
+
+message ManageDrsServiceResponse {
+  bool success = 1;
+  string message = 2;
+  string service_status = 3;
+}
+
+message ManageRecorderServiceRequest {
+  ServiceAction action = 1;
+  
+  enum ServiceAction {
+    SERVICE_ACTION_UNSPECIFIED = 0;
+    SERVICE_ACTION_STOP = 1;
+    SERVICE_ACTION_RESTART = 2;
+    SERVICE_ACTION_STATUS = 3;
+  }
+}
+
+message ManageRecorderServiceResponse {
+  bool success = 1;
+  string message = 2;
+  string service_status = 3;
+}
+
+message GetDiskUsageRequest {
+  string path = 1;
+}
+
+message GetDiskUsageResponse {
+  bool success = 1;
+  string message = 2;
+  DiskUsage disk_usage = 3;
+}
+
+message DiskUsage {
+  uint64 total_bytes = 1;
+  uint64 used_bytes = 2;
+  uint64 free_bytes = 3;
+  double usage_percentage = 4;
+  string filesystem = 5;
+}
+

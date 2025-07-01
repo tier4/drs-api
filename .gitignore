@@ -1,0 +1,77 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go specific
+*.test
+*.out
+vendor/
+go.sum
+
+# Go build cache
+/services/system-manager/bin/
+/services/system-manager/server
+/services/system-manager-lite/bin/
+/services/system-manager-lite/server
+
+# Generated protobuf/gRPC files
+/services/system-manager/gen/
+/services/system-manager-lite/gen/
+/services/ros2-bridge/gen/
+*.pb.go
+*.pb.cc
+*.pb.h
+*_pb2.py
+*_grpc.pb.go
+*_grpc.pb.cc
+*_grpc.pb.h
+
+# ROS2 build artifacts
+/services/ros2-bridge/build/
+/services/ros2-bridge/install/
+/services/ros2-bridge/log/
+.colcon_build_base
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Coverage
+*.cover
+*.coverage
+coverage.xml
+coverage.html
+
+# Debug files
+debug
+debug.test
+
+# OS generated files
+Thumbs.db
+.Spotlight-V100
+.Trashes

@@ -1,0 +1,42 @@
+# System Manager Configuration
+
+# Server settings
+server:
+  port: 50051
+  mode: "full"  # "full" or "lite"
+
+# Disk monitoring settings
+disk:
+  # Directories to monitor for disk usage
+  monitored_paths:
+    - path: "/"
+      name: "root"
+      description: "Root filesystem"
+    - path: "/home"
+      name: "home"
+      description: "Home directory"
+    - path: "/var/log"
+      name: "logs"
+      description: "Log directory"
+    - path: "/tmp"
+      name: "temp"
+      description: "Temporary files"
+  
+  # Default path when no specific path is requested
+  default_path: "/"
+
+# Service management settings (only applies in full mode)
+services:
+  enable_systemd_manage: true
+  allowed_services:
+    - "drs.service"
+    - "recorder.service"
+
+# System operation settings
+system:
+  # Maximum delay allowed for reboot/shutdown (seconds)
+  max_delay_seconds: 300
+  
+  # Enable system operations
+  allow_reboot: true
+  allow_shutdown: true
