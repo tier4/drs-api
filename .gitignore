@@ -16,6 +16,7 @@ go.sum
 /services/system-manager/server
 /services/system-manager-lite/bin/
 /services/system-manager-lite/server
+/tools/client/bin/
 
 # Generated protobuf/gRPC files
 /services/system-manager/gen/

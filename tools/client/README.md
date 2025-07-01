@@ -18,8 +18,8 @@ make build-arm64
 make all
 
 # または直接コマンド
-go build -o client main.go                              # ローカル用
-GOOS=linux GOARCH=arm64 go build -o client-arm64 main.go  # ARM64用
+mkdir -p bin && go build -o bin/client main.go                              # ローカル用
+mkdir -p bin && GOOS=linux GOARCH=arm64 go build -o bin/client-arm64 main.go  # ARM64用
 ```
 
 ## 使用方法
@@ -27,13 +27,13 @@ GOOS=linux GOARCH=arm64 go build -o client-arm64 main.go  # ARM64用
 ### 基本的な使用法
 ```bash
 # reboot（デフォルト）
-./client
+./bin/client
 
 # 特定のコマンドを実行
-./client -cmd=<command>
+./bin/client -cmd=<command>
 
 # 別のサーバーを指定
-./client -server=192.168.1.100:50051 -cmd=disk
+./bin/client -server=192.168.1.100:50051 -cmd=disk
 ```
 
 ### 利用可能なコマンド
@@ -41,58 +41,58 @@ GOOS=linux GOARCH=arm64 go build -o client-arm64 main.go  # ARM64用
 #### システム制御
 ```bash
 # 即座にreboot
-./client -cmd=reboot
+./bin/client -cmd=reboot
 
 # 5秒遅延してreboot
-./client -cmd=reboot -delay=5
+./bin/client -cmd=reboot -delay=5
 
 # 即座にshutdown
-./client -cmd=shutdown
+./bin/client -cmd=shutdown
 
 # 10秒遅延してshutdown
-./client -cmd=shutdown -delay=10
+./bin/client -cmd=shutdown -delay=10
 ```
 
 #### DRSサービス管理
 ```bash
 # DRSサービスを停止
-./client -cmd=drs-stop
+./bin/client -cmd=drs-stop
 
 # DRSサービスを再起動
-./client -cmd=drs-restart
+./bin/client -cmd=drs-restart
 
 # DRSサービスの状態確認
-./client -cmd=drs-status
+./bin/client -cmd=drs-status
 ```
 
 #### Recorderサービス管理
 ```bash
 # Recorderサービスを停止
-./client -cmd=recorder-stop
+./bin/client -cmd=recorder-stop
 
 # Recorderサービスを再起動
-./client -cmd=recorder-restart
+./bin/client -cmd=recorder-restart
 
 # Recorderサービスの状態確認
-./client -cmd=recorder-status
+./bin/client -cmd=recorder-status
 ```
 
 #### ディスク使用量確認
 ```bash
 # ルートディスクの使用量
-./client -cmd=disk
+./bin/client -cmd=disk
 
 # 特定のパスの使用量
-./client -cmd=disk -path=/home
+./bin/client -cmd=disk -path=/home
 ```
 
 #### PTP時刻同期確認
 ```bash
 # ローカルのPTP同期状態のみ確認
-./client -cmd=ptp
+./bin/client -cmd=ptp
 
 # ローカルとリモートデバイスのPTP同期状態を確認
-./client -cmd=ptp-all
+./bin/client -cmd=ptp-all
 ```
 
 ## オプション
@@ -111,17 +111,17 @@ GOOS=linux GOARCH=arm64 go build -o client-arm64 main.go  # ARM64用
 
 ```bash
 # ARM64環境のサーバーをテスト
-./client-arm64 -server=192.168.20.1:50051 -cmd=disk
+./bin/client-arm64 -server=192.168.20.1:50051 -cmd=disk
 
 # Lite版サーバーでsystemdサービステスト（エラーになる）
-./client -server=localhost:50053 -cmd=drs-status
+./bin/client -server=localhost:50053 -cmd=drs-status
 
 # フル版サーバーで全機能テスト
-./client -server=localhost:50051 -cmd=drs-status
+./bin/client -server=localhost:50051 -cmd=drs-status
 
 # PTP同期状態確認
-./client -cmd=ptp
-./client -server=192.168.1.100:50051 -cmd=ptp-all
+./bin/client -cmd=ptp
+./bin/client -server=192.168.1.100:50051 -cmd=ptp-all
 ```
 
 ## 注意
