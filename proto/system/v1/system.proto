@@ -10,6 +10,7 @@ service SystemService {
   rpc ManageDrsService(ManageDrsServiceRequest) returns (ManageDrsServiceResponse);
   rpc ManageRecorderService(ManageRecorderServiceRequest) returns (ManageRecorderServiceResponse);
   rpc GetDiskUsage(GetDiskUsageRequest) returns (GetDiskUsageResponse);
+  rpc CheckPTPSync(CheckPTPSyncRequest) returns (CheckPTPSyncResponse);
 }
 
 message RebootRequest {
@@ -80,5 +81,33 @@ message DiskUsage {
   uint64 free_bytes = 3;
   double usage_percentage = 4;
   string filesystem = 5;
+}
+
+message CheckPTPSyncRequest {
+  bool include_remote_devices = 1;
+}
+
+message CheckPTPSyncResponse {
+  bool success = 1;
+  string message = 2;
+  PTPStatus local_status = 3;
+  repeated RemotePTPStatus remote_statuses = 4;
+}
+
+message PTPStatus {
+  string clock_id = 1;
+  int64 master_offset_ns = 2;
+  uint64 ingress_time = 3;
+  bool gm_present = 4;
+  string gm_identity = 5;
+  bool is_synced = 6;
+}
+
+message RemotePTPStatus {
+  string device_name = 1;
+  string ip_address = 2;
+  PTPStatus status = 3;
+  bool is_reachable = 4;
+  string error_message = 5;
 }
 

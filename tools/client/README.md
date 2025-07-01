@@ -86,10 +86,24 @@ GOOS=linux GOARCH=arm64 go build -o client-arm64 main.go  # ARM64用
 ./client -cmd=disk -path=/home
 ```
 
+#### PTP時刻同期確認
+```bash
+# ローカルのPTP同期状態のみ確認
+./client -cmd=ptp
+
+# ローカルとリモートデバイスのPTP同期状態を確認
+./client -cmd=ptp-all
+```
+
 ## オプション
 
 - `-server`: サーバーアドレス（デフォルト: localhost:50051）
 - `-cmd`: 実行するコマンド（デフォルト: reboot）
+  - システム制御: `reboot`, `shutdown`
+  - DRSサービス: `drs-stop`, `drs-restart`, `drs-status`
+  - Recorderサービス: `recorder-stop`, `recorder-restart`, `recorder-status`
+  - ディスク: `disk`
+  - PTP同期: `ptp` (ローカルのみ), `ptp-all` (ローカル＋リモート)
 - `-delay`: reboot/shutdown前の遅延秒数（デフォルト: 0）
 - `-path`: ディスク使用量確認のパス（デフォルト: /）
 
@@ -104,6 +118,10 @@ GOOS=linux GOARCH=arm64 go build -o client-arm64 main.go  # ARM64用
 
 # フル版サーバーで全機能テスト
 ./client -server=localhost:50051 -cmd=drs-status
+
+# PTP同期状態確認
+./client -cmd=ptp
+./client -server=192.168.1.100:50051 -cmd=ptp-all
 ```
 
 ## 注意
@@ -111,3 +129,5 @@ GOOS=linux GOARCH=arm64 go build -o client-arm64 main.go  # ARM64用
 - reboot/shutdownコマンドは実際にシステムを操作します
 - テスト環境でのみ使用してください
 - systemdサービス管理はLite版では利用できません
+- PTP同期確認には`pmc`コマンドが必要です
+- リモートデバイスのPTP確認にはARPテーブルエントリが必要です

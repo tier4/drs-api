@@ -15,10 +15,10 @@ import (
 
 func main() {
 	var (
-		serverAddr   = flag.String("server", "localhost:50051", "The server address")
-		command      = flag.String("cmd", "reboot", "Command to execute: reboot, shutdown, drs-stop, drs-restart, drs-status, recorder-stop, recorder-restart, recorder-status, disk")
-		delaySeconds = flag.Int("delay", 0, "Delay in seconds for reboot/shutdown")
-		diskPath     = flag.String("path", "/", "Path for disk usage check")
+		serverAddr    = flag.String("server", "localhost:50051", "The server address")
+		command       = flag.String("cmd", "reboot", "Command to execute: reboot, shutdown, drs-stop, drs-restart, drs-status, recorder-stop, recorder-restart, recorder-status, disk, ptp, ptp-all")
+		delaySeconds  = flag.Int("delay", 0, "Delay in seconds for reboot/shutdown")
+		diskPath      = flag.String("path", "/", "Path for disk usage check")
 	)
 	flag.Parse()
 
@@ -58,9 +58,13 @@ func main() {
 		executeRecorderAction(ctx, client, systemv1.ManageRecorderServiceRequest_SERVICE_ACTION_STATUS)
 	case "disk":
 		executeDiskUsage(ctx, client, *diskPath)
+	case "ptp":
+		executePTPCheck(ctx, client, false)
+	case "ptp-all":
+		executePTPCheck(ctx, client, true)
 	default:
 		fmt.Printf("Unknown command: %s\n", *command)
-		fmt.Println("Available commands: reboot, shutdown, drs-stop, drs-restart, drs-status, recorder-stop, recorder-restart, recorder-status, disk")
+		fmt.Println("Available commands: reboot, shutdown, drs-stop, drs-restart, drs-status, recorder-stop, recorder-restart, recorder-status, disk, ptp, ptp-all")
 	}
 }
 
@@ -166,4 +170,52 @@ func executeDiskUsage(ctx context.Context, client systemv1.SystemServiceClient, 
 		fmt.Printf("  Free: %.2f GB\n", float64(usage.FreeBytes)/1024/1024/1024)
 		fmt.Printf("  Usage: %.1f%%\n", usage.UsagePercentage)
 	}
+}
+
+func executePTPCheck(ctx context.Context, client systemv1.SystemServiceClient, includeRemote bool) {
+	if includeRemote {
+		fmt.Println("Checking PTP sync status for local and remote devices...")
+	} else {
+		fmt.Println("Checking local PTP sync status...")
+	}
+	
+	req := &systemv1.CheckPTPSyncRequest{
+		IncludeRemoteDevices: includeRemote,
+	}
+	
+	resp, err := client.CheckPTPSync(ctx, req)
+	if err != nil {
+		log.Fatalf("PTP check request failed: %v", err)
+	}
+	
+	fmt.Printf("PTP sync response:\n")
+	fmt.Printf("  Success: %v\n", resp.Success)
+	fmt.Printf("  Message: %s\n", resp.Message)
+	
+	if resp.Success && resp.LocalStatus != nil {
+		fmt.Printf("\n[Local PTP Status]\n")
+		printPTPStatus(resp.LocalStatus)
+		
+		if includeRemote && len(resp.RemoteStatuses) > 0 {
+			fmt.Printf("\n[Remote Devices]\n")
+			for _, remote := range resp.RemoteStatuses {
+				fmt.Printf("\n  Device: %s (%s)\n", remote.DeviceName, remote.IpAddress)
+				fmt.Printf("  Reachable: %v\n", remote.IsReachable)
+				if remote.IsReachable && remote.Status != nil {
+					printPTPStatus(remote.Status)
+				} else if !remote.IsReachable && remote.ErrorMessage != "" {
+					fmt.Printf("  Error: %s\n", remote.ErrorMessage)
+				}
+			}
+		}
+	}
+}
+
+func printPTPStatus(status *systemv1.PTPStatus) {
+	fmt.Printf("  Clock ID: %s\n", status.ClockId)
+	fmt.Printf("  Master Offset: %d ns (%.3f ms)\n", status.MasterOffsetNs, float64(status.MasterOffsetNs)/1000000.0)
+	fmt.Printf("  Ingress Time: %d\n", status.IngressTime)
+	fmt.Printf("  GM Present: %v\n", status.GmPresent)
+	fmt.Printf("  GM Identity: %s\n", status.GmIdentity)
+	fmt.Printf("  Is Synced: %v\n", status.IsSynced)
 }

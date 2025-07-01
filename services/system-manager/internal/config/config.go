@@ -13,6 +13,7 @@ type Config struct {
 	Disk     DiskConfig     `yaml:"disk"`
 	Services ServicesConfig `yaml:"services"`
 	System   SystemConfig   `yaml:"system"`
+	PTP      PTPConfig      `yaml:"ptp"`
 }
 
 type ServerConfig struct {
@@ -42,6 +43,16 @@ type SystemConfig struct {
 	AllowShutdown   bool `yaml:"allow_shutdown"`
 }
 
+type PTPConfig struct {
+	RemoteDevices   []RemoteDevice `yaml:"remote_devices"`
+	SyncThresholdNs int64          `yaml:"sync_threshold_ns"`
+}
+
+type RemoteDevice struct {
+	Name      string `yaml:"name"`
+	IPAddress string `yaml:"ip_address"`
+}
+
 // LoadConfig loads configuration from file
 func LoadConfig(configPath string) (*Config, error) {
 	// Default configuration
@@ -64,6 +75,10 @@ func LoadConfig(configPath string) (*Config, error) {
 			MaxDelaySeconds: 300,
 			AllowReboot:     true,
 			AllowShutdown:   true,
+		},
+		PTP: PTPConfig{
+			RemoteDevices:   []RemoteDevice{},
+			SyncThresholdNs: 1000000, // 1ms default
 		},
 	}
 

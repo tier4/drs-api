@@ -40,3 +40,15 @@ system:
   # Enable system operations
   allow_reboot: true
   allow_shutdown: true
+
+# PTP time synchronization settings
+ptp:
+  # Remote devices to check for PTP sync
+  remote_devices:
+    - name: "front_lidar"
+      ip_address: "192.168.2.201"
+    - name: "rear_lidar"
+      ip_address: "192.168.2.202"
+  
+  # PTP sync threshold in nanoseconds (default: 1ms)
+  sync_threshold_ns: 1000000

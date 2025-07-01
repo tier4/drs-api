@@ -7,6 +7,7 @@ import (
 
 	"github.com/proto_api/services/system-manager/internal/config"
 	systemv1 "github.com/proto_api/services/system-manager/gen/system/v1"
+	"github.com/proto_api/services/system-manager/internal/ptp"
 	"github.com/proto_api/services/system-manager/internal/storage"
 	"github.com/proto_api/services/system-manager/internal/system"
 )
@@ -15,6 +16,7 @@ type SystemService struct {
 	systemv1.UnimplementedSystemServiceServer
 	systemManager  *system.Manager
 	storageManager *storage.Manager
+	ptpChecker     *ptp.Checker
 	config         *config.Config
 }
 
@@ -22,6 +24,7 @@ func NewSystemService(cfg *config.Config) *SystemService {
 	return &SystemService{
 		systemManager:  system.NewManager(),
 		storageManager: storage.NewManager(),
+		ptpChecker:     ptp.NewChecker(cfg.PTP.SyncThresholdNs),
 		config:         cfg,
 	}
 }
@@ -101,4 +104,63 @@ func (s *SystemService) GetDiskUsage(ctx context.Context, req *systemv1.GetDiskU
 			Filesystem:      targetPath,
 		},
 	}, nil
+}
+
+func (s *SystemService) CheckPTPSync(ctx context.Context, req *systemv1.CheckPTPSyncRequest) (*systemv1.CheckPTPSyncResponse, error) {
+	log.Printf("PTP sync check request received (include_remote: %v)", req.IncludeRemoteDevices)
+	
+	// Get local PTP status
+	localStatus, err := s.ptpChecker.GetLocalTimeStatus()
+	if err != nil {
+		return &systemv1.CheckPTPSyncResponse{
+			Success: false,
+			Message: fmt.Sprintf("Failed to get local PTP status: %v", err),
+		}, nil
+	}
+	
+	response := &systemv1.CheckPTPSyncResponse{
+		Success: true,
+		Message: "PTP sync status retrieved successfully",
+		LocalStatus: &systemv1.PTPStatus{
+			ClockId:       localStatus.ClockID,
+			MasterOffsetNs: localStatus.MasterOffset,
+			IngressTime:   localStatus.IngressTime,
+			GmPresent:     localStatus.GmPresent,
+			GmIdentity:    localStatus.GmIdentity,
+			IsSynced:      localStatus.IsSynced,
+		},
+		RemoteStatuses: []*systemv1.RemotePTPStatus{},
+	}
+	
+	// Check remote devices if requested
+	if req.IncludeRemoteDevices {
+		for _, device := range s.config.PTP.RemoteDevices {
+			log.Printf("Checking PTP status for %s (%s)", device.Name, device.IPAddress)
+			
+			remoteStatus := &systemv1.RemotePTPStatus{
+				DeviceName: device.Name,
+				IpAddress:  device.IPAddress,
+			}
+			
+			timeStatus, err := s.ptpChecker.GetRemoteTimeStatus(device.IPAddress)
+			if err != nil {
+				remoteStatus.IsReachable = false
+				remoteStatus.ErrorMessage = err.Error()
+			} else {
+				remoteStatus.IsReachable = true
+				remoteStatus.Status = &systemv1.PTPStatus{
+					ClockId:       timeStatus.ClockID,
+					MasterOffsetNs: timeStatus.MasterOffset,
+					IngressTime:   timeStatus.IngressTime,
+					GmPresent:     timeStatus.GmPresent,
+					GmIdentity:    timeStatus.GmIdentity,
+					IsSynced:      timeStatus.IsSynced,
+				}
+			}
+			
+			response.RemoteStatuses = append(response.RemoteStatuses, remoteStatus)
+		}
+	}
+	
+	return response, nil
 }
