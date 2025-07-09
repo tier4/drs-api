@@ -85,6 +85,8 @@ func (s *SystemService) Shutdown(ctx context.Context, req *systemv1.ShutdownRequ
 
 
 func (s *SystemService) GetDiskUsage(ctx context.Context, req *systemv1.GetDiskUsageRequest) (*systemv1.GetDiskUsageResponse, error) {
+	log.Printf("Disk usage request received")
+	
 	// Check if disk usage API is enabled
 	if !s.config.APIs.EnableDiskUsage {
 		log.Printf("Disk usage API is disabled")
@@ -94,41 +96,26 @@ func (s *SystemService) GetDiskUsage(ctx context.Context, req *systemv1.GetDiskU
 		}, nil
 	}
 	
-	// Determine target path
-	var targetPath string
-	if req.Path == "" {
-		// Use default path from config
-		targetPath = s.config.Disk.DefaultPath
-		log.Printf("Disk usage request for default path: %s", targetPath)
-	} else {
-		// Check if the requested path is a configured name
-		targetPath = s.config.GetDiskPath(req.Path)
-		if targetPath == s.config.Disk.DefaultPath && req.Path != s.config.Disk.DefaultPath {
-			// It was a name lookup that fell back to default
-			log.Printf("Disk usage request for named path '%s' -> %s", req.Path, targetPath)
-		} else {
-			// Direct path or exact match
-			log.Printf("Disk usage request for path: %s", targetPath)
-		}
-	}
+	// Always use the configured monitor path - one disk per ECU
+	targetPath := s.config.GetDiskPath()
+	log.Printf("Getting disk usage for primary disk: %s", targetPath)
 	
 	usage, err := s.storageManager.GetDiskUsage(targetPath)
 	if err != nil {
 		return &systemv1.GetDiskUsageResponse{
 			Success: false,
-			Message: fmt.Sprintf("Failed to get disk usage for %s: %v", targetPath, err),
+			Message: fmt.Sprintf("Failed to get disk usage: %v", err),
 		}, nil
 	}
 
 	return &systemv1.GetDiskUsageResponse{
 		Success: true,
-		Message: fmt.Sprintf("Disk usage retrieved successfully for %s", targetPath),
+		Message: "Disk usage retrieved successfully",
 		DiskUsage: &systemv1.DiskUsage{
 			TotalBytes:      usage.TotalBytes,
 			UsedBytes:       usage.UsedBytes,
 			FreeBytes:       usage.FreeBytes,
 			UsagePercentage: usage.UsagePercentage,
-			Filesystem:      targetPath,
 		},
 	}, nil
 }

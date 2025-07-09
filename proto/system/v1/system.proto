@@ -121,7 +121,7 @@ message DisableServiceResponse {
 }
 
 message GetDiskUsageRequest {
-  string path = 1;
+  // No parameters needed - always returns usage for the primary disk
 }
 
 message GetDiskUsageResponse {
@@ -135,7 +135,6 @@ message DiskUsage {
   uint64 used_bytes = 2;
   uint64 free_bytes = 3;
   double usage_percentage = 4;
-  string filesystem = 5;
 }
 
 message CheckPTPSyncRequest {

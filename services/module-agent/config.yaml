@@ -1,79 +1,51 @@
-# Module Agent Configuration
+# DRS API Module Agent Configuration Example
+# Copy this file to config.yaml and modify as needed
 
-# Server settings
 server:
   port: 50051
 
-# API enable/disable settings
+# API feature flags - control which APIs are enabled
 apis:
-  enable_reboot: true           # Enable/disable reboot API
-  enable_shutdown: true         # Enable/disable shutdown API
-  enable_service_management: true  # Enable/disable service management APIs
-  enable_disk_usage: true       # Enable/disable disk usage API
-  enable_ptp_check: true        # Enable/disable PTP check API
+  enable_reboot: true
+  enable_shutdown: true
+  enable_service_management: true
+  enable_disk_usage: true
+  enable_ptp_check: true
 
-# Disk monitoring settings
+# Disk monitoring configuration  
+# Single disk per ECU - API users don't need to know disk details
 disk:
-  # Directories to monitor for disk usage
-  monitored_paths:
-    - path: "/"
-      name: "root"
-      description: "Root filesystem"
-    - path: "/home"
-      name: "home"
-      description: "Home directory"
-    - path: "/var/log"
-      name: "logs"
-      description: "Log directory"
-    - path: "/tmp"
-      name: "temp"
-      description: "Temporary files"
-  
-  # Default path when no specific path is requested
-  default_path: "/"
+  monitor_path: "/"  # Path to monitor for disk usage
 
-# Service management settings (only applies in full mode)
+# Service management configuration
 services:
   enable_systemd_manage: true
   allowed_services:
-    - "drs.service"
-    - "recorder.service"
+    - "drs_sensor.service"
+    - "drs_recorder.service"
+  services:
+    drs_sensor:
+      systemd_name: "drs_sensor.service"
+      display_name: "DRS Sensor Service"
+      description: "Data recording sensor management service"
+      enabled: true
+    drs_recorder:
+      systemd_name: "drs_recorder.service"
+      display_name: "DRS Recorder Service"
+      description: "Data recording service"
+      enabled: true
 
-# System operation settings
+# System operation limits
 system:
-  # Maximum delay allowed for reboot/shutdown (seconds)
   max_delay_seconds: 300
-  
-  # Enable system operations
   allow_reboot: true
   allow_shutdown: true
 
-# PTP time synchronization settings
+# PTP synchronization monitoring
 ptp:
-  # Remote devices to check for PTP sync
+  sync_threshold_ns: 1000000  # 1ms
   remote_devices:
-    - name: "front_lidar"
-      ip_address: "192.168.2.201"
-    - name: "rear_lidar"
-      ip_address: "192.168.2.202"
-  
-  # PTP sync threshold in nanoseconds (default: 1ms)
-  sync_threshold_ns: 1000000
-
-# Example configurations for different modules:
-#
-# For Sensing Module:
-# apis:
-#   enable_reboot: true
-#   enable_shutdown: true
-#   enable_service_management: true  # For managing recording services
-#   enable_disk_usage: true          # For monitoring storage
-#   enable_ptp_check: true           # For time synchronization
-#
-# For Storage Module:
-# apis:
-#   enable_reboot: true
-#   enable_shutdown: true
-#   enable_service_management: false # Not needed for storage
-#   enable_disk_usage: true          # Main functionality
-#   enable_ptp_check: false          # Not needed for storage
+    - name: "master_clock"
+      ip_address: "192.168.1.100"
+    - name: "backup_clock"
+      ip_address: "192.168.1.101"

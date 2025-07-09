@@ -31,14 +31,7 @@ type APIsConfig struct {
 }
 
 type DiskConfig struct {
-	MonitoredPaths []DiskPath `yaml:"monitored_paths"`
-	DefaultPath    string     `yaml:"default_path"`
-}
-
-type DiskPath struct {
-	Path        string `yaml:"path"`
-	Name        string `yaml:"name"`
-	Description string `yaml:"description"`
+	MonitorPath string `yaml:"monitor_path"`
 }
 
 type ServicesConfig struct {
@@ -85,10 +78,7 @@ func LoadConfig(configPath string) (*Config, error) {
 			EnablePTPCheck:         true,
 		},
 		Disk: DiskConfig{
-			DefaultPath: "/",
-			MonitoredPaths: []DiskPath{
-				{Path: "/", Name: "root", Description: "Root filesystem"},
-			},
+			MonitorPath: "/",
 		},
 		Services: ServicesConfig{
 			EnableSystemdManage: true,
@@ -183,18 +173,9 @@ func validateConfig(config *Config) error {
 		return fmt.Errorf("invalid server port: %d", config.Server.Port)
 	}
 
-	// Validate disk paths
-	if config.Disk.DefaultPath == "" {
-		return fmt.Errorf("default_path cannot be empty")
-	}
-
-	for _, path := range config.Disk.MonitoredPaths {
-		if path.Path == "" {
-			return fmt.Errorf("disk path cannot be empty")
-		}
-		if path.Name == "" {
-			return fmt.Errorf("disk path name cannot be empty")
-		}
+	// Validate disk path
+	if config.Disk.MonitorPath == "" {
+		return fmt.Errorf("monitor_path cannot be empty")
 	}
 
 	// Validate system settings
@@ -205,24 +186,9 @@ func validateConfig(config *Config) error {
 	return nil
 }
 
-// GetDiskPath returns disk path by name, or default if not found
-func (c *Config) GetDiskPath(name string) string {
-	if name == "" {
-		return c.Disk.DefaultPath
-	}
-
-	for _, path := range c.Disk.MonitoredPaths {
-		if path.Name == name {
-			return path.Path
-		}
-	}
-
-	return c.Disk.DefaultPath
-}
-
-// GetDiskPaths returns all configured disk paths
-func (c *Config) GetDiskPaths() []DiskPath {
-	return c.Disk.MonitoredPaths
+// GetDiskPath returns the configured disk monitor path
+func (c *Config) GetDiskPath() string {
+	return c.Disk.MonitorPath
 }
 
 // IsServiceAllowed checks if a service is allowed to be managed

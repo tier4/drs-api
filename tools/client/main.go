@@ -20,7 +20,6 @@ func main() {
 		serviceName   = flag.String("service", "", "Service name for service management")
 		serviceAction = flag.String("action", "status", "Service action: start, stop, restart, status, enable, disable")
 		delaySeconds  = flag.Int("delay", 0, "Delay in seconds for reboot/shutdown")
-		diskPath      = flag.String("path", "/", "Path for disk usage check")
 	)
 	flag.Parse()
 
@@ -55,7 +54,7 @@ func main() {
 	case "list-services":
 		executeListServices(ctx, client)
 	case "disk":
-		executeDiskUsage(ctx, client, *diskPath)
+		executeDiskUsage(ctx, client)
 	case "ptp":
 		executePTPCheck(ctx, client, false)
 	case "ptp-all":
@@ -256,16 +255,10 @@ func executeListServices(ctx context.Context, client systemv1.SystemServiceClien
 	}
 }
 
-func executeDiskUsage(ctx context.Context, client systemv1.SystemServiceClient, path string) {
-	if path == "/" {
-		fmt.Printf("Getting disk usage for default path\n")
-	} else {
-		fmt.Printf("Getting disk usage for: %s\n", path)
-	}
+func executeDiskUsage(ctx context.Context, client systemv1.SystemServiceClient) {
+	fmt.Printf("Getting disk usage for primary disk\n")
 	
-	req := &systemv1.GetDiskUsageRequest{
-		Path: path,
-	}
+	req := &systemv1.GetDiskUsageRequest{}
 
 	resp, err := client.GetDiskUsage(ctx, req)
 	if err != nil {
@@ -278,7 +271,6 @@ func executeDiskUsage(ctx context.Context, client systemv1.SystemServiceClient, 
 	
 	if resp.DiskUsage != nil {
 		usage := resp.DiskUsage
-		fmt.Printf("  Filesystem: %s\n", usage.Filesystem)
 		fmt.Printf("  Total: %.2f GB\n", float64(usage.TotalBytes)/1024/1024/1024)
 		fmt.Printf("  Used: %.2f GB\n", float64(usage.UsedBytes)/1024/1024/1024)
 		fmt.Printf("  Free: %.2f GB\n", float64(usage.FreeBytes)/1024/1024/1024)
