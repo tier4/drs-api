@@ -3,6 +3,8 @@ package system
 import (
 	"fmt"
 	"os/exec"
+	"strings"
+	"time"
 )
 
 type Manager struct{}
@@ -74,6 +76,155 @@ func (m *Manager) RestartRecorderService() error {
 
 func (m *Manager) GetRecorderServiceStatus() (string, error) {
 	return m.getServiceStatus(RecorderServiceName)
+}
+
+// ServiceInfo represents detailed service information
+type ServiceInfo struct {
+	Name          string
+	Status        string
+	Enabled       bool
+	Description   string
+	UptimeSeconds int64
+}
+
+// Generic service management
+func (m *Manager) ManageService(serviceName, action string) (string, error) {
+	switch action {
+	case "start":
+		return m.startService(serviceName)
+	case "stop":
+		return m.stopService(serviceName)
+	case "restart":
+		return m.restartService(serviceName)
+	case "status":
+		return m.getServiceStatus(serviceName)
+	case "enable":
+		return m.enableService(serviceName)
+	case "disable":
+		return m.disableService(serviceName)
+	default:
+		return "", fmt.Errorf("unsupported action: %s", action)
+	}
+}
+
+func (m *Manager) GetServiceInfo(serviceName string) (*ServiceInfo, error) {
+	info := &ServiceInfo{
+		Name: serviceName,
+	}
+	
+	// Get status
+	status, err := m.getServiceStatus(serviceName)
+	if err != nil {
+		return nil, err
+	}
+	info.Status = strings.TrimSpace(status)
+	
+	// Get enabled status
+	info.Enabled, _ = m.isServiceEnabled(serviceName)
+	
+	// Get description
+	info.Description, _ = m.getServiceDescription(serviceName)
+	
+	// Get uptime if active
+	if info.Status == "active" {
+		info.UptimeSeconds, _ = m.getServiceUptime(serviceName)
+	}
+	
+	return info, nil
+}
+
+func (m *Manager) startService(serviceName string) (string, error) {
+	cmd := exec.Command("sudo", "systemctl", "start", serviceName)
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	return "started", nil
+}
+
+func (m *Manager) stopService(serviceName string) (string, error) {
+	cmd := exec.Command("sudo", "systemctl", "stop", serviceName)
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	return "stopped", nil
+}
+
+func (m *Manager) restartService(serviceName string) (string, error) {
+	cmd := exec.Command("sudo", "systemctl", "restart", serviceName)
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	return "restarted", nil
+}
+
+func (m *Manager) enableService(serviceName string) (string, error) {
+	cmd := exec.Command("sudo", "systemctl", "enable", serviceName)
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	return "enabled", nil
+}
+
+func (m *Manager) disableService(serviceName string) (string, error) {
+	cmd := exec.Command("sudo", "systemctl", "disable", serviceName)
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+	return "disabled", nil
+}
+
+func (m *Manager) isServiceEnabled(serviceName string) (bool, error) {
+	cmd := exec.Command("systemctl", "is-enabled", serviceName)
+	output, err := cmd.Output()
+	if err != nil {
+		return false, nil // Service might not exist or be disabled
+	}
+	status := strings.TrimSpace(string(output))
+	return status == "enabled", nil
+}
+
+func (m *Manager) getServiceDescription(serviceName string) (string, error) {
+	cmd := exec.Command("systemctl", "show", serviceName, "--property=Description", "--value")
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(output)), nil
+}
+
+func (m *Manager) getServiceUptime(serviceName string) (int64, error) {
+	cmd := exec.Command("systemctl", "show", serviceName, "--property=ActiveEnterTimestamp", "--value")
+	output, err := cmd.Output()
+	if err != nil {
+		return 0, err
+	}
+	
+	timestampStr := strings.TrimSpace(string(output))
+	if timestampStr == "" {
+		return 0, nil
+	}
+	
+	// Parse systemd timestamp (format: "Mon 2021-01-01 12:00:00 UTC")
+	layouts := []string{
+		"Mon 2006-01-02 15:04:05 MST",
+		time.RFC3339,
+		"2006-01-02 15:04:05",
+	}
+	
+	var startTime time.Time
+	for _, layout := range layouts {
+		if t, err := time.Parse(layout, timestampStr); err == nil {
+			startTime = t
+			break
+		}
+	}
+	
+	if startTime.IsZero() {
+		return 0, fmt.Errorf("could not parse timestamp: %s", timestampStr)
+	}
+	
+	uptime := time.Since(startTime)
+	return int64(uptime.Seconds()), nil
 }
 
 // Common helper function

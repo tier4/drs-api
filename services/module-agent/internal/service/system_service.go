@@ -200,108 +200,278 @@ func (s *SystemService) CheckPTPSync(ctx context.Context, req *systemv1.CheckPTP
 	
 	return response, nil
 }
-func (s *SystemService) ManageDrsService(ctx context.Context, req *systemv1.ManageDrsServiceRequest) (*systemv1.ManageDrsServiceResponse, error) {
-	log.Printf("DRS service management request: %v", req.Action)
+func (s *SystemService) GetService(ctx context.Context, req *systemv1.GetServiceRequest) (*systemv1.Service, error) {
+	log.Printf("Get service request: %s", req.Name)
 	
 	// Check if service management API is enabled
 	if !s.config.APIs.EnableServiceManagement {
 		log.Printf("Service management API is disabled")
-		return &systemv1.ManageDrsServiceResponse{
-			Success: false,
-			Message: "Service management API is disabled in configuration",
-		}, nil
+		return nil, fmt.Errorf("service management API is disabled in configuration")
 	}
 	
-	// Check if systemd management is enabled
-	if !s.config.Services.EnableSystemdManage {
-		return &systemv1.ManageDrsServiceResponse{
-			Success: false,
-			Message: "systemd service management is not enabled",
-		}, nil
-	}
-
-	var err error
-	var statusStr string
-	
-	switch req.Action {
-	case systemv1.ManageDrsServiceRequest_SERVICE_ACTION_STOP:
-		err = s.systemManager.StopDrsService()
-		statusStr = "stopped"
-	case systemv1.ManageDrsServiceRequest_SERVICE_ACTION_RESTART:
-		err = s.systemManager.RestartDrsService()
-		statusStr = "restarted"
-	case systemv1.ManageDrsServiceRequest_SERVICE_ACTION_STATUS:
-		statusStr, err = s.systemManager.GetDrsServiceStatus()
-	default:
-		return &systemv1.ManageDrsServiceResponse{
-			Success: false,
-			Message: "invalid action specified",
-		}, nil
-	}
-
+	// Parse resource name
+	resourceType, resourceID, err := config.ParseResourceName(req.Name)
 	if err != nil {
-		return &systemv1.ManageDrsServiceResponse{
-			Success: false,
-			Message: fmt.Sprintf("DRS service operation failed: %v", err),
-		}, nil
+		return nil, fmt.Errorf("invalid resource name: %v", err)
 	}
-
-	return &systemv1.ManageDrsServiceResponse{
-		Success:       true,
-		Message:       fmt.Sprintf("DRS service operation completed successfully"),
-		ServiceStatus: statusStr,
+	
+	if resourceType != "services" {
+		return nil, fmt.Errorf("unsupported resource type: %s", resourceType)
+	}
+	
+	// Get service mapping
+	serviceMapping, err := s.config.GetServiceMapping(resourceID)
+	if err != nil {
+		return nil, fmt.Errorf("service not found: %v", err)
+	}
+	
+	// Get systemd service info
+	serviceInfo, err := s.systemManager.GetServiceInfo(serviceMapping.SystemdName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service info: %v", err)
+	}
+	
+	// Convert status to proto enum
+	var state systemv1.Service_ServiceState
+	switch serviceInfo.Status {
+	case "active":
+		state = systemv1.Service_SERVICE_STATE_ACTIVE
+	case "inactive":
+		state = systemv1.Service_SERVICE_STATE_INACTIVE
+	case "failed":
+		state = systemv1.Service_SERVICE_STATE_FAILED
+	case "activating":
+		state = systemv1.Service_SERVICE_STATE_ACTIVATING
+	case "deactivating":
+		state = systemv1.Service_SERVICE_STATE_DEACTIVATING
+	default:
+		state = systemv1.Service_SERVICE_STATE_UNSPECIFIED
+	}
+	
+	return &systemv1.Service{
+		Name:           req.Name,
+		DisplayName:    serviceMapping.DisplayName,
+		State:          state,
+		Enabled:        serviceInfo.Enabled,
+		Description:    serviceMapping.Description,
+		UptimeSeconds:  serviceInfo.UptimeSeconds,
 	}, nil
 }
 
-func (s *SystemService) ManageRecorderService(ctx context.Context, req *systemv1.ManageRecorderServiceRequest) (*systemv1.ManageRecorderServiceResponse, error) {
-	log.Printf("Recorder service management request: %v", req.Action)
+func (s *SystemService) ListServices(ctx context.Context, req *systemv1.ListServicesRequest) (*systemv1.ListServicesResponse, error) {
+	log.Printf("List services request")
 	
 	// Check if service management API is enabled
 	if !s.config.APIs.EnableServiceManagement {
 		log.Printf("Service management API is disabled")
-		return &systemv1.ManageRecorderServiceResponse{
-			Success: false,
-			Message: "Service management API is disabled in configuration",
-		}, nil
+		return nil, fmt.Errorf("service management API is disabled in configuration")
 	}
 	
-	// Check if systemd management is enabled
-	if !s.config.Services.EnableSystemdManage {
-		return &systemv1.ManageRecorderServiceResponse{
-			Success: false,
-			Message: "systemd service management is not enabled",
-		}, nil
-	}
-
-	var err error
-	var statusStr string
+	// Get all enabled services from config
+	enabledServices := s.config.GetAllEnabledServices()
 	
-	switch req.Action {
-	case systemv1.ManageRecorderServiceRequest_SERVICE_ACTION_STOP:
-		err = s.systemManager.StopRecorderService()
-		statusStr = "stopped"
-	case systemv1.ManageRecorderServiceRequest_SERVICE_ACTION_RESTART:
-		err = s.systemManager.RestartRecorderService()
-		statusStr = "restarted"
-	case systemv1.ManageRecorderServiceRequest_SERVICE_ACTION_STATUS:
-		statusStr, err = s.systemManager.GetRecorderServiceStatus()
-	default:
-		return &systemv1.ManageRecorderServiceResponse{
-			Success: false,
-			Message: "invalid action specified",
-		}, nil
+	var services []*systemv1.Service
+	for _, resourceID := range enabledServices {
+		serviceMapping, err := s.config.GetServiceMapping(resourceID)
+		if err != nil {
+			log.Printf("Failed to get service mapping for %s: %v", resourceID, err)
+			continue
+		}
+		
+		serviceInfo, err := s.systemManager.GetServiceInfo(serviceMapping.SystemdName)
+		if err != nil {
+			log.Printf("Failed to get service info for %s: %v", serviceMapping.SystemdName, err)
+			continue
+		}
+		
+		// Convert status to proto enum
+		var state systemv1.Service_ServiceState
+		switch serviceInfo.Status {
+		case "active":
+			state = systemv1.Service_SERVICE_STATE_ACTIVE
+		case "inactive":
+			state = systemv1.Service_SERVICE_STATE_INACTIVE
+		case "failed":
+			state = systemv1.Service_SERVICE_STATE_FAILED
+		case "activating":
+			state = systemv1.Service_SERVICE_STATE_ACTIVATING
+		case "deactivating":
+			state = systemv1.Service_SERVICE_STATE_DEACTIVATING
+		default:
+			state = systemv1.Service_SERVICE_STATE_UNSPECIFIED
+		}
+		
+		services = append(services, &systemv1.Service{
+			Name:           fmt.Sprintf("services/%s", resourceID),
+			DisplayName:    serviceMapping.DisplayName,
+			State:          state,
+			Enabled:        serviceInfo.Enabled,
+			Description:    serviceMapping.Description,
+			UptimeSeconds:  serviceInfo.UptimeSeconds,
+		})
 	}
+	
+	return &systemv1.ListServicesResponse{
+		Services: services,
+	}, nil
+}
 
+func (s *SystemService) StartService(ctx context.Context, req *systemv1.StartServiceRequest) (*systemv1.StartServiceResponse, error) {
+	log.Printf("Start service request: %s", req.Name)
+	
+	// Check if service management API is enabled
+	if !s.config.APIs.EnableServiceManagement {
+		log.Printf("Service management API is disabled")
+		return nil, fmt.Errorf("service management API is disabled in configuration")
+	}
+	
+	// Get systemd service name
+	systemdName, err := s.config.GetSystemdServiceName(req.Name)
 	if err != nil {
-		return &systemv1.ManageRecorderServiceResponse{
-			Success: false,
-			Message: fmt.Sprintf("Recorder service operation failed: %v", err),
-		}, nil
+		return nil, fmt.Errorf("failed to get systemd service name: %v", err)
 	}
+	
+	// Start the service
+	_, err = s.systemManager.ManageService(systemdName, "start")
+	if err != nil {
+		return nil, fmt.Errorf("failed to start service: %v", err)
+	}
+	
+	// Get updated service info
+	service, err := s.GetService(ctx, &systemv1.GetServiceRequest{Name: req.Name})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service info after start: %v", err)
+	}
+	
+	return &systemv1.StartServiceResponse{
+		Service: service,
+	}, nil
+}
 
-	return &systemv1.ManageRecorderServiceResponse{
-		Success:       true,
-		Message:       fmt.Sprintf("Recorder service operation completed successfully"),
-		ServiceStatus: statusStr,
+func (s *SystemService) StopService(ctx context.Context, req *systemv1.StopServiceRequest) (*systemv1.StopServiceResponse, error) {
+	log.Printf("Stop service request: %s", req.Name)
+	
+	// Check if service management API is enabled
+	if !s.config.APIs.EnableServiceManagement {
+		log.Printf("Service management API is disabled")
+		return nil, fmt.Errorf("service management API is disabled in configuration")
+	}
+	
+	// Get systemd service name
+	systemdName, err := s.config.GetSystemdServiceName(req.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get systemd service name: %v", err)
+	}
+	
+	// Stop the service
+	_, err = s.systemManager.ManageService(systemdName, "stop")
+	if err != nil {
+		return nil, fmt.Errorf("failed to stop service: %v", err)
+	}
+	
+	// Get updated service info
+	service, err := s.GetService(ctx, &systemv1.GetServiceRequest{Name: req.Name})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service info after stop: %v", err)
+	}
+	
+	return &systemv1.StopServiceResponse{
+		Service: service,
+	}, nil
+}
+
+func (s *SystemService) RestartService(ctx context.Context, req *systemv1.RestartServiceRequest) (*systemv1.RestartServiceResponse, error) {
+	log.Printf("Restart service request: %s", req.Name)
+	
+	// Check if service management API is enabled
+	if !s.config.APIs.EnableServiceManagement {
+		log.Printf("Service management API is disabled")
+		return nil, fmt.Errorf("service management API is disabled in configuration")
+	}
+	
+	// Get systemd service name
+	systemdName, err := s.config.GetSystemdServiceName(req.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get systemd service name: %v", err)
+	}
+	
+	// Restart the service
+	_, err = s.systemManager.ManageService(systemdName, "restart")
+	if err != nil {
+		return nil, fmt.Errorf("failed to restart service: %v", err)
+	}
+	
+	// Get updated service info
+	service, err := s.GetService(ctx, &systemv1.GetServiceRequest{Name: req.Name})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service info after restart: %v", err)
+	}
+	
+	return &systemv1.RestartServiceResponse{
+		Service: service,
+	}, nil
+}
+
+func (s *SystemService) EnableService(ctx context.Context, req *systemv1.EnableServiceRequest) (*systemv1.EnableServiceResponse, error) {
+	log.Printf("Enable service request: %s", req.Name)
+	
+	// Check if service management API is enabled
+	if !s.config.APIs.EnableServiceManagement {
+		log.Printf("Service management API is disabled")
+		return nil, fmt.Errorf("service management API is disabled in configuration")
+	}
+	
+	// Get systemd service name
+	systemdName, err := s.config.GetSystemdServiceName(req.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get systemd service name: %v", err)
+	}
+	
+	// Enable the service
+	_, err = s.systemManager.ManageService(systemdName, "enable")
+	if err != nil {
+		return nil, fmt.Errorf("failed to enable service: %v", err)
+	}
+	
+	// Get updated service info
+	service, err := s.GetService(ctx, &systemv1.GetServiceRequest{Name: req.Name})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service info after enable: %v", err)
+	}
+	
+	return &systemv1.EnableServiceResponse{
+		Service: service,
+	}, nil
+}
+
+func (s *SystemService) DisableService(ctx context.Context, req *systemv1.DisableServiceRequest) (*systemv1.DisableServiceResponse, error) {
+	log.Printf("Disable service request: %s", req.Name)
+	
+	// Check if service management API is enabled
+	if !s.config.APIs.EnableServiceManagement {
+		log.Printf("Service management API is disabled")
+		return nil, fmt.Errorf("service management API is disabled in configuration")
+	}
+	
+	// Get systemd service name
+	systemdName, err := s.config.GetSystemdServiceName(req.Name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get systemd service name: %v", err)
+	}
+	
+	// Disable the service
+	_, err = s.systemManager.ManageService(systemdName, "disable")
+	if err != nil {
+		return nil, fmt.Errorf("failed to disable service: %v", err)
+	}
+	
+	// Get updated service info
+	service, err := s.GetService(ctx, &systemv1.GetServiceRequest{Name: req.Name})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get service info after disable: %v", err)
+	}
+	
+	return &systemv1.DisableServiceResponse{
+		Service: service,
 	}, nil
 }

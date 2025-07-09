@@ -5,10 +5,22 @@ package system.v1;
 option go_package = "github.com/proto_api/services/module-agent/gen/system/v1;systemv1";
 
 service SystemService {
+  // Standard methods
+  rpc GetService(GetServiceRequest) returns (Service);
+  rpc ListServices(ListServicesRequest) returns (ListServicesResponse);
+  
+  // Service management (custom methods)
+  rpc StartService(StartServiceRequest) returns (StartServiceResponse);
+  rpc StopService(StopServiceRequest) returns (StopServiceResponse);
+  rpc RestartService(RestartServiceRequest) returns (RestartServiceResponse);
+  rpc EnableService(EnableServiceRequest) returns (EnableServiceResponse);
+  rpc DisableService(DisableServiceRequest) returns (DisableServiceResponse);
+  
+  // System operations (custom methods)
   rpc Reboot(RebootRequest) returns (RebootResponse);
   rpc Shutdown(ShutdownRequest) returns (ShutdownResponse);
-  rpc ManageDrsService(ManageDrsServiceRequest) returns (ManageDrsServiceResponse);
-  rpc ManageRecorderService(ManageRecorderServiceRequest) returns (ManageRecorderServiceResponse);
+  
+  // Resource state operations
   rpc GetDiskUsage(GetDiskUsageRequest) returns (GetDiskUsageResponse);
   rpc CheckPTPSync(CheckPTPSyncRequest) returns (CheckPTPSyncResponse);
 }
@@ -31,38 +43,81 @@ message ShutdownResponse {
   string message = 2;
 }
 
-message ManageDrsServiceRequest {
-  ServiceAction action = 1;
+// Standard Get operation
+message GetServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+// Standard List operation
+message ListServicesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+}
+
+message ListServicesResponse {
+  repeated Service services = 1;
+  string next_page_token = 2;
+}
+
+// Service resource
+message Service {
+  string name = 1;          // Resource name: services/{service_id}
+  string display_name = 2;  // Human-readable name
+  ServiceState state = 3;   // Current state
+  bool enabled = 4;         // Whether service is enabled
+  string description = 5;   // Service description
+  int64 uptime_seconds = 6; // Uptime in seconds
   
-  enum ServiceAction {
-    SERVICE_ACTION_UNSPECIFIED = 0;
-    SERVICE_ACTION_STOP = 1;
-    SERVICE_ACTION_RESTART = 2;
-    SERVICE_ACTION_STATUS = 3;
+  enum ServiceState {
+    SERVICE_STATE_UNSPECIFIED = 0;
+    SERVICE_STATE_ACTIVE = 1;
+    SERVICE_STATE_INACTIVE = 2;
+    SERVICE_STATE_FAILED = 3;
+    SERVICE_STATE_ACTIVATING = 4;
+    SERVICE_STATE_DEACTIVATING = 5;
   }
 }
 
-message ManageDrsServiceResponse {
-  bool success = 1;
-  string message = 2;
-  string service_status = 3;
+// Service management operations
+message StartServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
 }
 
-message ManageRecorderServiceRequest {
-  ServiceAction action = 1;
-  
-  enum ServiceAction {
-    SERVICE_ACTION_UNSPECIFIED = 0;
-    SERVICE_ACTION_STOP = 1;
-    SERVICE_ACTION_RESTART = 2;
-    SERVICE_ACTION_STATUS = 3;
-  }
+message StartServiceResponse {
+  Service service = 1;
 }
 
-message ManageRecorderServiceResponse {
-  bool success = 1;
-  string message = 2;
-  string service_status = 3;
+message StopServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+message StopServiceResponse {
+  Service service = 1;
+}
+
+message RestartServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+message RestartServiceResponse {
+  Service service = 1;
+}
+
+message EnableServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+message EnableServiceResponse {
+  Service service = 1;
+}
+
+message DisableServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+message DisableServiceResponse {
+  Service service = 1;
 }
 
 message GetDiskUsageRequest {

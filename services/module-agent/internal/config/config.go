@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -41,8 +42,16 @@ type DiskPath struct {
 }
 
 type ServicesConfig struct {
-	EnableSystemdManage bool     `yaml:"enable_systemd_manage"`
-	AllowedServices     []string `yaml:"allowed_services"`
+	EnableSystemdManage bool                      `yaml:"enable_systemd_manage"`
+	AllowedServices     []string                  `yaml:"allowed_services"`
+	Services            map[string]ServiceMapping `yaml:"services"`
+}
+
+type ServiceMapping struct {
+	SystemdName string `yaml:"systemd_name"`
+	DisplayName string `yaml:"display_name"`
+	Description string `yaml:"description"`
+	Enabled     bool   `yaml:"enabled"`
 }
 
 type SystemConfig struct {
@@ -83,7 +92,21 @@ func LoadConfig(configPath string) (*Config, error) {
 		},
 		Services: ServicesConfig{
 			EnableSystemdManage: true,
-			AllowedServices:     []string{"drs.service", "recorder.service"},
+			AllowedServices:     []string{"drs_sensor.service", "drs_recorder.service"},
+			Services: map[string]ServiceMapping{
+				"drs_sensor": {
+					SystemdName: "drs_sensor.service",
+					DisplayName: "DRS Sensor Service",
+					Description: "Data recording sensor management service",
+					Enabled:     true,
+				},
+				"drs_recorder": {
+					SystemdName: "drs_recorder.service",
+					DisplayName: "DRS Recorder Service",
+					Description: "Data recording service",
+					Enabled:     true,
+				},
+			},
 		},
 		System: SystemConfig{
 			MaxDelaySeconds: 300,
@@ -160,7 +183,6 @@ func validateConfig(config *Config) error {
 		return fmt.Errorf("invalid server port: %d", config.Server.Port)
 	}
 
-
 	// Validate disk paths
 	if config.Disk.DefaultPath == "" {
 		return fmt.Errorf("default_path cannot be empty")
@@ -211,4 +233,65 @@ func (c *Config) IsServiceAllowed(serviceName string) bool {
 		}
 	}
 	return false
+}
+
+// ParseResourceName parses a resource name like "services/drs_sensor"
+func ParseResourceName(resourceName string) (resourceType, resourceID string, err error) {
+	parts := strings.Split(resourceName, "/")
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("invalid resource name format: %s (expected: type/id)", resourceName)
+	}
+	return parts[0], parts[1], nil
+}
+
+// GetSystemdServiceName converts a resource name to systemd service name
+func (c *Config) GetSystemdServiceName(resourceName string) (string, error) {
+	resourceType, resourceID, err := ParseResourceName(resourceName)
+	if err != nil {
+		return "", err
+	}
+	
+	if resourceType != "services" {
+		return "", fmt.Errorf("unsupported resource type: %s", resourceType)
+	}
+	
+	service, exists := c.Services.Services[resourceID]
+	if !exists {
+		return "", fmt.Errorf("service not found: %s", resourceID)
+	}
+	
+	if !service.Enabled {
+		return "", fmt.Errorf("service is disabled: %s", resourceID)
+	}
+	
+	return service.SystemdName, nil
+}
+
+// GetServiceMapping returns service mapping for a resource ID
+func (c *Config) GetServiceMapping(resourceID string) (ServiceMapping, error) {
+	service, exists := c.Services.Services[resourceID]
+	if !exists {
+		return ServiceMapping{}, fmt.Errorf("service not found: %s", resourceID)
+	}
+	return service, nil
+}
+
+// GetAllEnabledServices returns all enabled services
+func (c *Config) GetAllEnabledServices() []string {
+	var services []string
+	for id, service := range c.Services.Services {
+		if service.Enabled {
+			services = append(services, id)
+		}
+	}
+	return services
+}
+
+// IsResourceAllowed checks if a resource is allowed
+func (c *Config) IsResourceAllowed(resourceName string) bool {
+	systemdName, err := c.GetSystemdServiceName(resourceName)
+	if err != nil {
+		return false
+	}
+	return c.IsServiceAllowed(systemdName)
 }

@@ -16,7 +16,9 @@ import (
 func main() {
 	var (
 		serverAddr    = flag.String("server", "localhost:50051", "The server address")
-		command       = flag.String("cmd", "reboot", "Command to execute: reboot, shutdown, drs-stop, drs-restart, drs-status, recorder-stop, recorder-restart, recorder-status, disk, ptp, ptp-all")
+		command       = flag.String("cmd", "reboot", "Command to execute: reboot, shutdown, service, list-services, disk, ptp, ptp-all")
+		serviceName   = flag.String("service", "", "Service name for service management")
+		serviceAction = flag.String("action", "status", "Service action: start, stop, restart, status, enable, disable")
 		delaySeconds  = flag.Int("delay", 0, "Delay in seconds for reboot/shutdown")
 		diskPath      = flag.String("path", "/", "Path for disk usage check")
 	)
@@ -44,27 +46,42 @@ func main() {
 		executeReboot(ctx, client, *delaySeconds)
 	case "shutdown":
 		executeShutdown(ctx, client, *delaySeconds)
-	case "drs-stop":
-		executeDrsAction(ctx, client, systemv1.ManageDrsServiceRequest_SERVICE_ACTION_STOP)
-	case "drs-restart":
-		executeDrsAction(ctx, client, systemv1.ManageDrsServiceRequest_SERVICE_ACTION_RESTART)
-	case "drs-status":
-		executeDrsAction(ctx, client, systemv1.ManageDrsServiceRequest_SERVICE_ACTION_STATUS)
-	case "recorder-stop":
-		executeRecorderAction(ctx, client, systemv1.ManageRecorderServiceRequest_SERVICE_ACTION_STOP)
-	case "recorder-restart":
-		executeRecorderAction(ctx, client, systemv1.ManageRecorderServiceRequest_SERVICE_ACTION_RESTART)
-	case "recorder-status":
-		executeRecorderAction(ctx, client, systemv1.ManageRecorderServiceRequest_SERVICE_ACTION_STATUS)
+	case "service":
+		if *serviceName == "" {
+			fmt.Println("Error: -service flag is required for service command")
+			return
+		}
+		executeServiceAction(ctx, client, *serviceName, *serviceAction)
+	case "list-services":
+		executeListServices(ctx, client)
 	case "disk":
 		executeDiskUsage(ctx, client, *diskPath)
 	case "ptp":
 		executePTPCheck(ctx, client, false)
 	case "ptp-all":
 		executePTPCheck(ctx, client, true)
+	// Backward compatibility shortcuts
+	case "drs-stop":
+		executeServiceAction(ctx, client, "services/drs_sensor", "stop")
+	case "drs-restart":
+		executeServiceAction(ctx, client, "services/drs_sensor", "restart")
+	case "drs-status":
+		executeServiceAction(ctx, client, "services/drs_sensor", "status")
+	case "recorder-stop":
+		executeServiceAction(ctx, client, "services/drs_recorder", "stop")
+	case "recorder-restart":
+		executeServiceAction(ctx, client, "services/drs_recorder", "restart")
+	case "recorder-status":
+		executeServiceAction(ctx, client, "services/drs_recorder", "status")
 	default:
 		fmt.Printf("Unknown command: %s\n", *command)
-		fmt.Println("Available commands: reboot, shutdown, drs-stop, drs-restart, drs-status, recorder-stop, recorder-restart, recorder-status, disk, ptp, ptp-all")
+		fmt.Println("Available commands: reboot, shutdown, service, list-services, disk, ptp, ptp-all")
+		fmt.Println("  service examples:")
+		fmt.Println("    -cmd=service -service=services/drs_sensor -action=stop")
+		fmt.Println("    -cmd=service -service=services/drs_recorder -action=restart")
+		fmt.Println("    -cmd=service -service=drs_sensor.service -action=stop (legacy format)")
+		fmt.Println("    -cmd=service -service=drs_recorder.service -action=restart (legacy format)")
+		fmt.Println("  For backward compatibility: drs-stop, drs-restart, drs-status, recorder-stop, recorder-restart, recorder-status")
 	}
 }
 
@@ -102,43 +119,140 @@ func executeShutdown(ctx context.Context, client systemv1.SystemServiceClient, d
 	fmt.Printf("  Message: %s\n", resp.Message)
 }
 
-func executeDrsAction(ctx context.Context, client systemv1.SystemServiceClient, action systemv1.ManageDrsServiceRequest_ServiceAction) {
-	fmt.Printf("Managing DRS service: %v\n", action)
+func executeServiceAction(ctx context.Context, client systemv1.SystemServiceClient, serviceName, actionStr string) {
+	fmt.Printf("Managing service: %s, action: %s\n", serviceName, actionStr)
 	
-	req := &systemv1.ManageDrsServiceRequest{
-		Action: action,
-	}
-
-	resp, err := client.ManageDrsService(ctx, req)
-	if err != nil {
-		log.Fatalf("DRS service request failed: %v", err)
-	}
-
-	fmt.Printf("DRS service response:\n")
-	fmt.Printf("  Success: %v\n", resp.Success)
-	fmt.Printf("  Message: %s\n", resp.Message)
-	if resp.ServiceStatus != "" {
-		fmt.Printf("  Status: %s\n", resp.ServiceStatus)
+	// Convert systemd service name to resource name
+	resourceName := convertSystemdNameToResourceName(serviceName)
+	
+	// Execute the appropriate method based on action
+	switch strings.ToLower(actionStr) {
+	case "start":
+		req := &systemv1.StartServiceRequest{Name: resourceName}
+		resp, err := client.StartService(ctx, req)
+		if err != nil {
+			log.Fatalf("Start service request failed: %v", err)
+		}
+		printServiceResult("Start", resp.Service)
+		
+	case "stop":
+		req := &systemv1.StopServiceRequest{Name: resourceName}
+		resp, err := client.StopService(ctx, req)
+		if err != nil {
+			log.Fatalf("Stop service request failed: %v", err)
+		}
+		printServiceResult("Stop", resp.Service)
+		
+	case "restart":
+		req := &systemv1.RestartServiceRequest{Name: resourceName}
+		resp, err := client.RestartService(ctx, req)
+		if err != nil {
+			log.Fatalf("Restart service request failed: %v", err)
+		}
+		printServiceResult("Restart", resp.Service)
+		
+	case "status":
+		req := &systemv1.GetServiceRequest{Name: resourceName}
+		resp, err := client.GetService(ctx, req)
+		if err != nil {
+			log.Fatalf("Get service request failed: %v", err)
+		}
+		printServiceResult("Status", resp)
+		
+	case "enable":
+		req := &systemv1.EnableServiceRequest{Name: resourceName}
+		resp, err := client.EnableService(ctx, req)
+		if err != nil {
+			log.Fatalf("Enable service request failed: %v", err)
+		}
+		printServiceResult("Enable", resp.Service)
+		
+	case "disable":
+		req := &systemv1.DisableServiceRequest{Name: resourceName}
+		resp, err := client.DisableService(ctx, req)
+		if err != nil {
+			log.Fatalf("Disable service request failed: %v", err)
+		}
+		printServiceResult("Disable", resp.Service)
+		
+	default:
+		fmt.Printf("Invalid action: %s\n", actionStr)
+		fmt.Println("Valid actions: start, stop, restart, status, enable, disable")
+		return
 	}
 }
 
-func executeRecorderAction(ctx context.Context, client systemv1.SystemServiceClient, action systemv1.ManageRecorderServiceRequest_ServiceAction) {
-	fmt.Printf("Managing Recorder service: %v\n", action)
+// convertSystemdNameToResourceName converts systemd service name to resource name
+func convertSystemdNameToResourceName(systemdName string) string {
+	// Remove .service suffix if present
+	serviceName := strings.TrimSuffix(systemdName, ".service")
 	
-	req := &systemv1.ManageRecorderServiceRequest{
-		Action: action,
+	// Map common systemd names to resource names
+	switch serviceName {
+	case "drs_sensor":
+		return "services/drs_sensor"
+	case "drs_recorder":
+		return "services/drs_recorder"
+	default:
+		// If it already looks like a resource name, return as-is
+		if strings.Contains(serviceName, "/") {
+			return serviceName
+		}
+		// Otherwise, assume it's a service resource
+		return "services/" + serviceName
 	}
+}
 
-	resp, err := client.ManageRecorderService(ctx, req)
+// printServiceResult prints the service information
+func printServiceResult(action string, service *systemv1.Service) {
+	if service == nil {
+		fmt.Printf("%s operation completed but no service info returned\n", action)
+		return
+	}
+	
+	fmt.Printf("%s operation completed successfully\n", action)
+	fmt.Printf("Service Info:\n")
+	fmt.Printf("  Name: %s\n", service.Name)
+	fmt.Printf("  Display Name: %s\n", service.DisplayName)
+	fmt.Printf("  State: %s\n", service.State.String())
+	fmt.Printf("  Enabled: %v\n", service.Enabled)
+	if service.Description != "" {
+		fmt.Printf("  Description: %s\n", service.Description)
+	}
+	if service.UptimeSeconds > 0 {
+		fmt.Printf("  Uptime: %d seconds (%.1f minutes)\n", service.UptimeSeconds, float64(service.UptimeSeconds)/60)
+	}
+}
+
+func executeListServices(ctx context.Context, client systemv1.SystemServiceClient) {
+	fmt.Println("Listing services...")
+	
+	req := &systemv1.ListServicesRequest{}
+
+	resp, err := client.ListServices(ctx, req)
 	if err != nil {
-		log.Fatalf("Recorder service request failed: %v", err)
+		log.Fatalf("List services request failed: %v", err)
 	}
 
-	fmt.Printf("Recorder service response:\n")
-	fmt.Printf("  Success: %v\n", resp.Success)
-	fmt.Printf("  Message: %s\n", resp.Message)
-	if resp.ServiceStatus != "" {
-		fmt.Printf("  Status: %s\n", resp.ServiceStatus)
+	fmt.Printf("List services response:\n")
+	
+	if len(resp.Services) > 0 {
+		fmt.Printf("\nServices:\n")
+		for i, service := range resp.Services {
+			fmt.Printf("  [%d] %s\n", i+1, service.Name)
+			fmt.Printf("      Display Name: %s\n", service.DisplayName)
+			fmt.Printf("      State: %s\n", service.State.String())
+			fmt.Printf("      Enabled: %v\n", service.Enabled)
+			if service.Description != "" {
+				fmt.Printf("      Description: %s\n", service.Description)
+			}
+			if service.UptimeSeconds > 0 {
+				fmt.Printf("      Uptime: %d seconds (%.1f minutes)\n", service.UptimeSeconds, float64(service.UptimeSeconds)/60)
+			}
+			fmt.Println()
+		}
+	} else {
+		fmt.Println("  No services found")
 	}
 }
 
