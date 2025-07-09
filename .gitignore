@@ -10,17 +10,16 @@
 *.out
 vendor/
 go.sum
+*.mod.backup
 
 # Go build cache
-/services/system-manager/bin/
-/services/system-manager/server
-/services/system-manager-lite/bin/
-/services/system-manager-lite/server
+/services/module-agent/bin/
+/services/module-agent/module-agent
 /tools/client/bin/
+/tools/client/client
 
 # Generated protobuf/gRPC files
-/services/system-manager/gen/
-/services/system-manager-lite/gen/
+/services/module-agent/gen/
 /services/ros2-bridge/gen/
 *.pb.go
 *.pb.cc
@@ -76,3 +75,24 @@ debug.test
 Thumbs.db
 .Spotlight-V100
 .Trashes
+
+# Configuration files (keep templates, ignore actual configs)
+config.yaml
+config.yml
+*.config
+!config.example.yaml
+!config.template.yaml
+
+# Development and testing
+/test-data/
+/testdata/
+mockery_output/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup files
+*.bak
+*.backup

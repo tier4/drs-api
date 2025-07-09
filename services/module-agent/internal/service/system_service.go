@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/proto_api/services/module-agent/internal/config"
-	systemv1 "github.com/proto_api/services/module-agent/gen/system/v1"
-	"github.com/proto_api/services/module-agent/internal/ptp"
-	"github.com/proto_api/services/module-agent/internal/storage"
-	"github.com/proto_api/services/module-agent/internal/system"
+	"github.com/drs-api/services/module-agent/internal/config"
+	systemv1 "github.com/drs-api/services/module-agent/gen/system/v1"
+	"github.com/drs-api/services/module-agent/internal/ptp"
+	"github.com/drs-api/services/module-agent/internal/storage"
+	"github.com/drs-api/services/module-agent/internal/system"
 )
 
 type SystemService struct {

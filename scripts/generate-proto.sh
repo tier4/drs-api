@@ -44,9 +44,9 @@ check_tools
 echo "Generating Go code for system service..."
 protoc -I ${PROTO_DIR} \
     --go_out=${SERVICES_DIR}/module-agent/gen \
-    --go_opt=module=github.com/proto_api/services/module-agent/gen \
+    --go_opt=module=github.com/drs-api/services/module-agent/gen \
     --go-grpc_out=${SERVICES_DIR}/module-agent/gen \
-    --go-grpc_opt=module=github.com/proto_api/services/module-agent/gen \
+    --go-grpc_opt=module=github.com/drs-api/services/module-agent/gen \
     ${PROTO_DIR}/system/v1/system.proto
 
 echo "Generating C++ code for ROS2 bridge service..."

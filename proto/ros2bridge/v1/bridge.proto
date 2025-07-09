@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ros2bridge.v1;
 
-option go_package = "github.com/proto_api/services/ros2-bridge/gen/ros2bridge/v1;ros2bridgev1";
+option go_package = "github.com/drs-api/services/ros2-bridge/gen/ros2bridge/v1;ros2bridgev1";
 
 service ROS2BridgeService {
   rpc GetTopicData(GetTopicDataRequest) returns (GetTopicDataResponse);
