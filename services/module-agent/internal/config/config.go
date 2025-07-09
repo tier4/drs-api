@@ -42,7 +42,6 @@ type ServicesConfig struct {
 
 type ServiceMapping struct {
 	SystemdName string `yaml:"systemd_name"`
-	DisplayName string `yaml:"display_name"`
 	Description string `yaml:"description"`
 	Enabled     bool   `yaml:"enabled"`
 }
@@ -86,13 +85,11 @@ func LoadConfig(configPath string) (*Config, error) {
 			Services: map[string]ServiceMapping{
 				"drs_sensor": {
 					SystemdName: "drs_sensor.service",
-					DisplayName: "DRS Sensor Service",
 					Description: "Data recording sensor management service",
 					Enabled:     true,
 				},
 				"drs_recorder": {
 					SystemdName: "drs_recorder.service",
-					DisplayName: "DRS Recorder Service",
 					Description: "Data recording service",
 					Enabled:     true,
 				},

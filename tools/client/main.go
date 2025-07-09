@@ -212,7 +212,6 @@ func printServiceResult(action string, service *systemv1.Service) {
 	fmt.Printf("%s operation completed successfully\n", action)
 	fmt.Printf("Service Info:\n")
 	fmt.Printf("  Name: %s\n", service.Name)
-	fmt.Printf("  Display Name: %s\n", service.DisplayName)
 	fmt.Printf("  State: %s\n", service.State.String())
 	fmt.Printf("  Enabled: %v\n", service.Enabled)
 	if service.Description != "" {
@@ -239,7 +238,6 @@ func executeListServices(ctx context.Context, client systemv1.SystemServiceClien
 		fmt.Printf("\nServices:\n")
 		for i, service := range resp.Services {
 			fmt.Printf("  [%d] %s\n", i+1, service.Name)
-			fmt.Printf("      Display Name: %s\n", service.DisplayName)
 			fmt.Printf("      State: %s\n", service.State.String())
 			fmt.Printf("      Enabled: %v\n", service.Enabled)
 			if service.Description != "" {

@@ -237,7 +237,6 @@ func (s *SystemService) GetService(ctx context.Context, req *systemv1.GetService
 	
 	return &systemv1.Service{
 		Name:           req.Name,
-		DisplayName:    serviceMapping.DisplayName,
 		State:          state,
 		Enabled:        serviceInfo.Enabled,
 		Description:    serviceMapping.Description,
@@ -290,7 +289,6 @@ func (s *SystemService) ListServices(ctx context.Context, req *systemv1.ListServ
 		
 		services = append(services, &systemv1.Service{
 			Name:           fmt.Sprintf("services/%s", resourceID),
-			DisplayName:    serviceMapping.DisplayName,
 			State:          state,
 			Enabled:        serviceInfo.Enabled,
 			Description:    serviceMapping.Description,

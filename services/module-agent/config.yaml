@@ -26,12 +26,10 @@ services:
   services:
     drs_sensor:
       systemd_name: "drs_sensor.service"
-      display_name: "DRS Sensor Service"
       description: "Data recording sensor management service"
       enabled: true
     drs_recorder:
       systemd_name: "drs_recorder.service"
-      display_name: "DRS Recorder Service"
       description: "Data recording service"
       enabled: true
 
