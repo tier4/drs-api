@@ -1,4 +1,4 @@
-module github.com/proto_api/services/system-manager
+module github.com/proto_api/services/module-agent
 
 go 1.22
 

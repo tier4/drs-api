@@ -1,9 +1,16 @@
-# System Manager Configuration
+# Module Agent Configuration
 
 # Server settings
 server:
   port: 50051
-  mode: "full"  # "full" or "lite"
+
+# API enable/disable settings
+apis:
+  enable_reboot: true           # Enable/disable reboot API
+  enable_shutdown: true         # Enable/disable shutdown API
+  enable_service_management: true  # Enable/disable service management APIs
+  enable_disk_usage: true       # Enable/disable disk usage API
+  enable_ptp_check: true        # Enable/disable PTP check API
 
 # Disk monitoring settings
 disk:
@@ -52,3 +59,21 @@ ptp:
   
   # PTP sync threshold in nanoseconds (default: 1ms)
   sync_threshold_ns: 1000000
+
+# Example configurations for different modules:
+#
+# For Sensing Module:
+# apis:
+#   enable_reboot: true
+#   enable_shutdown: true
+#   enable_service_management: true  # For managing recording services
+#   enable_disk_usage: true          # For monitoring storage
+#   enable_ptp_check: true           # For time synchronization
+#
+# For Storage Module:
+# apis:
+#   enable_reboot: true
+#   enable_shutdown: true
+#   enable_service_management: false # Not needed for storage
+#   enable_disk_usage: true          # Main functionality
+#   enable_ptp_check: false          # Not needed for storage

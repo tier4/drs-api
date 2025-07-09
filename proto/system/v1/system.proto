@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package system.v1;
 
-option go_package = "github.com/proto_api/services/system-manager/gen/system/v1;systemv1";
+option go_package = "github.com/proto_api/services/module-agent/gen/system/v1;systemv1";
 
 service SystemService {
   rpc Reboot(RebootRequest) returns (RebootResponse);

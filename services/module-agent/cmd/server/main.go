@@ -9,8 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/proto_api/services/system-manager/internal/config"
-	"github.com/proto_api/services/system-manager/internal/service"
+	"github.com/proto_api/services/module-agent/internal/config"
+	"github.com/proto_api/services/module-agent/internal/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -53,7 +53,7 @@ func main() {
 	
 	reflection.Register(s)
 
-	log.Printf("Starting gRPC server on port %d (mode: %s)", serverPort, cfg.Server.Mode)
+	log.Printf("Starting gRPC server on port %d", serverPort)
 
 	go func() {
 		if err := s.Serve(lis); err != nil {

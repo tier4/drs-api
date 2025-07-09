@@ -4,7 +4,7 @@
 
 ## サービス構成
 
-### 1. System Manager (基本サービス)
+### 1. DRS Manager (基本サービス)
 - **言語**: Go
 - **ポート**: 50051
 - **機能**:
@@ -13,7 +13,7 @@
   - recorder.serviceの管理（stop/restart/status）
   - ディスク容量の取得
 
-### 2. System Manager Lite (制限版)
+### 2. DRS Manager Lite (制限版)
 - **言語**: Go
 - **ポート**: 50053
 - **機能**:
@@ -33,7 +33,7 @@
 proto_api/
 ├── proto/                     # gRPC定義ファイル
 ├── services/                  # マイクロサービス群
-│   ├── system-manager/        # 基本サービス（フル版・Lite版共用）
+│   ├── drs-manager/           # 基本サービス（フル版・Lite版共用）
 │   └── ros2-bridge/          # ROS2ブリッジ
 ├── scripts/                   # ビルド・実行スクリプト
 └── docs/                      # ドキュメント
@@ -56,7 +56,7 @@ cd scripts
 ```
 
 ### 注意事項
-- System Managerサービスは**ネイティブ実行**を前提としています（shutdown/reboot/systemd操作のため）
+- DRS Managerサービスは**ネイティブ実行**を前提としています（shutdown/reboot/systemd操作のため）
 - ARM64環境でのデプロイにはクロスコンパイルしたバイナリを使用してください
 - 古いglibc環境では静的リンク版（`*-static`）を使用してください
 
@@ -69,10 +69,10 @@ cd scripts
 
 ## ビルドと実行
 
-### System Manager (Go)
+### DRS Manager (Go)
 静的リンク版は古いglibc環境でも動作します。
 ```bash
-cd services/system-manager
+cd services/drs-manager
 
 # フル版のビルド（ローカルアーキテクチャ）
 make build
@@ -88,14 +88,14 @@ make build-lite-arm64
 make all
 
 # 実行（フル版）
-./bin/system-manager -port=50051
+./bin/drs-manager -port=50051
 
 # 実行（Lite版）
-./bin/system-manager-lite -port=50053
+./bin/drs-manager-lite -port=50053
 
 # ARM64環境での実行
-./bin/system-manager-arm64 -port=50051
-./bin/system-manager-lite-arm64 -port=50053
+./bin/drs-manager-arm64 -port=50051
+./bin/drs-manager-lite-arm64 -port=50053
 ```
 
 #### ROS2 Bridge (C++)
@@ -114,7 +114,7 @@ ros2 run ros2_bridge ros2_bridge_node
 
 ### ビルドタグによる機能切り替え
 
-System Managerは、ビルドタグまたは環境変数で機能を切り替えられます：
+DRS Managerは、ビルドタグまたは環境変数で機能を切り替えられます：
 
 - ビルドタグ: `go build -tags lite`でLite版をビルド
 - 環境変数: `SERVICE_MODE=lite`でLite版として動作

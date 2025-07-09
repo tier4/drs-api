@@ -36,17 +36,17 @@ check_tools() {
 }
 
 # Create output directories
-mkdir -p ${SERVICES_DIR}/system-manager/gen/system/v1
+mkdir -p ${SERVICES_DIR}/module-agent/gen/system/v1
 mkdir -p ${SERVICES_DIR}/ros2-bridge/gen/ros2bridge/v1
 
 check_tools
 
 echo "Generating Go code for system service..."
 protoc -I ${PROTO_DIR} \
-    --go_out=${SERVICES_DIR}/system-manager/gen \
-    --go_opt=module=github.com/proto_api/services/system-manager/gen \
-    --go-grpc_out=${SERVICES_DIR}/system-manager/gen \
-    --go-grpc_opt=module=github.com/proto_api/services/system-manager/gen \
+    --go_out=${SERVICES_DIR}/module-agent/gen \
+    --go_opt=module=github.com/proto_api/services/module-agent/gen \
+    --go-grpc_out=${SERVICES_DIR}/module-agent/gen \
+    --go-grpc_opt=module=github.com/proto_api/services/module-agent/gen \
     ${PROTO_DIR}/system/v1/system.proto
 
 echo "Generating C++ code for ROS2 bridge service..."
@@ -59,5 +59,5 @@ protoc -I ${PROTO_DIR} \
 echo "Proto generation complete!"
 echo ""
 echo "Generated files:"
-echo "  - Go: ${SERVICES_DIR}/system-manager/gen/"
+echo "  - Go: ${SERVICES_DIR}/module-agent/gen/"
 echo "  - C++: ${SERVICES_DIR}/ros2-bridge/gen/"

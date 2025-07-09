@@ -1,6 +1,7 @@
-# System Manager Service
+# Module Agent Service
 
-システム制御のためのgRPCサービスです。設定ファイルによってカスタマイズ可能です。
+DRSの各モジュール（Sensing Module、Storage Moduleなど）で動作するシステム制御用gRPCサービスです。
+設定ファイルでAPIを個別に有効/無効化でき、各モジュールの要件に応じた構成が可能です。
 
 ## 設定ファイル
 
@@ -10,14 +11,21 @@
 2. `./config.yml`
 3. `実行ファイルと同じディレクトリ/config.yaml`
 4. `実行ファイルと同じディレクトリ/config.yml`
-5. `/etc/system-manager/config.yaml`
-6. `/etc/system-manager/config.yml`
+5. `/etc/module-agent/config.yaml`
+6. `/etc/module-agent/config.yml`
 
 ### 設定例（config.yaml）
 ```yaml
 server:
   port: 50051
-  mode: "full"  # "full" or "lite"
+
+# APIごとの有効/無効設定
+apis:
+  enable_reboot: true           # 再起動API
+  enable_shutdown: true         # シャットダウンAPI
+  enable_service_management: true  # サービス管理API
+  enable_disk_usage: true       # ディスク使用率API
+  enable_ptp_check: true        # PTP同期確認API
 
 disk:
   monitored_paths:
@@ -48,17 +56,17 @@ system:
 
 ### デフォルト設定で実行
 ```bash
-./bin/system-manager
+./bin/module-agent
 ```
 
 ### 設定ファイルを指定して実行
 ```bash
-./bin/system-manager -config=custom-config.yaml
+./bin/module-agent -config=custom-config.yaml
 ```
 
 ### ポートを指定して実行（設定ファイルより優先）
 ```bash
-./bin/system-manager -port=50052
+./bin/module-agent -port=50052
 ```
 
 ## ディスク使用量API
@@ -84,6 +92,28 @@ system:
 ```bash
 # パス未指定時はdefault_pathを使用
 ./client -cmd=disk
+```
+
+## モジュール別設定例
+
+### Sensing Module用設定
+```yaml
+apis:
+  enable_reboot: true
+  enable_shutdown: true
+  enable_service_management: true  # レコーディングサービス管理用
+  enable_disk_usage: true          # ストレージ監視用
+  enable_ptp_check: true           # 時刻同期確認用
+```
+
+### Storage Module用設定
+```yaml
+apis:
+  enable_reboot: true
+  enable_shutdown: true
+  enable_service_management: false # ストレージモジュールでは不要
+  enable_disk_usage: true          # メイン機能
+  enable_ptp_check: false          # ストレージモジュールでは不要
 ```
 
 ## ビルド

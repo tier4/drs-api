@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
+	APIs     APIsConfig     `yaml:"apis"`
 	Disk     DiskConfig     `yaml:"disk"`
 	Services ServicesConfig `yaml:"services"`
 	System   SystemConfig   `yaml:"system"`
@@ -17,8 +18,15 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port int    `yaml:"port"`
-	Mode string `yaml:"mode"`
+	Port int `yaml:"port"`
+}
+
+type APIsConfig struct {
+	EnableReboot           bool `yaml:"enable_reboot"`
+	EnableShutdown         bool `yaml:"enable_shutdown"`
+	EnableServiceManagement bool `yaml:"enable_service_management"`
+	EnableDiskUsage        bool `yaml:"enable_disk_usage"`
+	EnablePTPCheck         bool `yaml:"enable_ptp_check"`
 }
 
 type DiskConfig struct {
@@ -59,7 +67,13 @@ func LoadConfig(configPath string) (*Config, error) {
 	config := &Config{
 		Server: ServerConfig{
 			Port: 50051,
-			Mode: "full",
+		},
+		APIs: APIsConfig{
+			EnableReboot:           true,
+			EnableShutdown:         true,
+			EnableServiceManagement: true,
+			EnableDiskUsage:        true,
+			EnablePTPCheck:         true,
 		},
 		Disk: DiskConfig{
 			DefaultPath: "/",
@@ -117,8 +131,8 @@ func LoadConfigFromDefault() (*Config, error) {
 	possiblePaths := []string{
 		"config.yaml",
 		"config.yml",
-		"/etc/system-manager/config.yaml",
-		"/etc/system-manager/config.yml",
+		"/etc/module-agent/config.yaml",
+		"/etc/module-agent/config.yml",
 	}
 
 	// Try to find executable directory
@@ -146,10 +160,6 @@ func validateConfig(config *Config) error {
 		return fmt.Errorf("invalid server port: %d", config.Server.Port)
 	}
 
-	// Validate server mode
-	if config.Server.Mode != "full" && config.Server.Mode != "lite" {
-		return fmt.Errorf("invalid server mode: %s (must be 'full' or 'lite')", config.Server.Mode)
-	}
 
 	// Validate disk paths
 	if config.Disk.DefaultPath == "" {

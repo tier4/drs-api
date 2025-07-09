@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/proto_api/services/system-manager/internal/config"
-	systemv1 "github.com/proto_api/services/system-manager/gen/system/v1"
-	"github.com/proto_api/services/system-manager/internal/ptp"
-	"github.com/proto_api/services/system-manager/internal/storage"
-	"github.com/proto_api/services/system-manager/internal/system"
+	"github.com/proto_api/services/module-agent/internal/config"
+	systemv1 "github.com/proto_api/services/module-agent/gen/system/v1"
+	"github.com/proto_api/services/module-agent/internal/ptp"
+	"github.com/proto_api/services/module-agent/internal/storage"
+	"github.com/proto_api/services/module-agent/internal/system"
 )
 
 type SystemService struct {
@@ -32,6 +32,15 @@ func NewSystemService(cfg *config.Config) *SystemService {
 func (s *SystemService) Reboot(ctx context.Context, req *systemv1.RebootRequest) (*systemv1.RebootResponse, error) {
 	log.Printf("Reboot request received with delay: %d seconds", req.DelaySeconds)
 	
+	// Check if reboot API is enabled
+	if !s.config.APIs.EnableReboot {
+		log.Printf("Reboot API is disabled")
+		return &systemv1.RebootResponse{
+			Success: false,
+			Message: "Reboot API is disabled in configuration",
+		}, nil
+	}
+	
 	err := s.systemManager.Reboot(int(req.DelaySeconds))
 	if err != nil {
 		log.Printf("Reboot failed: %v", err)
@@ -50,6 +59,15 @@ func (s *SystemService) Reboot(ctx context.Context, req *systemv1.RebootRequest)
 func (s *SystemService) Shutdown(ctx context.Context, req *systemv1.ShutdownRequest) (*systemv1.ShutdownResponse, error) {
 	log.Printf("Shutdown request received with delay: %d seconds", req.DelaySeconds)
 	
+	// Check if shutdown API is enabled
+	if !s.config.APIs.EnableShutdown {
+		log.Printf("Shutdown API is disabled")
+		return &systemv1.ShutdownResponse{
+			Success: false,
+			Message: "Shutdown API is disabled in configuration",
+		}, nil
+	}
+	
 	err := s.systemManager.Shutdown(int(req.DelaySeconds))
 	if err != nil {
 		log.Printf("Shutdown failed: %v", err)
@@ -67,6 +85,15 @@ func (s *SystemService) Shutdown(ctx context.Context, req *systemv1.ShutdownRequ
 
 
 func (s *SystemService) GetDiskUsage(ctx context.Context, req *systemv1.GetDiskUsageRequest) (*systemv1.GetDiskUsageResponse, error) {
+	// Check if disk usage API is enabled
+	if !s.config.APIs.EnableDiskUsage {
+		log.Printf("Disk usage API is disabled")
+		return &systemv1.GetDiskUsageResponse{
+			Success: false,
+			Message: "Disk usage API is disabled in configuration",
+		}, nil
+	}
+	
 	// Determine target path
 	var targetPath string
 	if req.Path == "" {
@@ -108,6 +135,15 @@ func (s *SystemService) GetDiskUsage(ctx context.Context, req *systemv1.GetDiskU
 
 func (s *SystemService) CheckPTPSync(ctx context.Context, req *systemv1.CheckPTPSyncRequest) (*systemv1.CheckPTPSyncResponse, error) {
 	log.Printf("PTP sync check request received (include_remote: %v)", req.IncludeRemoteDevices)
+	
+	// Check if PTP check API is enabled
+	if !s.config.APIs.EnablePTPCheck {
+		log.Printf("PTP check API is disabled")
+		return &systemv1.CheckPTPSyncResponse{
+			Success: false,
+			Message: "PTP check API is disabled in configuration",
+		}, nil
+	}
 	
 	// Get local PTP status
 	localStatus, err := s.ptpChecker.GetLocalTimeStatus()
@@ -163,4 +199,109 @@ func (s *SystemService) CheckPTPSync(ctx context.Context, req *systemv1.CheckPTP
 	}
 	
 	return response, nil
+}
+func (s *SystemService) ManageDrsService(ctx context.Context, req *systemv1.ManageDrsServiceRequest) (*systemv1.ManageDrsServiceResponse, error) {
+	log.Printf("DRS service management request: %v", req.Action)
+	
+	// Check if service management API is enabled
+	if !s.config.APIs.EnableServiceManagement {
+		log.Printf("Service management API is disabled")
+		return &systemv1.ManageDrsServiceResponse{
+			Success: false,
+			Message: "Service management API is disabled in configuration",
+		}, nil
+	}
+	
+	// Check if systemd management is enabled
+	if !s.config.Services.EnableSystemdManage {
+		return &systemv1.ManageDrsServiceResponse{
+			Success: false,
+			Message: "systemd service management is not enabled",
+		}, nil
+	}
+
+	var err error
+	var statusStr string
+	
+	switch req.Action {
+	case systemv1.ManageDrsServiceRequest_SERVICE_ACTION_STOP:
+		err = s.systemManager.StopDrsService()
+		statusStr = "stopped"
+	case systemv1.ManageDrsServiceRequest_SERVICE_ACTION_RESTART:
+		err = s.systemManager.RestartDrsService()
+		statusStr = "restarted"
+	case systemv1.ManageDrsServiceRequest_SERVICE_ACTION_STATUS:
+		statusStr, err = s.systemManager.GetDrsServiceStatus()
+	default:
+		return &systemv1.ManageDrsServiceResponse{
+			Success: false,
+			Message: "invalid action specified",
+		}, nil
+	}
+
+	if err != nil {
+		return &systemv1.ManageDrsServiceResponse{
+			Success: false,
+			Message: fmt.Sprintf("DRS service operation failed: %v", err),
+		}, nil
+	}
+
+	return &systemv1.ManageDrsServiceResponse{
+		Success:       true,
+		Message:       fmt.Sprintf("DRS service operation completed successfully"),
+		ServiceStatus: statusStr,
+	}, nil
+}
+
+func (s *SystemService) ManageRecorderService(ctx context.Context, req *systemv1.ManageRecorderServiceRequest) (*systemv1.ManageRecorderServiceResponse, error) {
+	log.Printf("Recorder service management request: %v", req.Action)
+	
+	// Check if service management API is enabled
+	if !s.config.APIs.EnableServiceManagement {
+		log.Printf("Service management API is disabled")
+		return &systemv1.ManageRecorderServiceResponse{
+			Success: false,
+			Message: "Service management API is disabled in configuration",
+		}, nil
+	}
+	
+	// Check if systemd management is enabled
+	if !s.config.Services.EnableSystemdManage {
+		return &systemv1.ManageRecorderServiceResponse{
+			Success: false,
+			Message: "systemd service management is not enabled",
+		}, nil
+	}
+
+	var err error
+	var statusStr string
+	
+	switch req.Action {
+	case systemv1.ManageRecorderServiceRequest_SERVICE_ACTION_STOP:
+		err = s.systemManager.StopRecorderService()
+		statusStr = "stopped"
+	case systemv1.ManageRecorderServiceRequest_SERVICE_ACTION_RESTART:
+		err = s.systemManager.RestartRecorderService()
+		statusStr = "restarted"
+	case systemv1.ManageRecorderServiceRequest_SERVICE_ACTION_STATUS:
+		statusStr, err = s.systemManager.GetRecorderServiceStatus()
+	default:
+		return &systemv1.ManageRecorderServiceResponse{
+			Success: false,
+			Message: "invalid action specified",
+		}, nil
+	}
+
+	if err != nil {
+		return &systemv1.ManageRecorderServiceResponse{
+			Success: false,
+			Message: fmt.Sprintf("Recorder service operation failed: %v", err),
+		}, nil
+	}
+
+	return &systemv1.ManageRecorderServiceResponse{
+		Success:       true,
+		Message:       fmt.Sprintf("Recorder service operation completed successfully"),
+		ServiceStatus: statusStr,
+	}, nil
 }

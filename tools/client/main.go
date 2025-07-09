@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	systemv1 "github.com/proto_api/services/system-manager/gen/system/v1"
+	systemv1 "github.com/proto_api/services/module-agent/gen/system/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
