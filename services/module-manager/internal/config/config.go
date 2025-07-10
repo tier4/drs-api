@@ -128,8 +128,8 @@ func LoadConfigFromDefault() (*Config, error) {
 	possiblePaths := []string{
 		"config.yaml",
 		"config.yml",
-		"/etc/module-agent/config.yaml",
-		"/etc/module-agent/config.yml",
+		"/etc/module-manager/config.yaml",
+		"/etc/module-manager/config.yml",
 	}
 
 	// Try to find executable directory

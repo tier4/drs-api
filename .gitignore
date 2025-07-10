@@ -12,15 +12,13 @@ vendor/
 go.sum
 *.mod.backup
 
-# Go build cache
-/services/module-agent/bin/
-/services/module-agent/module-agent
-/tools/client/bin/
-/tools/client/client
+# Build artifacts and binaries
+bin/
+gen/
+**/bin/
+**/gen/
 
 # Generated protobuf/gRPC files
-/services/module-agent/gen/
-/services/ros2-bridge/gen/
 *.pb.go
 *.pb.cc
 *.pb.h
@@ -30,9 +28,12 @@ go.sum
 *_grpc.pb.h
 
 # ROS2 build artifacts
-/services/ros2-bridge/build/
-/services/ros2-bridge/install/
-/services/ros2-bridge/log/
+build/
+install/
+log/
+**/build/
+**/install/
+**/log/
 .colcon_build_base
 
 # IDE and editor files

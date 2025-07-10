@@ -1,6 +1,6 @@
-# Module Agent Service
+# Module Manager Service
 
-DRSの各モジュール（Sensing Module、Storage Moduleなど）で動作するシステム制御用gRPCサービスです。
+DRSの各モジュール（Sensing Module、Storage Moduleなど）で動作するシステム管理用gRPCサービスです。
 設定ファイルでAPIを個別に有効/無効化でき、各モジュールの要件に応じた構成が可能です。
 
 ## 機能
@@ -30,8 +30,8 @@ DRSの各モジュール（Sensing Module、Storage Moduleなど）で動作す�
 2. `./config.yml`
 3. `実行ファイルと同じディレクトリ/config.yaml`
 4. `実行ファイルと同じディレクトリ/config.yml`
-5. `/etc/module-agent/config.yaml`
-6. `/etc/module-agent/config.yml`
+5. `/etc/module-manager/config.yaml`
+6. `/etc/module-manager/config.yml`
 
 ### 設定例（config.yaml）
 ```yaml
@@ -77,17 +77,17 @@ ptp:
 
 ### デフォルト設定で実行
 ```bash
-./bin/module-agent
+./bin/module-manager
 ```
 
 ### 設定ファイルを指定して実行
 ```bash
-./bin/module-agent -config=custom-config.yaml
+./bin/module-manager -config=custom-config.yaml
 ```
 
 ### ポートを指定して実行（設定ファイルより優先）
 ```bash
-./bin/module-agent -port=50052
+./bin/module-manager -port=50052
 ```
 
 ## API使用例
