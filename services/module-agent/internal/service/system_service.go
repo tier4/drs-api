@@ -33,7 +33,7 @@ func (s *SystemService) Reboot(ctx context.Context, req *systemv1.RebootRequest)
 	log.Printf("Reboot request received with delay: %d seconds", req.DelaySeconds)
 	
 	// Check if reboot API is enabled
-	if !s.config.APIs.EnableReboot {
+	if !s.config.System.EnableReboot {
 		log.Printf("Reboot API is disabled")
 		return &systemv1.RebootResponse{
 			Success: false,
@@ -60,7 +60,7 @@ func (s *SystemService) Shutdown(ctx context.Context, req *systemv1.ShutdownRequ
 	log.Printf("Shutdown request received with delay: %d seconds", req.DelaySeconds)
 	
 	// Check if shutdown API is enabled
-	if !s.config.APIs.EnableShutdown {
+	if !s.config.System.EnableShutdown {
 		log.Printf("Shutdown API is disabled")
 		return &systemv1.ShutdownResponse{
 			Success: false,
@@ -88,7 +88,7 @@ func (s *SystemService) GetDiskUsage(ctx context.Context, req *systemv1.GetDiskU
 	log.Printf("Disk usage request received")
 	
 	// Check if disk usage API is enabled
-	if !s.config.APIs.EnableDiskUsage {
+	if !s.config.Disk.Enabled {
 		log.Printf("Disk usage API is disabled")
 		return &systemv1.GetDiskUsageResponse{
 			Success: false,
@@ -124,7 +124,7 @@ func (s *SystemService) CheckPTPSync(ctx context.Context, req *systemv1.CheckPTP
 	log.Printf("PTP sync check request received (include_remote: %v)", req.IncludeRemoteDevices)
 	
 	// Check if PTP check API is enabled
-	if !s.config.APIs.EnablePTPCheck {
+	if !s.config.PTP.Enabled {
 		log.Printf("PTP check API is disabled")
 		return &systemv1.CheckPTPSyncResponse{
 			Success: false,
@@ -191,7 +191,7 @@ func (s *SystemService) GetService(ctx context.Context, req *systemv1.GetService
 	log.Printf("Get service request: %s", req.Name)
 	
 	// Check if service management API is enabled
-	if !s.config.APIs.EnableServiceManagement {
+	if !s.config.Services.Enabled {
 		log.Printf("Service management API is disabled")
 		return nil, fmt.Errorf("service management API is disabled in configuration")
 	}
@@ -248,7 +248,7 @@ func (s *SystemService) ListServices(ctx context.Context, req *systemv1.ListServ
 	log.Printf("List services request")
 	
 	// Check if service management API is enabled
-	if !s.config.APIs.EnableServiceManagement {
+	if !s.config.Services.Enabled {
 		log.Printf("Service management API is disabled")
 		return nil, fmt.Errorf("service management API is disabled in configuration")
 	}
@@ -305,7 +305,7 @@ func (s *SystemService) StartService(ctx context.Context, req *systemv1.StartSer
 	log.Printf("Start service request: %s", req.Name)
 	
 	// Check if service management API is enabled
-	if !s.config.APIs.EnableServiceManagement {
+	if !s.config.Services.Enabled {
 		log.Printf("Service management API is disabled")
 		return nil, fmt.Errorf("service management API is disabled in configuration")
 	}
@@ -337,7 +337,7 @@ func (s *SystemService) StopService(ctx context.Context, req *systemv1.StopServi
 	log.Printf("Stop service request: %s", req.Name)
 	
 	// Check if service management API is enabled
-	if !s.config.APIs.EnableServiceManagement {
+	if !s.config.Services.Enabled {
 		log.Printf("Service management API is disabled")
 		return nil, fmt.Errorf("service management API is disabled in configuration")
 	}
@@ -369,7 +369,7 @@ func (s *SystemService) RestartService(ctx context.Context, req *systemv1.Restar
 	log.Printf("Restart service request: %s", req.Name)
 	
 	// Check if service management API is enabled
-	if !s.config.APIs.EnableServiceManagement {
+	if !s.config.Services.Enabled {
 		log.Printf("Service management API is disabled")
 		return nil, fmt.Errorf("service management API is disabled in configuration")
 	}
@@ -401,7 +401,7 @@ func (s *SystemService) EnableService(ctx context.Context, req *systemv1.EnableS
 	log.Printf("Enable service request: %s", req.Name)
 	
 	// Check if service management API is enabled
-	if !s.config.APIs.EnableServiceManagement {
+	if !s.config.Services.Enabled {
 		log.Printf("Service management API is disabled")
 		return nil, fmt.Errorf("service management API is disabled in configuration")
 	}
@@ -433,7 +433,7 @@ func (s *SystemService) DisableService(ctx context.Context, req *systemv1.Disabl
 	log.Printf("Disable service request: %s", req.Name)
 	
 	// Check if service management API is enabled
-	if !s.config.APIs.EnableServiceManagement {
+	if !s.config.Services.Enabled {
 		log.Printf("Service management API is disabled")
 		return nil, fmt.Errorf("service management API is disabled in configuration")
 	}

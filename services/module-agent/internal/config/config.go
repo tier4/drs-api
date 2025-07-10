@@ -11,7 +11,6 @@ import (
 
 type Config struct {
 	Server   ServerConfig   `yaml:"server"`
-	APIs     APIsConfig     `yaml:"apis"`
 	Disk     DiskConfig     `yaml:"disk"`
 	Services ServicesConfig `yaml:"services"`
 	System   SystemConfig   `yaml:"system"`
@@ -22,21 +21,14 @@ type ServerConfig struct {
 	Port int `yaml:"port"`
 }
 
-type APIsConfig struct {
-	EnableReboot           bool `yaml:"enable_reboot"`
-	EnableShutdown         bool `yaml:"enable_shutdown"`
-	EnableServiceManagement bool `yaml:"enable_service_management"`
-	EnableDiskUsage        bool `yaml:"enable_disk_usage"`
-	EnablePTPCheck         bool `yaml:"enable_ptp_check"`
-}
-
 type DiskConfig struct {
+	Enabled     bool   `yaml:"enabled"`
 	MonitorPath string `yaml:"monitor_path"`
 }
 
 type ServicesConfig struct {
-	EnableSystemdManage bool                      `yaml:"enable_systemd_manage"`
-	Services            map[string]ServiceMapping `yaml:"services"`
+	Enabled  bool                      `yaml:"enabled"`
+	Services map[string]ServiceMapping `yaml:"services"`
 }
 
 type ServiceMapping struct {
@@ -45,12 +37,15 @@ type ServiceMapping struct {
 }
 
 type SystemConfig struct {
+	EnableReboot    bool `yaml:"enable_reboot"`
+	EnableShutdown  bool `yaml:"enable_shutdown"`
 	MaxDelaySeconds int  `yaml:"max_delay_seconds"`
 	AllowReboot     bool `yaml:"allow_reboot"`
 	AllowShutdown   bool `yaml:"allow_shutdown"`
 }
 
 type PTPConfig struct {
+	Enabled         bool           `yaml:"enabled"`
 	RemoteDevices   []RemoteDevice `yaml:"remote_devices"`
 	SyncThresholdNs int64          `yaml:"sync_threshold_ns"`
 }
@@ -67,18 +62,12 @@ func LoadConfig(configPath string) (*Config, error) {
 		Server: ServerConfig{
 			Port: 50051,
 		},
-		APIs: APIsConfig{
-			EnableReboot:           true,
-			EnableShutdown:         true,
-			EnableServiceManagement: true,
-			EnableDiskUsage:        true,
-			EnablePTPCheck:         true,
-		},
 		Disk: DiskConfig{
+			Enabled:     true,
 			MonitorPath: "/",
 		},
 		Services: ServicesConfig{
-			EnableSystemdManage: true,
+			Enabled:  true,
 			Services: map[string]ServiceMapping{
 				"drs_sensor": {
 					SystemdName: "drs_sensor.service",
@@ -91,11 +80,14 @@ func LoadConfig(configPath string) (*Config, error) {
 			},
 		},
 		System: SystemConfig{
+			EnableReboot:    true,
+			EnableShutdown:  true,
 			MaxDelaySeconds: 300,
 			AllowReboot:     true,
 			AllowShutdown:   true,
 		},
 		PTP: PTPConfig{
+			Enabled:         true,
 			RemoteDevices:   []RemoteDevice{},
 			SyncThresholdNs: 1000000, // 1ms default
 		},

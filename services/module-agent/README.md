@@ -38,21 +38,14 @@ DRSの各モジュール（Sensing Module、Storage Moduleなど）で動作す�
 server:
   port: 50051
 
-# APIごとの有効/無効設定
-apis:
-  enable_reboot: true           # 再起動API
-  enable_shutdown: true         # シャットダウンAPI
-  enable_service_management: true  # サービス管理API
-  enable_disk_usage: true       # ディスク使用率API
-  enable_ptp_check: true        # PTP同期確認API
-
 # ディスク監視設定（ECUごとに単一パス）
 disk:
+  enabled: true                 # ディスク使用率API有効化
   monitor_path: "/"             # 監視対象パス
 
 # サービス管理設定
 services:
-  enable_systemd_manage: true
+  enabled: true                 # サービス管理API有効化
   services:
     drs_sensor:
       systemd_name: "drs-sensor.service"
@@ -63,12 +56,15 @@ services:
 
 # システム設定
 system:
+  enable_reboot: true           # 再起動API有効化
+  enable_shutdown: true         # シャットダウンAPI有効化
   max_delay_seconds: 300
   allow_reboot: true
   allow_shutdown: true
 
 # PTP同期設定
 ptp:
+  enabled: true                 # PTP同期確認API有効化
   sync_threshold_ns: 1000000    # 同期閾値（ナノ秒）
   remote_devices:               # リモートデバイスのPTP同期確認
     - name: "sensor1"
@@ -151,18 +147,12 @@ ptp:
 server:
   port: 50051
 
-apis:
-  enable_reboot: true
-  enable_shutdown: true
-  enable_service_management: true  # レコーディングサービス管理用
-  enable_disk_usage: true          # ストレージ監視用
-  enable_ptp_check: true           # 時刻同期確認用
-
 disk:
+  enabled: true                    # ディスク使用率API有効化
   monitor_path: "/data"            # センサーデータ保存領域
 
 services:
-  enable_systemd_manage: true
+  enabled: true                    # サービス管理API有効化
   services:
     drs_sensor:
       systemd_name: "drs-sensor.service"
@@ -171,7 +161,15 @@ services:
       systemd_name: "drs-recorder.service"
       description: "DRS Recorder Service"
 
+system:
+  enable_reboot: true              # 再起動API有効化
+  enable_shutdown: true            # シャットダウンAPI有効化
+  max_delay_seconds: 300
+  allow_reboot: true
+  allow_shutdown: true
+
 ptp:
+  enabled: true                    # PTP同期確認API有効化
   sync_threshold_ns: 1000000       # 1ms以内の同期を要求
 ```
 
@@ -180,20 +178,22 @@ ptp:
 server:
   port: 50051
 
-apis:
-  enable_reboot: true
-  enable_shutdown: true
-  enable_service_management: false # ストレージモジュールでは不要
-  enable_disk_usage: true          # メイン機能
-  enable_ptp_check: false          # ストレージモジュールでは不要
-
 disk:
+  enabled: true                    # ディスク使用率API有効化（メイン機能）
   monitor_path: "/storage"         # データストレージ領域
 
+services:
+  enabled: false                   # サービス管理API無効化（ストレージモジュールでは不要）
+
 system:
+  enable_reboot: true              # 再起動API有効化
+  enable_shutdown: true            # シャットダウンAPI有効化
   max_delay_seconds: 300
   allow_reboot: true
   allow_shutdown: true
+
+ptp:
+  enabled: false                   # PTP同期確認API無効化（ストレージモジュールでは不要）
 ```
 
 ### Control Module用設定
@@ -201,21 +201,26 @@ system:
 server:
   port: 50051
 
-apis:
-  enable_reboot: true
-  enable_shutdown: true
-  enable_service_management: true  # 全体システム管理用
-  enable_disk_usage: true
-  enable_ptp_check: true           # センサーモジュールとの同期確認
+disk:
+  enabled: true                    # ディスク使用率API有効化
+  monitor_path: "/data"
 
 services:
-  enable_systemd_manage: true
+  enabled: true                    # サービス管理API有効化（全体システム管理用）
   services:
     drs_control:
       systemd_name: "drs-control.service"
       description: "DRS Control Service"
 
+system:
+  enable_reboot: true              # 再起動API有効化
+  enable_shutdown: true            # シャットダウンAPI有効化
+  max_delay_seconds: 300
+  allow_reboot: true
+  allow_shutdown: true
+
 ptp:
+  enabled: true                    # PTP同期確認API有効化（センサーモジュールとの同期確認）
   sync_threshold_ns: 1000000
   remote_devices:                  # センサーモジュールの同期状態監視
     - name: "sensor1"

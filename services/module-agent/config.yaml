@@ -4,22 +4,15 @@
 server:
   port: 50051
 
-# API feature flags - control which APIs are enabled
-apis:
-  enable_reboot: true
-  enable_shutdown: true
-  enable_service_management: true
-  enable_disk_usage: true
-  enable_ptp_check: true
-
 # Disk monitoring configuration  
 # Single disk per ECU - API users don't need to know disk details
 disk:
+  enabled: true                  # Enable disk usage API
   monitor_path: "/mnt/ssd/data"  # Path to monitor for disk usage
 
 # Service management configuration
 services:
-  enable_systemd_manage: true
+  enabled: true                  # Enable service management API
   services:
     drs_sensor:
       systemd_name: "drs_sensor.service"
@@ -28,15 +21,18 @@ services:
       systemd_name: "drs_recorder.service"
       description: "Data recording service"
 
-# System operation limits
+# System operation configuration
 system:
+  enable_reboot: true            # Enable reboot API
+  enable_shutdown: true          # Enable shutdown API
   max_delay_seconds: 300
   allow_reboot: true
   allow_shutdown: true
 
 # PTP synchronization monitoring
 ptp:
-  sync_threshold_ns: 1000000  # 1ms
+  enabled: true                  # Enable PTP check API
+  sync_threshold_ns: 1000000     # 1ms
   remote_devices:
     - name: "front_lidar"
       ip_address: "192.168.2.201"
