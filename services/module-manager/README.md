@@ -1,51 +1,51 @@
 # Module Manager Service
 
-DRSの各モジュール（Sensing Module、Storage Moduleなど）で動作するシステム管理用gRPCサービスです。
-設定ファイルでAPIを個別に有効/無効化でき、各モジュールの要件に応じた構成が可能です。
+A gRPC service for system management that runs on each DRS module (Sensing Module, Storage Module, etc.).
+APIs can be individually enabled/disabled via configuration file, allowing customization per module requirements.
 
-## 機能
+## Features
 
-### システム制御API
-- **Reboot**: システムの再起動（遅延設定可能）
-- **Shutdown**: システムのシャットダウン（遅延設定可能）
+### System Control APIs
+- **Reboot**: System restart (configurable delay)
+- **Shutdown**: System shutdown (configurable delay)
 
-### サービス管理API
-- **GetService**: 特定サービスの情報取得
-- **ListServices**: 設定済みサービスの一覧取得
-- **StartService**: サービスの起動
-- **StopService**: サービスの停止
-- **RestartService**: サービスの再起動
-- **EnableService**: サービスの自動起動有効化
-- **DisableService**: サービスの自動起動無効化
+### Service Management APIs
+- **GetService**: Retrieve information for a specific service
+- **ListServices**: List configured services
+- **StartService**: Start a service
+- **StopService**: Stop a service
+- **RestartService**: Restart a service
+- **EnableService**: Enable service auto-start
+- **DisableService**: Disable service auto-start
 
-### リソース監視API
-- **GetDiskUsage**: ディスク使用状況の取得（単一パス）
-- **GetPTPStatus**: PTP（Precision Time Protocol）ステータス情報の取得
+### Resource Monitoring APIs
+- **GetDiskUsage**: Get disk usage information (single path)
+- **GetPTPStatus**: Get PTP (Precision Time Protocol) status information
 
-## 設定ファイル
+## Configuration File
 
-### 設定ファイルの場所
-以下の順序で設定ファイルを検索します：
+### Configuration File Location
+Configuration files are searched in the following order:
 1. `./config.yaml`
 2. `./config.yml`
-3. `実行ファイルと同じディレクトリ/config.yaml`
-4. `実行ファイルと同じディレクトリ/config.yml`
+3. `<executable_directory>/config.yaml`
+4. `<executable_directory>/config.yml`
 5. `/etc/module-manager/config.yaml`
 6. `/etc/module-manager/config.yml`
 
-### 設定例（config.yaml）
+### Configuration Example (config.yaml)
 ```yaml
 server:
   port: 50051
 
-# ディスク監視設定（ECUごとに単一パス）
+# Disk monitoring settings (single path per ECU)
 disk:
-  enabled: true                 # ディスク使用率API有効化
-  monitor_path: "/"             # 監視対象パス
+  enabled: true                 # Enable disk usage API
+  monitor_path: "/"             # Path to monitor
 
-# サービス管理設定
+# Service management settings
 services:
-  enabled: true                 # サービス管理API有効化
+  enabled: true                 # Enable service management API
   services:
     drs_sensor:
       systemd_name: "drs-sensor.service"
@@ -54,104 +54,104 @@ services:
       systemd_name: "drs-recorder.service"
       description: "DRS Recorder Service"
 
-# システム設定
+# System settings
 system:
-  enable_reboot: true           # 再起動API有効化
-  enable_shutdown: true         # シャットダウンAPI有効化
+  enable_reboot: true           # Enable reboot API
+  enable_shutdown: true         # Enable shutdown API
   max_delay_seconds: 300
   allow_reboot: true
   allow_shutdown: true
 
-# PTP同期設定
+# PTP sync settings
 ptp:
-  enabled: true                 # PTP同期確認API有効化
-  remote_devices:               # リモートデバイスのPTP同期確認
+  enabled: true                 # Enable PTP sync check API
+  remote_devices:               # Remote device PTP sync check
     - name: "sensor1"
       address: "192.168.1.101:50051"
     - name: "sensor2"
       address: "192.168.1.102:50051"
 ```
 
-## 実行方法
+## Usage
 
-### デフォルト設定で実行
+### Run with default configuration
 ```bash
 ./bin/module-manager
 ```
 
-### 設定ファイルを指定して実行
+### Run with custom configuration file
 ```bash
 ./bin/module-manager -config=custom-config.yaml
 ```
 
-### ポートを指定して実行（設定ファイルより優先）
+### Run with specific port (overrides configuration file)
 ```bash
 ./bin/module-manager -port=50052
 ```
 
-## API使用例
+## API Usage Examples
 
-### ディスク使用量取得
+### Get Disk Usage
 ```bash
-# 設定ファイルで定義されたパスの使用量を取得
+# Get usage for path defined in configuration file
 ./tools/client -cmd=disk
 ```
 
-### サービス管理
+### Service Management
 ```bash
-# サービス一覧の取得
+# List services
 ./tools/client -cmd=list-services
 
-# サービス情報の取得（リソース名形式）
+# Get service information (resource name format)
 ./tools/client -cmd=service -name=services/drs_sensor -action=status
 
-# サービスの起動/停止/再起動
+# Start/stop/restart services
 ./tools/client -cmd=service -name=services/drs_recorder -action=start
 ./tools/client -cmd=service -name=services/drs_recorder -action=stop
 ./tools/client -cmd=service -name=services/drs_recorder -action=restart
 
-# サービスの自動起動設定
+# Enable/disable service auto-start
 ./tools/client -cmd=service -name=services/drs_sensor -action=enable
 ./tools/client -cmd=service -name=services/drs_sensor -action=disable
 ```
 
-### PTP同期確認
+### PTP Sync Check
 ```bash
-# ローカルのPTP同期状態確認
+# Check local PTP sync status
 ./tools/client -cmd=ptp
 
-# すべてのデバイス（ローカル＋リモート）のPTP同期状態確認
+# Check all devices (local + remote) PTP sync status
 ./tools/client -cmd=ptp-all
 ```
 
-### システム制御
+### System Control
 ```bash
-# 即座に再起動
+# Immediate reboot
 ./tools/client -cmd=reboot
 
-# 60秒後に再起動
+# Reboot after 60 seconds
 ./tools/client -cmd=reboot -delay=60
 
-# 即座にシャットダウン
+# Immediate shutdown
 ./tools/client -cmd=shutdown
 
-# 30秒後にシャットダウン
+# Shutdown after 30 seconds
 ./tools/client -cmd=shutdown -delay=30
 ```
 
-## モジュール別設定例
+## Module-Specific Configuration Examples
 
-### Sensing Module用設定
+### Sensing Module Configuration
 ```yaml
 server:
   port: 50051
 
 disk:
-  enabled: true                    # ディスク使用率API有効化
-  monitor_path: "/data"            # センサーデータ保存領域
+  enabled: true                    # Enable disk usage API
+  monitor_path: "/data"            # Sensor data storage area
 
 services:
-  enabled: true                    # サービス管理API有効化
+  enabled: true                    # Enable service management API
   services:
     drs_sensor:
       systemd_name: "drs-sensor.service"
@@ -161,83 +161,83 @@ services:
       description: "DRS Recorder Service"
 
 system:
-  enable_reboot: true              # 再起動API有効化
-  enable_shutdown: true            # シャットダウンAPI有効化
+  enable_reboot: true              # Enable reboot API
+  enable_shutdown: true            # Enable shutdown API
   max_delay_seconds: 300
   allow_reboot: true
   allow_shutdown: true
 
 ptp:
-  enabled: true                    # PTP同期確認API有効化
+  enabled: true                    # Enable PTP sync check API
 ```
 
-### Storage Module用設定
+### Storage Module Configuration
 ```yaml
 server:
   port: 50051
 
 disk:
-  enabled: true                    # ディスク使用率API有効化（メイン機能）
-  monitor_path: "/storage"         # データストレージ領域
+  enabled: true                    # Enable disk usage API (main feature)
+  monitor_path: "/storage"         # Data storage area
 
 services:
-  enabled: false                   # サービス管理API無効化（ストレージモジュールでは不要）
+  enabled: false                   # Disable service management API (not needed for storage module)
 
 system:
-  enable_reboot: true              # 再起動API有効化
-  enable_shutdown: true            # シャットダウンAPI有効化
+  enable_reboot: true              # Enable reboot API
+  enable_shutdown: true            # Enable shutdown API
   max_delay_seconds: 300
   allow_reboot: true
   allow_shutdown: true
 
 ptp:
-  enabled: false                   # PTP同期確認API無効化（ストレージモジュールでは不要）
+  enabled: false                   # Disable PTP sync check API (not needed for storage module)
 ```
 
-### Control Module用設定
+### Control Module Configuration
 ```yaml
 server:
   port: 50051
 
 disk:
-  enabled: true                    # ディスク使用率API有効化
+  enabled: true                    # Enable disk usage API
   monitor_path: "/data"
 
 services:
-  enabled: true                    # サービス管理API有効化（全体システム管理用）
+  enabled: true                    # Enable service management API (for overall system management)
   services:
     drs_control:
       systemd_name: "drs-control.service"
       description: "DRS Control Service"
 
 system:
-  enable_reboot: true              # 再起動API有効化
-  enable_shutdown: true            # シャットダウンAPI有効化
+  enable_reboot: true              # Enable reboot API
+  enable_shutdown: true            # Enable shutdown API
   max_delay_seconds: 300
   allow_reboot: true
   allow_shutdown: true
 
 ptp:
-  enabled: true                    # PTP同期確認API有効化（センサーモジュールとの同期確認）
-  remote_devices:                  # センサーモジュールの同期状態監視
+  enabled: true                    # Enable PTP sync check API (for sensor module sync check)
+  remote_devices:                  # Monitor sensor module sync status
     - name: "sensor1"
       address: "192.168.1.101:50051"
     - name: "sensor2"
       address: "192.168.1.102:50051"
 ```
 
-## ビルド
+## Build
 
 ```bash
-# 通常版
+# Standard build
 make build
 
-# 静的リンク版（古いglibc環境用）
+# Static linked build (for older glibc environments)
 make build-static
 
-# ARM64版
+# ARM64 build
 make build-arm64
 
-# ARM64静的リンク版
+# ARM64 static linked build
 make build-arm64-static
 ```

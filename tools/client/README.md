@@ -1,133 +1,146 @@
-# System Manager Client
+# Module Manager Client
 
-reboot APIをテストするための最小限のクライアントです。
+A minimal client for testing the module manager gRPC service APIs.
 
-## ビルド
+## Build
 
 ```bash
 cd tools/client
 export PATH=/usr/local/go/bin:$PATH
 
-# ローカルアーキテクチャ用
+# For local architecture
 make build
 
-# ARM64用
+# For ARM64
 make build-arm64
 
-# 両方
+# Both
 make all
 
-# または直接コマンド
-mkdir -p bin && go build -o bin/client main.go                              # ローカル用
-mkdir -p bin && GOOS=linux GOARCH=arm64 go build -o bin/client-arm64 main.go  # ARM64用
+# Or direct commands
+mkdir -p bin && go build -o bin/client main.go                              # Local
+mkdir -p bin && GOOS=linux GOARCH=arm64 go build -o bin/client-arm64 main.go  # ARM64
 ```
 
-## 使用方法
+## Usage
 
-### 基本的な使用法
+### Basic Usage
 ```bash
-# reboot（デフォルト）
+# reboot (default)
 ./bin/client
 
-# 特定のコマンドを実行
+# Execute specific command
 ./bin/client -cmd=<command>
 
-# 別のサーバーを指定
+# Specify different server
 ./bin/client -server=192.168.1.100:50051 -cmd=disk
 ```
 
-### 利用可能なコマンド
+### Available Commands
 
-#### システム制御
+#### System Control
 ```bash
-# 即座にreboot
+# Immediate reboot
 ./bin/client -cmd=reboot
 
-# 5秒遅延してreboot
+# Reboot with 5 second delay
 ./bin/client -cmd=reboot -delay=5
 
-# 即座にshutdown
+# Immediate shutdown
 ./bin/client -cmd=shutdown
 
-# 10秒遅延してshutdown
+# Shutdown with 10 second delay
 ./bin/client -cmd=shutdown -delay=10
 ```
 
-#### DRSサービス管理
+#### Service Management
 ```bash
-# DRSサービスを停止
-./bin/client -cmd=drs-stop
+# List all services
+./bin/client -cmd=list-services
 
-# DRSサービスを再起動
-./bin/client -cmd=drs-restart
+# Get service status (resource name format)
+./bin/client -cmd=service -service=services/drs_sensor -action=status
 
-# DRSサービスの状態確認
-./bin/client -cmd=drs-status
+# Start/stop/restart services
+./bin/client -cmd=service -service=services/drs_recorder -action=start
+./bin/client -cmd=service -service=services/drs_recorder -action=stop
+./bin/client -cmd=service -service=services/drs_recorder -action=restart
+
+# Enable/disable service auto-start
+./bin/client -cmd=service -service=services/drs_sensor -action=enable
+./bin/client -cmd=service -service=services/drs_sensor -action=disable
 ```
 
-#### Recorderサービス管理
+#### Legacy Service Management (Backward Compatibility)
 ```bash
-# Recorderサービスを停止
+# Stop DRS service
+./bin/client -cmd=drs-stop
+
+# Restart DRS service
+./bin/client -cmd=drs-restart
+
+# Check DRS service status
+./bin/client -cmd=drs-status
+
+# Stop Recorder service
 ./bin/client -cmd=recorder-stop
 
-# Recorderサービスを再起動
+# Restart Recorder service
 ./bin/client -cmd=recorder-restart
 
-# Recorderサービスの状態確認
+# Check Recorder service status
 ./bin/client -cmd=recorder-status
 ```
 
-#### ディスク使用量確認
+#### Disk Usage Check
 ```bash
-# ルートディスクの使用量
+# Root disk usage
 ./bin/client -cmd=disk
-
-# 特定のパスの使用量
-./bin/client -cmd=disk -path=/home
 ```
 
-#### PTP時刻同期確認
+#### PTP Time Synchronization Check
 ```bash
-# ローカルのPTP同期状態のみ確認
+# Check local PTP sync status only
 ./bin/client -cmd=ptp
 
-# ローカルとリモートデバイスのPTP同期状態を確認
+# Check PTP sync status for local and remote devices
 ./bin/client -cmd=ptp-all
 ```
 
-## オプション
+## Options
 
-- `-server`: サーバーアドレス（デフォルト: localhost:50051）
-- `-cmd`: 実行するコマンド（デフォルト: reboot）
-  - システム制御: `reboot`, `shutdown`
-  - DRSサービス: `drs-stop`, `drs-restart`, `drs-status`
-  - Recorderサービス: `recorder-stop`, `recorder-restart`, `recorder-status`
-  - ディスク: `disk`
-  - PTP同期: `ptp` (ローカルのみ), `ptp-all` (ローカル＋リモート)
-- `-delay`: reboot/shutdown前の遅延秒数（デフォルト: 0）
-- `-path`: ディスク使用量確認のパス（デフォルト: /）
+- `-server`: Server address (default: localhost:50051)
+- `-cmd`: Command to execute (default: reboot)
+  - System control: `reboot`, `shutdown`
+  - Service management: `service`, `list-services`
+  - Legacy service shortcuts: `drs-stop`, `drs-restart`, `drs-status`, `recorder-stop`, `recorder-restart`, `recorder-status`
+  - Disk: `disk`
+  - PTP sync: `ptp` (local only), `ptp-all` (local + remote)
+- `-delay`: Delay seconds before reboot/shutdown (default: 0)
+- `-service`: Service name for service management (resource name format: services/{service_id})
+- `-action`: Service action (start, stop, restart, status, enable, disable)
 
-## 使用例
+## Usage Examples
 
 ```bash
-# ARM64環境のサーバーをテスト
+# Test server in ARM64 environment
 ./bin/client-arm64 -server=192.168.20.1:50051 -cmd=disk
 
-# Lite版サーバーでsystemdサービステスト（エラーになる）
-./bin/client -server=localhost:50053 -cmd=drs-status
+# Test service management
+./bin/client -server=localhost:50051 -cmd=service -service=services/drs_sensor -action=status
 
-# フル版サーバーで全機能テスト
-./bin/client -server=localhost:50051 -cmd=drs-status
+# Test all features on full version server
+./bin/client -server=localhost:50051 -cmd=list-services
 
-# PTP同期状態確認
+# Check PTP sync status
 ./bin/client -cmd=ptp
 ./bin/client -server=192.168.1.100:50051 -cmd=ptp-all
 ```
 
-## 注意
+## Notes
 
-- reboot/shutdownコマンドは実際にシステムを操作します
-- テスト環境でのみ使用してください
-- systemdサービス管理はLite版では利用できません
-- PTP同期確認には`pmc`コマンドが必要です
-- リモートデバイスのPTP確認にはARPテーブルエントリが必要です
+- reboot/shutdown commands actually operate the system
+- Use only in test environment
+- Service management requires proper configuration in the service
+- PTP sync check requires `pmc` command
+- Remote device PTP check requires ARP table entries
