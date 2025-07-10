@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package system.v1;
 
-option go_package = "github.com/drs-api/services/module-agent/gen/system/v1;systemv1";
+option go_package = "./gen/system/v1;systemv1";
 
 service SystemService {
   // Standard methods
@@ -22,7 +22,7 @@ service SystemService {
   
   // Resource state operations
   rpc GetDiskUsage(GetDiskUsageRequest) returns (GetDiskUsageResponse);
-  rpc CheckPTPSync(CheckPTPSyncRequest) returns (CheckPTPSyncResponse);
+  rpc GetPTPStatus(GetPTPStatusRequest) returns (GetPTPStatusResponse);
 }
 
 message RebootRequest {
@@ -136,11 +136,11 @@ message DiskUsage {
   double usage_percentage = 4;
 }
 
-message CheckPTPSyncRequest {
+message GetPTPStatusRequest {
   bool include_remote_devices = 1;
 }
 
-message CheckPTPSyncResponse {
+message GetPTPStatusResponse {
   bool success = 1;
   string message = 2;
   PTPStatus local_status = 3;
