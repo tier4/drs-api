@@ -15,7 +15,7 @@ apis:
 # Disk monitoring configuration  
 # Single disk per ECU - API users don't need to know disk details
 disk:
-  monitor_path: "/"  # Path to monitor for disk usage
+  monitor_path: "/mnt/ssd/data"  # Path to monitor for disk usage
 
 # Service management configuration
 services:
@@ -43,7 +43,7 @@ system:
 ptp:
   sync_threshold_ns: 1000000  # 1ms
   remote_devices:
-    - name: "master_clock"
-      ip_address: "192.168.1.100"
-    - name: "backup_clock"
-      ip_address: "192.168.1.101"
+    - name: "front_lidar"
+      ip_address: "192.168.2.201"
+    - name: "left_lidar"
+      ip_address: "192.168.2.203"
