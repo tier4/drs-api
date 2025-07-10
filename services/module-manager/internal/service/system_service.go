@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/drs-api/services/module-agent/internal/config"
-	systemv1 "github.com/drs-api/services/module-agent/gen/system/v1"
-	"github.com/drs-api/services/module-agent/internal/ptp"
-	"github.com/drs-api/services/module-agent/internal/storage"
-	"github.com/drs-api/services/module-agent/internal/system"
+	"github.com/drs-api/services/module-manager/internal/config"
+	systemv1 "github.com/drs-api/services/module-manager/gen/system/v1"
+	"github.com/drs-api/services/module-manager/internal/ptp"
+	"github.com/drs-api/services/module-manager/internal/storage"
+	"github.com/drs-api/services/module-manager/internal/system"
 )
 
 type SystemService struct {
@@ -24,7 +24,7 @@ func NewSystemService(cfg *config.Config) *SystemService {
 	return &SystemService{
 		systemManager:  system.NewManager(),
 		storageManager: storage.NewManager(),
-		ptpChecker:     ptp.NewChecker(cfg.PTP.SyncThresholdNs),
+		ptpChecker:     ptp.NewChecker(),
 		config:         cfg,
 	}
 }
@@ -120,13 +120,13 @@ func (s *SystemService) GetDiskUsage(ctx context.Context, req *systemv1.GetDiskU
 	}, nil
 }
 
-func (s *SystemService) CheckPTPSync(ctx context.Context, req *systemv1.CheckPTPSyncRequest) (*systemv1.CheckPTPSyncResponse, error) {
+func (s *SystemService) GetPTPStatus(ctx context.Context, req *systemv1.GetPTPStatusRequest) (*systemv1.GetPTPStatusResponse, error) {
 	log.Printf("PTP sync check request received (include_remote: %v)", req.IncludeRemoteDevices)
 	
 	// Check if PTP check API is enabled
 	if !s.config.PTP.Enabled {
 		log.Printf("PTP check API is disabled")
-		return &systemv1.CheckPTPSyncResponse{
+		return &systemv1.GetPTPStatusResponse{
 			Success: false,
 			Message: "PTP check API is disabled in configuration",
 		}, nil
@@ -135,13 +135,13 @@ func (s *SystemService) CheckPTPSync(ctx context.Context, req *systemv1.CheckPTP
 	// Get local PTP status
 	localStatus, err := s.ptpChecker.GetLocalTimeStatus()
 	if err != nil {
-		return &systemv1.CheckPTPSyncResponse{
+		return &systemv1.GetPTPStatusResponse{
 			Success: false,
 			Message: fmt.Sprintf("Failed to get local PTP status: %v", err),
 		}, nil
 	}
 	
-	response := &systemv1.CheckPTPSyncResponse{
+	response := &systemv1.GetPTPStatusResponse{
 		Success: true,
 		Message: "PTP sync status retrieved successfully",
 		LocalStatus: &systemv1.PTPStatus{

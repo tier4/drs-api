@@ -20,7 +20,7 @@ DRSの各モジュール（Sensing Module、Storage Moduleなど）で動作す�
 
 ### リソース監視API
 - **GetDiskUsage**: ディスク使用状況の取得（単一パス）
-- **CheckPTPSync**: PTP（Precision Time Protocol）同期状態の確認
+- **GetPTPStatus**: PTP（Precision Time Protocol）ステータス情報の取得
 
 ## 設定ファイル
 
@@ -65,7 +65,6 @@ system:
 # PTP同期設定
 ptp:
   enabled: true                 # PTP同期確認API有効化
-  sync_threshold_ns: 1000000    # 同期閾値（ナノ秒）
   remote_devices:               # リモートデバイスのPTP同期確認
     - name: "sensor1"
       address: "192.168.1.101:50051"
@@ -170,7 +169,6 @@ system:
 
 ptp:
   enabled: true                    # PTP同期確認API有効化
-  sync_threshold_ns: 1000000       # 1ms以内の同期を要求
 ```
 
 ### Storage Module用設定
@@ -221,7 +219,6 @@ system:
 
 ptp:
   enabled: true                    # PTP同期確認API有効化（センサーモジュールとの同期確認）
-  sync_threshold_ns: 1000000
   remote_devices:                  # センサーモジュールの同期状態監視
     - name: "sensor1"
       address: "192.168.1.101:50051"

@@ -9,8 +9,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/drs-api/services/module-agent/internal/config"
-	"github.com/drs-api/services/module-agent/internal/service"
+	"github.com/drs-api/services/module-manager/internal/config"
+	"github.com/drs-api/services/module-manager/internal/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )

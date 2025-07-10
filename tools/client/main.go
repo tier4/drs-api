@@ -283,11 +283,11 @@ func executePTPCheck(ctx context.Context, client systemv1.SystemServiceClient, i
 		fmt.Println("Checking local PTP sync status...")
 	}
 	
-	req := &systemv1.CheckPTPSyncRequest{
+	req := &systemv1.GetPTPStatusRequest{
 		IncludeRemoteDevices: includeRemote,
 	}
 	
-	resp, err := client.CheckPTPSync(ctx, req)
+	resp, err := client.GetPTPStatus(ctx, req)
 	if err != nil {
 		log.Fatalf("PTP check request failed: %v", err)
 	}

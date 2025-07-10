@@ -20,13 +20,11 @@ type TimeStatus struct {
 }
 
 type Checker struct {
-	syncThresholdNs int64
+	// Remove syncThresholdNs - clients will decide sync status
 }
 
-func NewChecker(syncThresholdNs int64) *Checker {
-	return &Checker{
-		syncThresholdNs: syncThresholdNs,
-	}
+func NewChecker() *Checker {
+	return &Checker{}
 }
 
 func (c *Checker) GetLocalTimeStatus() (*TimeStatus, error) {
@@ -129,8 +127,9 @@ func (c *Checker) parseTimeStatus(output string) (*TimeStatus, error) {
 		status.GmIdentity = match[1]
 	}
 	
-	// Determine if synced based on threshold
-	status.IsSynced = status.GmPresent && abs(status.MasterOffset) <= c.syncThresholdNs
+	// Return raw data only - let clients decide sync status
+	// Note: IsSynced field will be false/default - clients should use raw data
+	status.IsSynced = false // Server no longer makes sync decisions
 	
 	return status, nil
 }

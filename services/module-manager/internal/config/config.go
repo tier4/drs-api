@@ -45,9 +45,8 @@ type SystemConfig struct {
 }
 
 type PTPConfig struct {
-	Enabled         bool           `yaml:"enabled"`
-	RemoteDevices   []RemoteDevice `yaml:"remote_devices"`
-	SyncThresholdNs int64          `yaml:"sync_threshold_ns"`
+	Enabled       bool           `yaml:"enabled"`
+	RemoteDevices []RemoteDevice `yaml:"remote_devices"`
 }
 
 type RemoteDevice struct {
@@ -87,9 +86,8 @@ func LoadConfig(configPath string) (*Config, error) {
 			AllowShutdown:   true,
 		},
 		PTP: PTPConfig{
-			Enabled:         true,
-			RemoteDevices:   []RemoteDevice{},
-			SyncThresholdNs: 1000000, // 1ms default
+			Enabled:       true,
+			RemoteDevices: []RemoteDevice{},
 		},
 	}
 
