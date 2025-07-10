@@ -20,18 +20,13 @@ disk:
 # Service management configuration
 services:
   enable_systemd_manage: true
-  allowed_services:
-    - "drs_sensor.service"
-    - "drs_recorder.service"
   services:
     drs_sensor:
       systemd_name: "drs_sensor.service"
       description: "Data recording sensor management service"
-      enabled: true
     drs_recorder:
       systemd_name: "drs_recorder.service"
       description: "Data recording service"
-      enabled: true
 
 # System operation limits
 system:

@@ -36,14 +36,12 @@ type DiskConfig struct {
 
 type ServicesConfig struct {
 	EnableSystemdManage bool                      `yaml:"enable_systemd_manage"`
-	AllowedServices     []string                  `yaml:"allowed_services"`
 	Services            map[string]ServiceMapping `yaml:"services"`
 }
 
 type ServiceMapping struct {
 	SystemdName string `yaml:"systemd_name"`
 	Description string `yaml:"description"`
-	Enabled     bool   `yaml:"enabled"`
 }
 
 type SystemConfig struct {
@@ -81,17 +79,14 @@ func LoadConfig(configPath string) (*Config, error) {
 		},
 		Services: ServicesConfig{
 			EnableSystemdManage: true,
-			AllowedServices:     []string{"drs_sensor.service", "drs_recorder.service"},
 			Services: map[string]ServiceMapping{
 				"drs_sensor": {
 					SystemdName: "drs_sensor.service",
 					Description: "Data recording sensor management service",
-					Enabled:     true,
 				},
 				"drs_recorder": {
 					SystemdName: "drs_recorder.service",
 					Description: "Data recording service",
-					Enabled:     true,
 				},
 			},
 		},
@@ -190,8 +185,9 @@ func (c *Config) GetDiskPath() string {
 
 // IsServiceAllowed checks if a service is allowed to be managed
 func (c *Config) IsServiceAllowed(serviceName string) bool {
-	for _, allowed := range c.Services.AllowedServices {
-		if allowed == serviceName {
+	// Check if the service is defined in the Services map
+	for _, service := range c.Services.Services {
+		if service.SystemdName == serviceName {
 			return true
 		}
 	}
@@ -223,9 +219,6 @@ func (c *Config) GetSystemdServiceName(resourceName string) (string, error) {
 		return "", fmt.Errorf("service not found: %s", resourceID)
 	}
 	
-	if !service.Enabled {
-		return "", fmt.Errorf("service is disabled: %s", resourceID)
-	}
 	
 	return service.SystemdName, nil
 }
@@ -239,13 +232,11 @@ func (c *Config) GetServiceMapping(resourceID string) (ServiceMapping, error) {
 	return service, nil
 }
 
-// GetAllEnabledServices returns all enabled services
+// GetAllEnabledServices returns all services defined in config
 func (c *Config) GetAllEnabledServices() []string {
 	var services []string
-	for id, service := range c.Services.Services {
-		if service.Enabled {
-			services = append(services, id)
-		}
+	for id := range c.Services.Services {
+		services = append(services, id)
 	}
 	return services
 }
