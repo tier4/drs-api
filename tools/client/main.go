@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	systemv1 "github.com/drs-api/services/module-agent/gen/system/v1"
+	modulev1 "github.com/drs-api/services/module-manager/gen/drs/module/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -31,7 +31,7 @@ func main() {
 	defer conn.Close()
 
 	// Create client
-	client := systemv1.NewSystemServiceClient(conn)
+	client := modulev1.NewModuleServiceClient(conn)
 
 	fmt.Printf("Connected to server: %s\n", *serverAddr)
 	fmt.Printf("Executing command: %s\n", *command)
@@ -84,10 +84,10 @@ func main() {
 	}
 }
 
-func executeReboot(ctx context.Context, client systemv1.SystemServiceClient, delaySeconds int) {
+func executeReboot(ctx context.Context, client modulev1.ModuleServiceClient, delaySeconds int) {
 	fmt.Printf("Requesting reboot with %d seconds delay\n", delaySeconds)
 	
-	req := &systemv1.RebootRequest{
+	req := &modulev1.RebootRequest{
 		DelaySeconds: int32(delaySeconds),
 	}
 
@@ -97,14 +97,15 @@ func executeReboot(ctx context.Context, client systemv1.SystemServiceClient, del
 	}
 
 	fmt.Printf("Reboot response:\n")
-	fmt.Printf("  Success: %v\n", resp.Success)
+	fmt.Printf("  Accepted: %v\n", resp.Accepted)
 	fmt.Printf("  Message: %s\n", resp.Message)
+	fmt.Printf("  Scheduled Delay: %d seconds\n", resp.ScheduledDelay)
 }
 
-func executeShutdown(ctx context.Context, client systemv1.SystemServiceClient, delaySeconds int) {
+func executeShutdown(ctx context.Context, client modulev1.ModuleServiceClient, delaySeconds int) {
 	fmt.Printf("Requesting shutdown with %d seconds delay\n", delaySeconds)
 	
-	req := &systemv1.ShutdownRequest{
+	req := &modulev1.ShutdownRequest{
 		DelaySeconds: int32(delaySeconds),
 	}
 
@@ -114,11 +115,12 @@ func executeShutdown(ctx context.Context, client systemv1.SystemServiceClient, d
 	}
 
 	fmt.Printf("Shutdown response:\n")
-	fmt.Printf("  Success: %v\n", resp.Success)
+	fmt.Printf("  Accepted: %v\n", resp.Accepted)
 	fmt.Printf("  Message: %s\n", resp.Message)
+	fmt.Printf("  Scheduled Delay: %d seconds\n", resp.ScheduledDelay)
 }
 
-func executeServiceAction(ctx context.Context, client systemv1.SystemServiceClient, serviceName, actionStr string) {
+func executeServiceAction(ctx context.Context, client modulev1.ModuleServiceClient, serviceName, actionStr string) {
 	fmt.Printf("Managing service: %s, action: %s\n", serviceName, actionStr)
 	
 	// Convert systemd service name to resource name
@@ -127,7 +129,7 @@ func executeServiceAction(ctx context.Context, client systemv1.SystemServiceClie
 	// Execute the appropriate method based on action
 	switch strings.ToLower(actionStr) {
 	case "start":
-		req := &systemv1.StartServiceRequest{Name: resourceName}
+		req := &modulev1.StartServiceRequest{Name: resourceName}
 		resp, err := client.StartService(ctx, req)
 		if err != nil {
 			log.Fatalf("Start service request failed: %v", err)
@@ -135,7 +137,7 @@ func executeServiceAction(ctx context.Context, client systemv1.SystemServiceClie
 		printServiceResult("Start", resp.Service)
 		
 	case "stop":
-		req := &systemv1.StopServiceRequest{Name: resourceName}
+		req := &modulev1.StopServiceRequest{Name: resourceName}
 		resp, err := client.StopService(ctx, req)
 		if err != nil {
 			log.Fatalf("Stop service request failed: %v", err)
@@ -143,7 +145,7 @@ func executeServiceAction(ctx context.Context, client systemv1.SystemServiceClie
 		printServiceResult("Stop", resp.Service)
 		
 	case "restart":
-		req := &systemv1.RestartServiceRequest{Name: resourceName}
+		req := &modulev1.RestartServiceRequest{Name: resourceName}
 		resp, err := client.RestartService(ctx, req)
 		if err != nil {
 			log.Fatalf("Restart service request failed: %v", err)
@@ -151,7 +153,7 @@ func executeServiceAction(ctx context.Context, client systemv1.SystemServiceClie
 		printServiceResult("Restart", resp.Service)
 		
 	case "status":
-		req := &systemv1.GetServiceRequest{Name: resourceName}
+		req := &modulev1.GetServiceRequest{Name: resourceName}
 		resp, err := client.GetService(ctx, req)
 		if err != nil {
 			log.Fatalf("Get service request failed: %v", err)
@@ -159,7 +161,7 @@ func executeServiceAction(ctx context.Context, client systemv1.SystemServiceClie
 		printServiceResult("Status", resp)
 		
 	case "enable":
-		req := &systemv1.EnableServiceRequest{Name: resourceName}
+		req := &modulev1.EnableServiceRequest{Name: resourceName}
 		resp, err := client.EnableService(ctx, req)
 		if err != nil {
 			log.Fatalf("Enable service request failed: %v", err)
@@ -167,7 +169,7 @@ func executeServiceAction(ctx context.Context, client systemv1.SystemServiceClie
 		printServiceResult("Enable", resp.Service)
 		
 	case "disable":
-		req := &systemv1.DisableServiceRequest{Name: resourceName}
+		req := &modulev1.DisableServiceRequest{Name: resourceName}
 		resp, err := client.DisableService(ctx, req)
 		if err != nil {
 			log.Fatalf("Disable service request failed: %v", err)
@@ -203,7 +205,7 @@ func convertSystemdNameToResourceName(systemdName string) string {
 }
 
 // printServiceResult prints the service information
-func printServiceResult(action string, service *systemv1.Service) {
+func printServiceResult(action string, service *modulev1.Service) {
 	if service == nil {
 		fmt.Printf("%s operation completed but no service info returned\n", action)
 		return
@@ -222,10 +224,10 @@ func printServiceResult(action string, service *systemv1.Service) {
 	}
 }
 
-func executeListServices(ctx context.Context, client systemv1.SystemServiceClient) {
+func executeListServices(ctx context.Context, client modulev1.ModuleServiceClient) {
 	fmt.Println("Listing services...")
 	
-	req := &systemv1.ListServicesRequest{}
+	req := &modulev1.ListServicesRequest{}
 
 	resp, err := client.ListServices(ctx, req)
 	if err != nil {
@@ -253,10 +255,10 @@ func executeListServices(ctx context.Context, client systemv1.SystemServiceClien
 	}
 }
 
-func executeDiskUsage(ctx context.Context, client systemv1.SystemServiceClient) {
+func executeDiskUsage(ctx context.Context, client modulev1.ModuleServiceClient) {
 	fmt.Printf("Getting disk usage for primary disk\n")
 	
-	req := &systemv1.GetDiskUsageRequest{}
+	req := &modulev1.GetDiskUsageRequest{}
 
 	resp, err := client.GetDiskUsage(ctx, req)
 	if err != nil {
@@ -264,8 +266,6 @@ func executeDiskUsage(ctx context.Context, client systemv1.SystemServiceClient) 
 	}
 
 	fmt.Printf("Disk usage response:\n")
-	fmt.Printf("  Success: %v\n", resp.Success)
-	fmt.Printf("  Message: %s\n", resp.Message)
 	
 	if resp.DiskUsage != nil {
 		usage := resp.DiskUsage
@@ -276,14 +276,14 @@ func executeDiskUsage(ctx context.Context, client systemv1.SystemServiceClient) 
 	}
 }
 
-func executePTPCheck(ctx context.Context, client systemv1.SystemServiceClient, includeRemote bool) {
+func executePTPCheck(ctx context.Context, client modulev1.ModuleServiceClient, includeRemote bool) {
 	if includeRemote {
 		fmt.Println("Checking PTP sync status for local and remote devices...")
 	} else {
 		fmt.Println("Checking local PTP sync status...")
 	}
 	
-	req := &systemv1.GetPTPStatusRequest{
+	req := &modulev1.GetPTPStatusRequest{
 		IncludeRemoteDevices: includeRemote,
 	}
 	
@@ -293,10 +293,8 @@ func executePTPCheck(ctx context.Context, client systemv1.SystemServiceClient, i
 	}
 	
 	fmt.Printf("PTP sync response:\n")
-	fmt.Printf("  Success: %v\n", resp.Success)
-	fmt.Printf("  Message: %s\n", resp.Message)
 	
-	if resp.Success && resp.LocalStatus != nil {
+	if resp.LocalStatus != nil {
 		fmt.Printf("\n[Local PTP Status]\n")
 		printPTPStatus(resp.LocalStatus)
 		
@@ -315,7 +313,7 @@ func executePTPCheck(ctx context.Context, client systemv1.SystemServiceClient, i
 	}
 }
 
-func printPTPStatus(status *systemv1.PTPStatus) {
+func printPTPStatus(status *modulev1.PTPStatus) {
 	fmt.Printf("  Clock ID: %s\n", status.ClockId)
 	fmt.Printf("  Master Offset: %d ns (%.3f ms)\n", status.MasterOffsetNs, float64(status.MasterOffsetNs)/1000000.0)
 	fmt.Printf("  Ingress Time: %d\n", status.IngressTime)

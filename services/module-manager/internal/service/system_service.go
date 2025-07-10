@@ -6,22 +6,22 @@ import (
 	"log"
 
 	"github.com/drs-api/services/module-manager/internal/config"
-	systemv1 "github.com/drs-api/services/module-manager/gen/system/v1"
+	modulev1 "github.com/drs-api/services/module-manager/gen/drs/module/v1"
 	"github.com/drs-api/services/module-manager/internal/ptp"
 	"github.com/drs-api/services/module-manager/internal/storage"
 	"github.com/drs-api/services/module-manager/internal/system"
 )
 
-type SystemService struct {
-	systemv1.UnimplementedSystemServiceServer
+type ModuleService struct {
+	modulev1.UnimplementedModuleServiceServer
 	systemManager  *system.Manager
 	storageManager *storage.Manager
 	ptpChecker     *ptp.Checker
 	config         *config.Config
 }
 
-func NewSystemService(cfg *config.Config) *SystemService {
-	return &SystemService{
+func NewModuleService(cfg *config.Config) *ModuleService {
+	return &ModuleService{
 		systemManager:  system.NewManager(),
 		storageManager: storage.NewManager(),
 		ptpChecker:     ptp.NewChecker(),
@@ -29,71 +29,58 @@ func NewSystemService(cfg *config.Config) *SystemService {
 	}
 }
 
-func (s *SystemService) Reboot(ctx context.Context, req *systemv1.RebootRequest) (*systemv1.RebootResponse, error) {
+func (s *ModuleService) Reboot(ctx context.Context, req *modulev1.RebootRequest) (*modulev1.RebootResponse, error) {
 	log.Printf("Reboot request received with delay: %d seconds", req.DelaySeconds)
 	
 	// Check if reboot API is enabled
 	if !s.config.System.EnableReboot {
 		log.Printf("Reboot API is disabled")
-		return &systemv1.RebootResponse{
-			Success: false,
-			Message: "Reboot API is disabled in configuration",
-		}, nil
+		return nil, fmt.Errorf("reboot API is disabled in configuration")
 	}
 	
 	err := s.systemManager.Reboot(int(req.DelaySeconds))
 	if err != nil {
 		log.Printf("Reboot failed: %v", err)
-		return &systemv1.RebootResponse{
-			Success: false,
-			Message: fmt.Sprintf("Reboot failed: %v", err),
-		}, nil
+		return nil, fmt.Errorf("reboot failed: %v", err)
 	}
 
-	return &systemv1.RebootResponse{
-		Success: true,
+	return &modulev1.RebootResponse{
+		Accepted: true,
 		Message: fmt.Sprintf("Reboot scheduled with %d seconds delay", req.DelaySeconds),
+		ScheduledDelay: req.DelaySeconds,
 	}, nil
 }
 
-func (s *SystemService) Shutdown(ctx context.Context, req *systemv1.ShutdownRequest) (*systemv1.ShutdownResponse, error) {
+func (s *ModuleService) Shutdown(ctx context.Context, req *modulev1.ShutdownRequest) (*modulev1.ShutdownResponse, error) {
 	log.Printf("Shutdown request received with delay: %d seconds", req.DelaySeconds)
 	
 	// Check if shutdown API is enabled
 	if !s.config.System.EnableShutdown {
 		log.Printf("Shutdown API is disabled")
-		return &systemv1.ShutdownResponse{
-			Success: false,
-			Message: "Shutdown API is disabled in configuration",
-		}, nil
+		return nil, fmt.Errorf("shutdown API is disabled in configuration")
 	}
 	
 	err := s.systemManager.Shutdown(int(req.DelaySeconds))
 	if err != nil {
 		log.Printf("Shutdown failed: %v", err)
-		return &systemv1.ShutdownResponse{
-			Success: false,
-			Message: fmt.Sprintf("Shutdown failed: %v", err),
-		}, nil
+		return nil, fmt.Errorf("shutdown failed: %v", err)
 	}
 
-	return &systemv1.ShutdownResponse{
-		Success: true,
+	return &modulev1.ShutdownResponse{
+		Accepted: true,
 		Message: fmt.Sprintf("Shutdown scheduled with %d seconds delay", req.DelaySeconds),
+		ScheduledDelay: req.DelaySeconds,
 	}, nil
 }
 
 
-func (s *SystemService) GetDiskUsage(ctx context.Context, req *systemv1.GetDiskUsageRequest) (*systemv1.GetDiskUsageResponse, error) {
+func (s *ModuleService) GetDiskUsage(ctx context.Context, req *modulev1.GetDiskUsageRequest) (*modulev1.GetDiskUsageResponse, error) {
 	log.Printf("Disk usage request received")
 	
 	// Check if disk usage API is enabled
 	if !s.config.Disk.Enabled {
 		log.Printf("Disk usage API is disabled")
-		return &systemv1.GetDiskUsageResponse{
-			Success: false,
-			Message: "Disk usage API is disabled in configuration",
-		}, nil
+		return nil, fmt.Errorf("disk usage API is disabled in configuration")
 	}
 	
 	// Always use the configured monitor path - one disk per ECU
@@ -102,16 +89,11 @@ func (s *SystemService) GetDiskUsage(ctx context.Context, req *systemv1.GetDiskU
 	
 	usage, err := s.storageManager.GetDiskUsage(targetPath)
 	if err != nil {
-		return &systemv1.GetDiskUsageResponse{
-			Success: false,
-			Message: fmt.Sprintf("Failed to get disk usage: %v", err),
-		}, nil
+		return nil, fmt.Errorf("failed to get disk usage: %v", err)
 	}
 
-	return &systemv1.GetDiskUsageResponse{
-		Success: true,
-		Message: "Disk usage retrieved successfully",
-		DiskUsage: &systemv1.DiskUsage{
+	return &modulev1.GetDiskUsageResponse{
+		DiskUsage: &modulev1.DiskUsage{
 			TotalBytes:      usage.TotalBytes,
 			UsedBytes:       usage.UsedBytes,
 			FreeBytes:       usage.FreeBytes,
@@ -120,31 +102,23 @@ func (s *SystemService) GetDiskUsage(ctx context.Context, req *systemv1.GetDiskU
 	}, nil
 }
 
-func (s *SystemService) GetPTPStatus(ctx context.Context, req *systemv1.GetPTPStatusRequest) (*systemv1.GetPTPStatusResponse, error) {
+func (s *ModuleService) GetPTPStatus(ctx context.Context, req *modulev1.GetPTPStatusRequest) (*modulev1.GetPTPStatusResponse, error) {
 	log.Printf("PTP sync check request received (include_remote: %v)", req.IncludeRemoteDevices)
 	
 	// Check if PTP check API is enabled
 	if !s.config.PTP.Enabled {
 		log.Printf("PTP check API is disabled")
-		return &systemv1.GetPTPStatusResponse{
-			Success: false,
-			Message: "PTP check API is disabled in configuration",
-		}, nil
+		return nil, fmt.Errorf("PTP check API is disabled in configuration")
 	}
 	
 	// Get local PTP status
 	localStatus, err := s.ptpChecker.GetLocalTimeStatus()
 	if err != nil {
-		return &systemv1.GetPTPStatusResponse{
-			Success: false,
-			Message: fmt.Sprintf("Failed to get local PTP status: %v", err),
-		}, nil
+		return nil, fmt.Errorf("failed to get local PTP status: %v", err)
 	}
 	
-	response := &systemv1.GetPTPStatusResponse{
-		Success: true,
-		Message: "PTP sync status retrieved successfully",
-		LocalStatus: &systemv1.PTPStatus{
+	response := &modulev1.GetPTPStatusResponse{
+		LocalStatus: &modulev1.PTPStatus{
 			ClockId:       localStatus.ClockID,
 			MasterOffsetNs: localStatus.MasterOffset,
 			IngressTime:   localStatus.IngressTime,
@@ -152,7 +126,7 @@ func (s *SystemService) GetPTPStatus(ctx context.Context, req *systemv1.GetPTPSt
 			GmIdentity:    localStatus.GmIdentity,
 			IsSynced:      localStatus.IsSynced,
 		},
-		RemoteStatuses: []*systemv1.RemotePTPStatus{},
+		RemoteStatuses: []*modulev1.RemotePTPStatus{},
 	}
 	
 	// Check remote devices if requested
@@ -160,7 +134,7 @@ func (s *SystemService) GetPTPStatus(ctx context.Context, req *systemv1.GetPTPSt
 		for _, device := range s.config.PTP.RemoteDevices {
 			log.Printf("Checking PTP status for %s (%s)", device.Name, device.IPAddress)
 			
-			remoteStatus := &systemv1.RemotePTPStatus{
+			remoteStatus := &modulev1.RemotePTPStatus{
 				DeviceName: device.Name,
 				IpAddress:  device.IPAddress,
 			}
@@ -171,7 +145,7 @@ func (s *SystemService) GetPTPStatus(ctx context.Context, req *systemv1.GetPTPSt
 				remoteStatus.ErrorMessage = err.Error()
 			} else {
 				remoteStatus.IsReachable = true
-				remoteStatus.Status = &systemv1.PTPStatus{
+				remoteStatus.Status = &modulev1.PTPStatus{
 					ClockId:       timeStatus.ClockID,
 					MasterOffsetNs: timeStatus.MasterOffset,
 					IngressTime:   timeStatus.IngressTime,
@@ -187,7 +161,7 @@ func (s *SystemService) GetPTPStatus(ctx context.Context, req *systemv1.GetPTPSt
 	
 	return response, nil
 }
-func (s *SystemService) GetService(ctx context.Context, req *systemv1.GetServiceRequest) (*systemv1.Service, error) {
+func (s *ModuleService) GetService(ctx context.Context, req *modulev1.GetServiceRequest) (*modulev1.Service, error) {
 	log.Printf("Get service request: %s", req.Name)
 	
 	// Check if service management API is enabled
@@ -219,23 +193,23 @@ func (s *SystemService) GetService(ctx context.Context, req *systemv1.GetService
 	}
 	
 	// Convert status to proto enum
-	var state systemv1.Service_ServiceState
+	var state modulev1.Service_ServiceState
 	switch serviceInfo.Status {
 	case "active":
-		state = systemv1.Service_SERVICE_STATE_ACTIVE
+		state = modulev1.Service_SERVICE_STATE_ACTIVE
 	case "inactive":
-		state = systemv1.Service_SERVICE_STATE_INACTIVE
+		state = modulev1.Service_SERVICE_STATE_INACTIVE
 	case "failed":
-		state = systemv1.Service_SERVICE_STATE_FAILED
+		state = modulev1.Service_SERVICE_STATE_FAILED
 	case "activating":
-		state = systemv1.Service_SERVICE_STATE_ACTIVATING
+		state = modulev1.Service_SERVICE_STATE_ACTIVATING
 	case "deactivating":
-		state = systemv1.Service_SERVICE_STATE_DEACTIVATING
+		state = modulev1.Service_SERVICE_STATE_DEACTIVATING
 	default:
-		state = systemv1.Service_SERVICE_STATE_UNSPECIFIED
+		state = modulev1.Service_SERVICE_STATE_UNSPECIFIED
 	}
 	
-	return &systemv1.Service{
+	return &modulev1.Service{
 		Name:           req.Name,
 		State:          state,
 		Enabled:        serviceInfo.Enabled,
@@ -244,7 +218,7 @@ func (s *SystemService) GetService(ctx context.Context, req *systemv1.GetService
 	}, nil
 }
 
-func (s *SystemService) ListServices(ctx context.Context, req *systemv1.ListServicesRequest) (*systemv1.ListServicesResponse, error) {
+func (s *ModuleService) ListServices(ctx context.Context, req *modulev1.ListServicesRequest) (*modulev1.ListServicesResponse, error) {
 	log.Printf("List services request")
 	
 	// Check if service management API is enabled
@@ -256,7 +230,7 @@ func (s *SystemService) ListServices(ctx context.Context, req *systemv1.ListServ
 	// Get all enabled services from config
 	enabledServices := s.config.GetAllEnabledServices()
 	
-	var services []*systemv1.Service
+	var services []*modulev1.Service
 	for _, resourceID := range enabledServices {
 		serviceMapping, err := s.config.GetServiceMapping(resourceID)
 		if err != nil {
@@ -271,23 +245,23 @@ func (s *SystemService) ListServices(ctx context.Context, req *systemv1.ListServ
 		}
 		
 		// Convert status to proto enum
-		var state systemv1.Service_ServiceState
+		var state modulev1.Service_ServiceState
 		switch serviceInfo.Status {
 		case "active":
-			state = systemv1.Service_SERVICE_STATE_ACTIVE
+			state = modulev1.Service_SERVICE_STATE_ACTIVE
 		case "inactive":
-			state = systemv1.Service_SERVICE_STATE_INACTIVE
+			state = modulev1.Service_SERVICE_STATE_INACTIVE
 		case "failed":
-			state = systemv1.Service_SERVICE_STATE_FAILED
+			state = modulev1.Service_SERVICE_STATE_FAILED
 		case "activating":
-			state = systemv1.Service_SERVICE_STATE_ACTIVATING
+			state = modulev1.Service_SERVICE_STATE_ACTIVATING
 		case "deactivating":
-			state = systemv1.Service_SERVICE_STATE_DEACTIVATING
+			state = modulev1.Service_SERVICE_STATE_DEACTIVATING
 		default:
-			state = systemv1.Service_SERVICE_STATE_UNSPECIFIED
+			state = modulev1.Service_SERVICE_STATE_UNSPECIFIED
 		}
 		
-		services = append(services, &systemv1.Service{
+		services = append(services, &modulev1.Service{
 			Name:           fmt.Sprintf("services/%s", resourceID),
 			State:          state,
 			Enabled:        serviceInfo.Enabled,
@@ -296,12 +270,12 @@ func (s *SystemService) ListServices(ctx context.Context, req *systemv1.ListServ
 		})
 	}
 	
-	return &systemv1.ListServicesResponse{
+	return &modulev1.ListServicesResponse{
 		Services: services,
 	}, nil
 }
 
-func (s *SystemService) StartService(ctx context.Context, req *systemv1.StartServiceRequest) (*systemv1.StartServiceResponse, error) {
+func (s *ModuleService) StartService(ctx context.Context, req *modulev1.StartServiceRequest) (*modulev1.StartServiceResponse, error) {
 	log.Printf("Start service request: %s", req.Name)
 	
 	// Check if service management API is enabled
@@ -323,17 +297,17 @@ func (s *SystemService) StartService(ctx context.Context, req *systemv1.StartSer
 	}
 	
 	// Get updated service info
-	service, err := s.GetService(ctx, &systemv1.GetServiceRequest{Name: req.Name})
+	service, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get service info after start: %v", err)
 	}
 	
-	return &systemv1.StartServiceResponse{
+	return &modulev1.StartServiceResponse{
 		Service: service,
 	}, nil
 }
 
-func (s *SystemService) StopService(ctx context.Context, req *systemv1.StopServiceRequest) (*systemv1.StopServiceResponse, error) {
+func (s *ModuleService) StopService(ctx context.Context, req *modulev1.StopServiceRequest) (*modulev1.StopServiceResponse, error) {
 	log.Printf("Stop service request: %s", req.Name)
 	
 	// Check if service management API is enabled
@@ -355,17 +329,17 @@ func (s *SystemService) StopService(ctx context.Context, req *systemv1.StopServi
 	}
 	
 	// Get updated service info
-	service, err := s.GetService(ctx, &systemv1.GetServiceRequest{Name: req.Name})
+	service, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get service info after stop: %v", err)
 	}
 	
-	return &systemv1.StopServiceResponse{
+	return &modulev1.StopServiceResponse{
 		Service: service,
 	}, nil
 }
 
-func (s *SystemService) RestartService(ctx context.Context, req *systemv1.RestartServiceRequest) (*systemv1.RestartServiceResponse, error) {
+func (s *ModuleService) RestartService(ctx context.Context, req *modulev1.RestartServiceRequest) (*modulev1.RestartServiceResponse, error) {
 	log.Printf("Restart service request: %s", req.Name)
 	
 	// Check if service management API is enabled
@@ -387,17 +361,17 @@ func (s *SystemService) RestartService(ctx context.Context, req *systemv1.Restar
 	}
 	
 	// Get updated service info
-	service, err := s.GetService(ctx, &systemv1.GetServiceRequest{Name: req.Name})
+	service, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get service info after restart: %v", err)
 	}
 	
-	return &systemv1.RestartServiceResponse{
+	return &modulev1.RestartServiceResponse{
 		Service: service,
 	}, nil
 }
 
-func (s *SystemService) EnableService(ctx context.Context, req *systemv1.EnableServiceRequest) (*systemv1.EnableServiceResponse, error) {
+func (s *ModuleService) EnableService(ctx context.Context, req *modulev1.EnableServiceRequest) (*modulev1.EnableServiceResponse, error) {
 	log.Printf("Enable service request: %s", req.Name)
 	
 	// Check if service management API is enabled
@@ -419,17 +393,17 @@ func (s *SystemService) EnableService(ctx context.Context, req *systemv1.EnableS
 	}
 	
 	// Get updated service info
-	service, err := s.GetService(ctx, &systemv1.GetServiceRequest{Name: req.Name})
+	service, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get service info after enable: %v", err)
 	}
 	
-	return &systemv1.EnableServiceResponse{
+	return &modulev1.EnableServiceResponse{
 		Service: service,
 	}, nil
 }
 
-func (s *SystemService) DisableService(ctx context.Context, req *systemv1.DisableServiceRequest) (*systemv1.DisableServiceResponse, error) {
+func (s *ModuleService) DisableService(ctx context.Context, req *modulev1.DisableServiceRequest) (*modulev1.DisableServiceResponse, error) {
 	log.Printf("Disable service request: %s", req.Name)
 	
 	// Check if service management API is enabled
@@ -451,12 +425,12 @@ func (s *SystemService) DisableService(ctx context.Context, req *systemv1.Disabl
 	}
 	
 	// Get updated service info
-	service, err := s.GetService(ctx, &systemv1.GetServiceRequest{Name: req.Name})
+	service, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get service info after disable: %v", err)
 	}
 	
-	return &systemv1.DisableServiceResponse{
+	return &modulev1.DisableServiceResponse{
 		Service: service,
 	}, nil
 }

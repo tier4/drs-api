@@ -5,7 +5,7 @@ go 1.22
 toolchain go1.24.4
 
 require (
-	github.com/drs-api/services/module-agent v0.0.0
+	github.com/drs-api/services/module-manager v0.0.0
 	google.golang.org/grpc v1.69.0
 )
 
@@ -17,4 +17,4 @@ require (
 	google.golang.org/protobuf v1.36.6 // indirect
 )
 
-replace github.com/drs-api/services/module-agent => ../../services/module-agent
+replace github.com/drs-api/services/module-manager => ../../services/module-manager
