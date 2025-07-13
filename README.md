@@ -34,8 +34,6 @@ drs-api/
 ├── services/                  # Microservices
 │   ├── module-manager/        # System management service
 │   └── ros2-bridge/          # ROS2 bridge service
-├── tools/                    # Client tools
-│   └── client/              # Test client for module-manager
 ├── scripts/                  # Build and utility scripts
 └── docs/                     # Documentation
 ```
@@ -145,29 +143,6 @@ cd services/ros2-bridge
 colcon build
 source install/setup.bash
 ros2 run ros2_bridge ros2_bridge_node
-```
-
-## Client Tools
-
-### Module Manager Test Client
-```bash
-cd tools/client
-make build
-
-# Test system APIs
-./bin/client -cmd=reboot -delay=60
-./bin/client -cmd=shutdown
-
-# Test service management
-./bin/client -cmd=list-services
-./bin/client -cmd=service -service=services/drs_sensor -action=status
-
-# Test disk usage
-./bin/client -cmd=disk
-
-# Test PTP sync
-./bin/client -cmd=ptp
-./bin/client -cmd=ptp-all
 ```
 
 ## API Specifications
