@@ -108,9 +108,6 @@ ptp:
 ```
 
 ## API Usage Examples
-
-### Using New Service-Oriented APIs
-
 With the new service architecture, you can use gRPC clients to call specific services directly:
 
 ```bash
@@ -122,54 +119,6 @@ grpcurl -plaintext -d '{"delay_seconds": 60}' localhost:50051 drs.module.v1.Syst
 
 # Example using grpcurl for ServiceManagerService
 grpcurl -plaintext localhost:50051 drs.module.v1.ServiceManagerService/ListServices
-```
-
-### Get Disk Usage
-```bash
-# Get usage for path defined in configuration file
-./tools/client -cmd=disk
-```
-
-### Service Management
-```bash
-# List services
-./tools/client -cmd=list-services
-
-# Get service information (resource name format)
-./tools/client -cmd=service -name=services/drs_sensor -action=status
-
-# Start/stop/restart services
-./tools/client -cmd=service -name=services/drs_recorder -action=start
-./tools/client -cmd=service -name=services/drs_recorder -action=stop
-./tools/client -cmd=service -name=services/drs_recorder -action=restart
-
-# Enable/disable service auto-start
-./tools/client -cmd=service -name=services/drs_sensor -action=enable
-./tools/client -cmd=service -name=services/drs_sensor -action=disable
-```
-
-### PTP Sync Check
-```bash
-# Check local PTP sync status
-./tools/client -cmd=ptp
-
-# Check all devices (local + remote) PTP sync status
-./tools/client -cmd=ptp-all
-```
-
-### System Control
-```bash
-# Immediate reboot
-./tools/client -cmd=reboot
-
-# Reboot after 60 seconds
-./tools/client -cmd=reboot -delay=60
-
-# Immediate shutdown
-./tools/client -cmd=shutdown
-
-# Shutdown after 30 seconds
-./tools/client -cmd=shutdown -delay=30
 ```
 
 ## Module-Specific Configuration Examples

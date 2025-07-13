@@ -135,40 +135,45 @@ func (m *Manager) GetServiceInfo(serviceName string) (*ServiceInfo, error) {
 
 func (m *Manager) startService(serviceName string) (string, error) {
 	cmd := exec.Command("sudo", "systemctl", "start", serviceName)
-	if err := cmd.Run(); err != nil {
-		return "", err
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to start service %s: %s (exit code: %v)", serviceName, string(output), err)
 	}
 	return "started", nil
 }
 
 func (m *Manager) stopService(serviceName string) (string, error) {
 	cmd := exec.Command("sudo", "systemctl", "stop", serviceName)
-	if err := cmd.Run(); err != nil {
-		return "", err
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to stop service %s: %s (exit code: %v)", serviceName, string(output), err)
 	}
 	return "stopped", nil
 }
 
 func (m *Manager) restartService(serviceName string) (string, error) {
 	cmd := exec.Command("sudo", "systemctl", "restart", serviceName)
-	if err := cmd.Run(); err != nil {
-		return "", err
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to restart service %s: %s (exit code: %v)", serviceName, string(output), err)
 	}
 	return "restarted", nil
 }
 
 func (m *Manager) enableService(serviceName string) (string, error) {
 	cmd := exec.Command("sudo", "systemctl", "enable", serviceName)
-	if err := cmd.Run(); err != nil {
-		return "", err
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to enable service %s: %s (exit code: %v)", serviceName, string(output), err)
 	}
 	return "enabled", nil
 }
 
 func (m *Manager) disableService(serviceName string) (string, error) {
 	cmd := exec.Command("sudo", "systemctl", "disable", serviceName)
-	if err := cmd.Run(); err != nil {
-		return "", err
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("failed to disable service %s: %s (exit code: %v)", serviceName, string(output), err)
 	}
 	return "disabled", nil
 }
