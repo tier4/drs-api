@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package drs.module.v1;
+
+import "drs/module/v1/common.proto";
+
+option go_package = "./gen/drs/module/v1;modulev1";
+
+service ServiceManagerService {
+  // Standard methods
+  rpc GetService(GetServiceRequest) returns (Service);
+  rpc ListServices(ListServicesRequest) returns (ListServicesResponse);
+  
+  // Service management (custom methods)
+  rpc StartService(StartServiceRequest) returns (StartServiceResponse);
+  rpc StopService(StopServiceRequest) returns (StopServiceResponse);
+  rpc RestartService(RestartServiceRequest) returns (RestartServiceResponse);
+  rpc EnableService(EnableServiceRequest) returns (EnableServiceResponse);
+  rpc DisableService(DisableServiceRequest) returns (DisableServiceResponse);
+}
+
+// Standard Get operation
+message GetServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+// Standard List operation
+message ListServicesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  string filter = 3;
+}
+
+message ListServicesResponse {
+  repeated Service services = 1;
+  string next_page_token = 2;
+}
+
+// Service management operations
+message StartServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+message StartServiceResponse {
+  Service service = 1;
+}
+
+message StopServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+message StopServiceResponse {
+  Service service = 1;
+}
+
+message RestartServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+message RestartServiceResponse {
+  Service service = 1;
+}
+
+message EnableServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+message EnableServiceResponse {
+  Service service = 1;
+}
+
+message DisableServiceRequest {
+  string name = 1; // Resource name: services/{service_id}
+}
+
+message DisableServiceResponse {
+  Service service = 1;
+}

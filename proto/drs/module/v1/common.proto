@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package drs.module.v1;
+
+option go_package = "./gen/drs/module/v1;modulev1";
+
+// Service resource - shared across service management APIs
+message Service {
+  string name = 1;          // Resource name: services/{service_id}
+  ServiceState state = 2;   // Current state
+  bool enabled = 3;         // Whether service is enabled
+  string description = 4;   // Service description
+  int64 uptime_seconds = 5; // Uptime in seconds
+  
+  enum ServiceState {
+    SERVICE_STATE_UNSPECIFIED = 0;
+    SERVICE_STATE_ACTIVE = 1;
+    SERVICE_STATE_INACTIVE = 2;
+    SERVICE_STATE_FAILED = 3;
+    SERVICE_STATE_ACTIVATING = 4;
+    SERVICE_STATE_DEACTIVATING = 5;
+  }
+}
+
+// Disk usage information
+message DiskUsage {
+  uint64 total_bytes = 1;
+  uint64 used_bytes = 2;
+  uint64 free_bytes = 3;
+  double usage_percentage = 4;
+}
+
+// PTP status information
+message PTPStatus {
+  string clock_id = 1;
+  int64 master_offset_ns = 2;
+  uint64 ingress_time = 3;
+  bool gm_present = 4;
+  string gm_identity = 5;
+  bool is_synced = 6;
+}
+
+// Remote PTP status information
+message RemotePTPStatus {
+  string device_name = 1;
+  string ip_address = 2;
+  PTPStatus status = 3;
+  bool is_reachable = 4;
+  string error_message = 5;
+}

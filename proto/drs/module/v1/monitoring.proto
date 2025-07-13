@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package drs.module.v1;
+
+import "drs/module/v1/common.proto";
+
+option go_package = "./gen/drs/module/v1;modulev1";
+
+service MonitoringService {
+  // Resource state operations
+  rpc GetDiskUsage(GetDiskUsageRequest) returns (GetDiskUsageResponse);
+  rpc GetPTPStatus(GetPTPStatusRequest) returns (GetPTPStatusResponse);
+}
+
+message GetDiskUsageRequest {
+  // No parameters needed - always returns usage for the primary disk
+}
+
+message GetDiskUsageResponse {
+  DiskUsage disk_usage = 1;
+}
+
+message GetPTPStatusRequest {
+  bool include_remote_devices = 1;
+}
+
+message GetPTPStatusResponse {
+  PTPStatus local_status = 1;
+  repeated RemotePTPStatus remote_statuses = 2;
+}

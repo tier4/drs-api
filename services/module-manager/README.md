@@ -3,13 +3,24 @@
 A gRPC service for system management that runs on each DRS module (Sensing Module, Storage Module, etc.).
 APIs can be individually enabled/disabled via configuration file, allowing customization per module requirements.
 
+## Service Architecture
+
+The Module Manager now implements a service-oriented architecture with multiple gRPC services running on a single endpoint:
+
+### Available Services
+- **ServiceManagerService**: systemd service management (start/stop/restart/enable/disable)
+- **SystemControlService**: system-level operations (reboot/shutdown)
+- **MonitoringService**: resource monitoring (disk usage, PTP synchronization)
+
+All services run on the same gRPC server and port (50051), allowing clients to use any service based on their needs.
+
 ## Features
 
-### System Control APIs
+### SystemControlService APIs
 - **Reboot**: System restart (configurable delay)
 - **Shutdown**: System shutdown (configurable delay)
 
-### Service Management APIs
+### ServiceManagerService APIs  
 - **GetService**: Retrieve information for a specific service
 - **ListServices**: List configured services
 - **StartService**: Start a service
@@ -18,9 +29,16 @@ APIs can be individually enabled/disabled via configuration file, allowing custo
 - **EnableService**: Enable service auto-start
 - **DisableService**: Disable service auto-start
 
-### Resource Monitoring APIs
+### MonitoringService APIs
 - **GetDiskUsage**: Get disk usage information (single path)
 - **GetPTPStatus**: Get PTP (Precision Time Protocol) status information
+
+### Individual API Control
+Each API can be individually enabled/disabled through configuration:
+- **MonitoringService**: disk.enabled and ptp.enabled settings control individual APIs
+- **SystemControlService**: system.enable_reboot and system.enable_shutdown settings
+- **ServiceManagerService**: services.enabled setting
+- When disabled, APIs return `Unimplemented` error with descriptive message
 
 ## Configuration File
 
@@ -90,6 +108,21 @@ ptp:
 ```
 
 ## API Usage Examples
+
+### Using New Service-Oriented APIs
+
+With the new service architecture, you can use gRPC clients to call specific services directly:
+
+```bash
+# Example using grpcurl for MonitoringService
+grpcurl -plaintext localhost:50051 drs.module.v1.MonitoringService/GetDiskUsage
+
+# Example using grpcurl for SystemControlService  
+grpcurl -plaintext -d '{"delay_seconds": 60}' localhost:50051 drs.module.v1.SystemControlService/Reboot
+
+# Example using grpcurl for ServiceManagerService
+grpcurl -plaintext localhost:50051 drs.module.v1.ServiceManagerService/ListServices
+```
 
 ### Get Disk Usage
 ```bash

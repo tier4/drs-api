@@ -7,7 +7,12 @@ import (
 )
 
 func RegisterServices(s *grpc.Server, cfg *config.Config) {
-	moduleService := NewModuleService(cfg)
-	// Register the generated service
-	modulev1.RegisterModuleServiceServer(s, moduleService)
+	// Register multiple services on a single gRPC server
+	serviceManagerService := NewServiceManagerService(cfg)
+	systemControlService := NewSystemControlService(cfg)
+	monitoringService := NewMonitoringService(cfg)
+	
+	modulev1.RegisterServiceManagerServiceServer(s, serviceManagerService)
+	modulev1.RegisterSystemControlServiceServer(s, systemControlService)
+	modulev1.RegisterMonitoringServiceServer(s, monitoringService)
 }
