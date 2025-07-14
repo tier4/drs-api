@@ -37,7 +37,6 @@ message PTPStatus {
   uint64 ingress_time = 3;
   bool gm_present = 4;
   string gm_identity = 5;
-  bool is_synced = 6;
 }
 
 // Remote PTP status information

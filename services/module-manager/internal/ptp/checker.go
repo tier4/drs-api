@@ -16,7 +16,6 @@ type TimeStatus struct {
 	IngressTime  uint64
 	GmPresent    bool
 	GmIdentity   string
-	IsSynced     bool
 }
 
 type Checker struct {
@@ -128,8 +127,6 @@ func (c *Checker) parseTimeStatus(output string) (*TimeStatus, error) {
 	}
 	
 	// Return raw data only - let clients decide sync status
-	// Note: IsSynced field will be false/default - clients should use raw data
-	status.IsSynced = false // Server no longer makes sync decisions
 	
 	return status, nil
 }

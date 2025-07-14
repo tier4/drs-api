@@ -113,7 +113,6 @@ func printPTPStatus(status *modulev1.PTPStatus, indent string) {
 	fmt.Printf("%sIngress Time: %d\n", indent, status.IngressTime)
 	fmt.Printf("%sGM Present: %t\n", indent, status.GmPresent)
 	fmt.Printf("%sGM Identity: %s\n", indent, status.GmIdentity)
-	fmt.Printf("%sSynced: %t\n", indent, status.IsSynced)
 }
 
 func formatBytes(bytes uint64) string {

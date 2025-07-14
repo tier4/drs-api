@@ -1,0 +1,143 @@
+package models
+
+import "time"
+
+// ECUStatus represents the status of a single ECU for the dashboard
+type ECUStatus struct {
+	Hostname       string            `json:"hostname"`
+	Address        string            `json:"address"`
+	Status         string            `json:"status"` // OK, WARN, ERROR
+	StatusDetail   ECUStatusDetail   `json:"status_detail"`
+	Disk           DiskInfo          `json:"disk"`
+	Environment    EnvironmentInfo   `json:"environment"`
+	EnabledServices []string         `json:"enabled_services"`
+	LastUpdated    time.Time         `json:"last_updated"`
+}
+
+// ECUStatusDetail provides detailed status information
+type ECUStatusDetail struct {
+	Services  ServiceStatus  `json:"services"`
+	Recording RecordingInfo  `json:"recording"`
+	PTP       PTPInfo        `json:"ptp"`
+}
+
+// ServiceStatus represents the status of system services
+type ServiceStatus struct {
+	DRSSensor   string `json:"drs_sensor"`   // active, inactive, failed
+	DRSRecorder string `json:"drs_recorder"` // active, inactive, failed
+}
+
+// RecordingInfo represents recording status
+type RecordingInfo struct {
+	Status string `json:"status"` // recording, stopped, paused
+	Active bool   `json:"active"`
+}
+
+// PTPInfo represents PTP synchronization information
+type PTPInfo struct {
+	OffsetNs int64 `json:"offset_ns"`
+}
+
+// DiskInfo represents disk usage information
+type DiskInfo struct {
+	UsagePercentage float64 `json:"usage_percentage"`
+	FreeBytes       uint64  `json:"free_bytes"`
+	TotalBytes      uint64  `json:"total_bytes"`
+}
+
+// EnvironmentInfo represents environment variables
+type EnvironmentInfo struct {
+	SensingSystemID string `json:"sensing_system_id"`
+	ModuleID        string `json:"module_id"`
+}
+
+// ECUListResponse represents the response for GET /ecus
+type ECUListResponse struct {
+	ECUs []ECUStatus `json:"ecus"`
+}
+
+// RecordingStatusResponse represents the response for GET /recording/status
+type RecordingStatusResponse struct {
+	RecordingStatus []RecordingStatus `json:"recording_status"`
+}
+
+// RecordingStatus represents recording status for a single ECU
+type RecordingStatus struct {
+	Hostname   string `json:"hostname"`
+	Status     string `json:"status"`
+	Active     bool   `json:"active"`
+	HardwareID string `json:"hardware_id"`
+}
+
+// PTPStatusResponse represents the response for GET /ptp/status
+type PTPStatusResponse struct {
+	PTPStatus []PTPStatus `json:"ptp_status"`
+}
+
+// PTPStatus represents PTP status for a single ECU
+type PTPStatus struct {
+	Hostname      string        `json:"hostname"`
+	LocalStatus   PTPLocalInfo  `json:"local_status"`
+	RemoteStatus  []PTPRemoteInfo `json:"remote_statuses"`
+}
+
+// PTPLocalInfo represents local PTP status
+type PTPLocalInfo struct {
+	ClockID       string `json:"clock_id"`
+	MasterOffsetNs int64  `json:"master_offset_ns"`
+	GMPresent     bool   `json:"gm_present"`
+}
+
+// PTPRemoteInfo represents remote device PTP status
+type PTPRemoteInfo struct {
+	DeviceName   string       `json:"device_name"`
+	IPAddress    string       `json:"ip_address"`
+	IsReachable  bool         `json:"is_reachable"`
+	Status       *PTPLocalInfo `json:"status,omitempty"`
+	ErrorMessage string       `json:"error_message,omitempty"`
+}
+
+// TopicStatusResponse represents the response for GET /ecus/{hostname}/topics/status
+type TopicStatusResponse struct {
+	Topics []TopicStatus `json:"topics"`
+}
+
+// TopicStatus represents the status of a single topic
+type TopicStatus struct {
+	TopicName        string  `json:"topic_name"`
+	RateHz           float64 `json:"rate_hz"`
+	ExpectedRateHz   float64 `json:"expected_rate_hz"`
+	Status           string  `json:"status"` // OK, WARN, ERROR
+}
+
+// SystemOperationRequest represents a system operation request
+type SystemOperationRequest struct {
+	DelaySeconds int32 `json:"delay_seconds"`
+}
+
+// SystemOperationResponse represents a system operation response
+type SystemOperationResponse struct {
+	Success     bool   `json:"success"`
+	Message     string `json:"message"`
+	DelaySeconds int32  `json:"delay_seconds"`
+}
+
+// ServiceOperationResponse represents a service operation response
+type ServiceOperationResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
+// ErrorResponse represents an error response
+type ErrorResponse struct {
+	Error   string                 `json:"error"`
+	Message string                 `json:"message"`
+	Details map[string]interface{} `json:"details,omitempty"`
+}
+
+// RecordingOperationResponse represents a recording operation response
+type RecordingOperationResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Status  string `json:"status"`
+}

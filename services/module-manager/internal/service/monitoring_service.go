@@ -79,7 +79,6 @@ func (s *MonitoringService) GetPTPStatus(ctx context.Context, req *modulev1.GetP
 			IngressTime:   localStatus.IngressTime,
 			GmPresent:     localStatus.GmPresent,
 			GmIdentity:    localStatus.GmIdentity,
-			IsSynced:      localStatus.IsSynced,
 		},
 		RemoteStatuses: []*modulev1.RemotePTPStatus{},
 	}
@@ -106,7 +105,6 @@ func (s *MonitoringService) GetPTPStatus(ctx context.Context, req *modulev1.GetP
 					IngressTime:   timeStatus.IngressTime,
 					GmPresent:     timeStatus.GmPresent,
 					GmIdentity:    timeStatus.GmIdentity,
-					IsSynced:      timeStatus.IsSynced,
 				}
 			}
 			
