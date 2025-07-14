@@ -9,9 +9,9 @@ RecordingHandler::RecordingHandler(rclcpp::Node::SharedPtr node)
     : node_(node) {
     
     // Create publishers for recording control
-    start_publisher_ = node_->create_publisher<std_msgs::msg::Bool>("/recorder/start", 10);
-    pause_publisher_ = node_->create_publisher<std_msgs::msg::Bool>("/recorder/pause", 10);
-    
+    start_publisher_ = node_->create_publisher<std_msgs::msg::Bool>("/recorder/start", rclcpp::QoS(1).transient_local());
+    pause_publisher_ = node_->create_publisher<std_msgs::msg::Bool>("/recorder/pause", rclcpp::QoS(1).transient_local());
+
     // Subscribe to recording status
     status_subscriber_ = node_->create_subscription<proto_recorder_msgs::msg::RecorderStatus>(
         "/recorder/status", 10,
