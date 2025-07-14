@@ -23,7 +23,7 @@ func NewSystemHandler(clientManager *grpc.ClientManager) *SystemHandler {
 	}
 }
 
-// SystemRestart handles POST /system/restart - restarts all ECUs
+// SystemRestart handles POST /system/restart - restarts all modules
 func (h *SystemHandler) SystemRestart(c *gin.Context) {
 	var req models.SystemOperationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -37,7 +37,7 @@ func (h *SystemHandler) SystemRestart(c *gin.Context) {
 	h.performSystemOperation(c, "restart", req.DelaySeconds)
 }
 
-// SystemShutdown handles POST /system/shutdown - shuts down all ECUs
+// SystemShutdown handles POST /system/shutdown - shuts down all modules
 func (h *SystemHandler) SystemShutdown(c *gin.Context) {
 	var req models.SystemOperationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -51,8 +51,8 @@ func (h *SystemHandler) SystemShutdown(c *gin.Context) {
 	h.performSystemOperation(c, "shutdown", req.DelaySeconds)
 }
 
-// ECURestart handles POST /ecus/{hostname}/restart - restarts a single ECU
-func (h *SystemHandler) ECURestart(c *gin.Context) {
+// ModuleRestart handles POST /modules/{hostname}/restart - restarts a single module
+func (h *SystemHandler) ModuleRestart(c *gin.Context) {
 	hostname := c.Param("hostname")
 	
 	var req models.SystemOperationRequest
@@ -64,11 +64,11 @@ func (h *SystemHandler) ECURestart(c *gin.Context) {
 		return
 	}
 
-	h.performECUOperation(c, hostname, "restart", req.DelaySeconds)
+	h.performModuleOperation(c, hostname, "restart", req.DelaySeconds)
 }
 
-// ECUShutdown handles POST /ecus/{hostname}/shutdown - shuts down a single ECU
-func (h *SystemHandler) ECUShutdown(c *gin.Context) {
+// ModuleShutdown handles POST /modules/{hostname}/shutdown - shuts down a single module
+func (h *SystemHandler) ModuleShutdown(c *gin.Context) {
 	hostname := c.Param("hostname")
 	
 	var req models.SystemOperationRequest
@@ -80,18 +80,18 @@ func (h *SystemHandler) ECUShutdown(c *gin.Context) {
 		return
 	}
 
-	h.performECUOperation(c, hostname, "shutdown", req.DelaySeconds)
+	h.performModuleOperation(c, hostname, "shutdown", req.DelaySeconds)
 }
 
-// ServicesRestart handles POST /ecus/{hostname}/services/restart - restarts services on ECU
+// ServicesRestart handles POST /modules/{hostname}/services/restart - restarts services on module
 func (h *SystemHandler) ServicesRestart(c *gin.Context) {
 	hostname := c.Param("hostname")
 	
-	clients, err := h.clientManager.GetECUClients(hostname)
+	clients, err := h.clientManager.GetModuleClients(hostname)
 	if err != nil {
 		c.JSON(http.StatusNotFound, models.ErrorResponse{
-			Error:   "ecu_not_found",
-			Message: "ECU not found or unreachable",
+			Error:   "module_not_found",
+			Message: "Module not found or unreachable",
 			Details: map[string]interface{}{
 				"hostname": hostname,
 			},
@@ -102,7 +102,7 @@ func (h *SystemHandler) ServicesRestart(c *gin.Context) {
 	if !h.clientManager.IsServiceEnabled(hostname, "services") {
 		c.JSON(http.StatusForbidden, models.ErrorResponse{
 			Error:   "service_disabled",
-			Message: "Service management is disabled for this ECU",
+			Message: "Service management is disabled for this module",
 		})
 		return
 	}
@@ -171,19 +171,19 @@ func (h *SystemHandler) ServicesRestart(c *gin.Context) {
 	}
 }
 
-// performSystemOperation performs a system operation on all ECUs
+// performSystemOperation performs a system operation on all modules
 func (h *SystemHandler) performSystemOperation(c *gin.Context, operation string, delaySeconds int32) {
-	ecuNames := h.clientManager.GetECUNames()
+	moduleNames := h.clientManager.GetModuleNames()
 	
 	var wg sync.WaitGroup
-	results := make(chan models.SystemOperationResponse, len(ecuNames))
+	results := make(chan models.SystemOperationResponse, len(moduleNames))
 
-	for _, hostname := range ecuNames {
+	for _, hostname := range moduleNames {
 		wg.Add(1)
 		go func(hostname string) {
 			defer wg.Done()
 			
-			clients, err := h.clientManager.GetECUClients(hostname)
+			clients, err := h.clientManager.GetModuleClients(hostname)
 			if err != nil {
 				results <- models.SystemOperationResponse{
 					Success: false,
@@ -257,7 +257,7 @@ func (h *SystemHandler) performSystemOperation(c *gin.Context, operation string,
 	} else {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
 			Error:   "operation_failed",
-			Message: "Some ECUs failed to perform the operation",
+			Message: "Some modules failed to perform the operation",
 			Details: map[string]interface{}{
 				"messages": messages,
 			},
@@ -265,13 +265,13 @@ func (h *SystemHandler) performSystemOperation(c *gin.Context, operation string,
 	}
 }
 
-// performECUOperation performs a system operation on a single ECU
-func (h *SystemHandler) performECUOperation(c *gin.Context, hostname, operation string, delaySeconds int32) {
-	clients, err := h.clientManager.GetECUClients(hostname)
+// performModuleOperation performs a system operation on a single module
+func (h *SystemHandler) performModuleOperation(c *gin.Context, hostname, operation string, delaySeconds int32) {
+	clients, err := h.clientManager.GetModuleClients(hostname)
 	if err != nil {
 		c.JSON(http.StatusNotFound, models.ErrorResponse{
-			Error:   "ecu_not_found",
-			Message: "ECU not found or unreachable",
+			Error:   "module_not_found",
+			Message: "Module not found or unreachable",
 			Details: map[string]interface{}{
 				"hostname": hostname,
 			},
