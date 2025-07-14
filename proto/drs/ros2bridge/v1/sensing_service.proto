@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package drs.ros2bridge.v1;
+
+import "drs/ros2bridge/v1/common.proto";
+
+option go_package = "./gen/drs/ros2bridge/v1;ros2bridgev1";
+
+service SensingService {
+  // Standard methods
+  rpc GetPosition(GetPositionRequest) returns (Position);
+  rpc ListNodes(ListNodesRequest) returns (ListNodesResponse);
+}
+
+// Standard Get operation for position
+message GetPositionRequest {
+  // Empty - always returns current position
+}
+
+// Standard List operation for nodes
+message ListNodesRequest {
+  // Filter by namespace: "namespace:=/sensing"
+  string filter = 1;
+}
+
+message ListNodesResponse {
+  repeated Node nodes = 1;
+}

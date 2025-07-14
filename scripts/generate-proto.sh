@@ -36,28 +36,28 @@ check_tools() {
 }
 
 # Create output directories
-mkdir -p ${SERVICES_DIR}/module-agent/gen/system/v1
-mkdir -p ${SERVICES_DIR}/ros2-bridge/gen/ros2bridge/v1
+mkdir -p ${SERVICES_DIR}/module-manager/gen/drs/module/v1
+mkdir -p ${SERVICES_DIR}/ros2-bridge/gen/drs/ros2bridge/v1
 
 check_tools
 
-echo "Generating Go code for system service..."
+echo "Generating Go code for module manager service..."
 protoc -I ${PROTO_DIR} \
-    --go_out=${SERVICES_DIR}/module-agent/gen \
-    --go_opt=module=github.com/drs-api/services/module-agent/gen \
-    --go-grpc_out=${SERVICES_DIR}/module-agent/gen \
-    --go-grpc_opt=module=github.com/drs-api/services/module-agent/gen \
-    ${PROTO_DIR}/system/v1/system.proto
+    --go_out=${SERVICES_DIR}/module-manager \
+    --go_opt=paths=source_relative \
+    --go-grpc_out=${SERVICES_DIR}/module-manager \
+    --go-grpc_opt=paths=source_relative \
+    ${PROTO_DIR}/drs/module/v1/*.proto
 
 echo "Generating C++ code for ROS2 bridge service..."
 protoc -I ${PROTO_DIR} \
     --cpp_out=${SERVICES_DIR}/ros2-bridge/gen \
     --grpc_out=${SERVICES_DIR}/ros2-bridge/gen \
     --plugin=protoc-gen-grpc=$(which grpc_cpp_plugin) \
-    ${PROTO_DIR}/ros2bridge/v1/bridge.proto
+    ${PROTO_DIR}/drs/ros2bridge/v1/*.proto
 
 echo "Proto generation complete!"
 echo ""
 echo "Generated files:"
-echo "  - Go: ${SERVICES_DIR}/module-agent/gen/"
-echo "  - C++: ${SERVICES_DIR}/ros2-bridge/gen/"
+echo "  - Go (module-manager): ${SERVICES_DIR}/module-manager/gen/"
+echo "  - C++ (ros2-bridge): ${SERVICES_DIR}/ros2-bridge/gen/"

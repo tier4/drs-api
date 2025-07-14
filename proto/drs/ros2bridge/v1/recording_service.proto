@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package drs.ros2bridge.v1;
+
+import "drs/ros2bridge/v1/common.proto";
+
+option go_package = "./gen/drs/ros2bridge/v1;ros2bridgev1";
+
+service RecordingService {
+  // Standard methods
+  rpc GetRecording(GetRecordingRequest) returns (Recording);
+  rpc ListRecordings(ListRecordingsRequest) returns (ListRecordingsResponse);
+  rpc ListTopicStatuses(ListTopicStatusesRequest) returns (ListTopicStatusesResponse);
+  
+  // Custom methods for recording control
+  rpc StartRecording(StartRecordingRequest) returns (StartRecordingResponse);
+  rpc StopRecording(StopRecordingRequest) returns (StopRecordingResponse);
+  rpc PauseRecording(PauseRecordingRequest) returns (PauseRecordingResponse);
+  rpc ResumeRecording(ResumeRecordingRequest) returns (ResumeRecordingResponse);
+}
+
+// Standard Get operation for recording status
+message GetRecordingRequest {
+  string hardware_id = 1; // Hardware ID to get recording status for
+}
+
+// Standard List operation for recordings
+message ListRecordingsRequest {
+  string filter = 1; // Filter by hardware_id: "hardware_id:=main_ecu"
+}
+
+message ListRecordingsResponse {
+  repeated Recording recordings = 1;
+}
+
+// Standard List operation for topic statuses
+message ListTopicStatusesRequest {
+  string hardware_id = 1;                      // Hardware ID to get topic statuses for
+  string filter = 2; // Filter by topic name pattern: "topic_name:=/sensing/*"
+}
+
+message ListTopicStatusesResponse {
+  repeated TopicStatus topic_statuses = 1;
+}
+
+// Custom methods for recording control
+message StartRecordingRequest {
+  // Empty - publishes true to /recorder/start (affects all ECUs)
+}
+
+message StartRecordingResponse {
+  bool success = 1;        // Whether publish succeeded
+  string message = 2;      // Status message
+}
+
+message StopRecordingRequest {
+  // Empty - publishes false to /recorder/start (affects all ECUs)
+}
+
+message StopRecordingResponse {
+  bool success = 1;        // Whether publish succeeded
+  string message = 2;      // Status message
+}
+
+message PauseRecordingRequest {
+  // Empty - publishes true to /recorder/pause (affects all ECUs)
+}
+
+message PauseRecordingResponse {
+  bool success = 1;        // Whether publish succeeded
+  string message = 2;      // Status message
+}
+
+message ResumeRecordingRequest {
+  // Empty - publishes false to /recorder/pause (affects all ECUs)
+}
+
+message ResumeRecordingResponse {
+  bool success = 1;        // Whether publish succeeded
+  string message = 2;      // Status message
+}
