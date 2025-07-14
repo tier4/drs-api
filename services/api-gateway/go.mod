@@ -1,4 +1,4 @@
-module github.com/drs-api/services/api-gateway
+module github.com/tier4/drs-api/services/api-gateway
 
 go 1.22
 

@@ -10,9 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/drs-api/services/api-gateway/internal/config"
-	"github.com/drs-api/services/api-gateway/internal/grpc"
-	"github.com/drs-api/services/api-gateway/internal/rest"
+	"github.com/tier4/drs-api/services/api-gateway/internal/config"
+	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
+	"github.com/tier4/drs-api/services/api-gateway/internal/rest"
 )
 
 func main() {

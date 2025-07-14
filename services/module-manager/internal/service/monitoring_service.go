@@ -6,10 +6,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/drs-api/services/module-manager/internal/config"
-	modulev1 "github.com/drs-api/services/module-manager/drs/module/v1"
-	"github.com/drs-api/services/module-manager/internal/ptp"
-	"github.com/drs-api/services/module-manager/internal/storage"
+	"github.com/tier4/drs-api/services/module-manager/internal/config"
+	modulev1 "github.com/tier4/drs-api/services/module-manager/drs/module/v1"
+	"github.com/tier4/drs-api/services/module-manager/internal/ptp"
+	"github.com/tier4/drs-api/services/module-manager/internal/storage"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

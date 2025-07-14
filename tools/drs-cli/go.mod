@@ -1,4 +1,4 @@
-module github.com/drs-api/tools/drs-cli
+module github.com/tier4/drs-api/tools/drs-cli
 
 go 1.21
 

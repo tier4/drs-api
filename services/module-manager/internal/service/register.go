@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/drs-api/services/module-manager/internal/config"
-	modulev1 "github.com/drs-api/services/module-manager/drs/module/v1"
+	"github.com/tier4/drs-api/services/module-manager/internal/config"
+	modulev1 "github.com/tier4/drs-api/services/module-manager/drs/module/v1"
 	"google.golang.org/grpc"
 )
 

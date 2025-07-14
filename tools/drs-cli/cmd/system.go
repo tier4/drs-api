@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/drs-api/tools/drs-cli/internal/client"
+	"github.com/tier4/drs-api/tools/drs-cli/internal/client"
 )
 
 var systemCmd = &cobra.Command{

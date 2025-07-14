@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/drs-api/services/module-manager/internal/config"
-	modulev1 "github.com/drs-api/services/module-manager/drs/module/v1"
-	"github.com/drs-api/services/module-manager/internal/system"
+	"github.com/tier4/drs-api/services/module-manager/internal/config"
+	modulev1 "github.com/tier4/drs-api/services/module-manager/drs/module/v1"
+	"github.com/tier4/drs-api/services/module-manager/internal/system"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/drs-api/tools/drs-cli/internal/client"
-	ros2bridgev1 "github.com/drs-api/tools/drs-cli/drs/ros2bridge/v1"
+	"github.com/tier4/drs-api/tools/drs-cli/internal/client"
+	ros2bridgev1 "github.com/tier4/drs-api/tools/drs-cli/drs/ros2bridge/v1"
 )
 
 var recordingCmd = &cobra.Command{

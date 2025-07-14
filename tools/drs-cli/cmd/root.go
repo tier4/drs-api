@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/drs-api/tools/drs-cli/internal/config"
+	"github.com/tier4/drs-api/tools/drs-cli/internal/config"
 )
 
 var (

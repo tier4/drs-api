@@ -1,4 +1,4 @@
-module github.com/drs-api/services/module-manager
+module github.com/tier4/drs-api/services/module-manager
 
 go 1.22
 
