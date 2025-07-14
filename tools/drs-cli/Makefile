@@ -49,7 +49,10 @@ proto-gen:
 		../../proto/drs/module/v1/common.proto \
 		../../proto/drs/module/v1/service_manager.proto \
 		../../proto/drs/module/v1/system_control.proto \
-		../../proto/drs/module/v1/monitoring.proto
+		../../proto/drs/module/v1/monitoring.proto \
+		../../proto/drs/ros2bridge/v1/common.proto \
+		../../proto/drs/ros2bridge/v1/recording_service.proto \
+		../../proto/drs/ros2bridge/v1/sensing_service.proto
 
 # Development help
 help:

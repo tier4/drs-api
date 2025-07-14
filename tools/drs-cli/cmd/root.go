@@ -19,8 +19,12 @@ var rootCmd = &cobra.Command{
 	Use:   "drs-cli",
 	Short: "CLI client for DRS services",
 	Long: `A command line client for interacting with DRS gRPC services.
-Currently supports module-manager service (ServiceManagerService, SystemControlService, and MonitoringService).
-Designed to be extensible for other DRS services like ros2-bridge.`,
+
+Supports:
+- module-manager service (ServiceManagerService, SystemControlService, and MonitoringService)
+- ros2-bridge service (SensingService and RecordingService)
+
+Use --address to specify different service endpoints.`,
 }
 
 func Execute() {
