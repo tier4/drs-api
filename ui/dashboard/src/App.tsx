@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { EcuStatusTable } from '@/components/EcuStatusTable'
 import type { EcuModule } from '@/components/EcuStatusTable'
 import { PtpSyncStatus } from '@/components/PtpSyncStatus'
@@ -8,6 +8,8 @@ import type { RecordingStatus } from '@/components/RecordingControl'
 import { TopicRateStatus } from '@/components/TopicRateStatus'
 import type { ModuleTopicStatus } from '@/components/TopicRateStatus'
 import { PowerControl } from '@/components/PowerControl'
+import { ApiService } from '@/services/api'
+import { useAutoRefresh } from '@/hooks/useAutoRefresh'
 
 // Mock data based on API design
 const mockModules: EcuModule[] = [
@@ -144,66 +146,217 @@ const mockModuleTopicStatuses: ModuleTopicStatus[] = [
 ]
 
 function App() {
-  const [globalRecordingEnabled, setGlobalRecordingEnabled] = useState(true)
+  const [modules, setModules] = useState<EcuModule[]>(mockModules)
+  const [ptpStatuses, setPtpStatuses] = useState<PtpStatus[]>(mockPtpStatuses)
   const [recordingStatuses, setRecordingStatuses] = useState<RecordingStatus[]>(mockRecordingStatuses)
+  const [topicStatuses, setTopicStatuses] = useState<ModuleTopicStatus[]>(mockModuleTopicStatuses)
+  const [globalRecordingEnabled, setGlobalRecordingEnabled] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
-  const handleRestartSensors = (hostname: string) => {
-    console.log(`Restarting sensors for ${hostname}`)
-    // TODO: Implement API call to restart sensors
-  }
+  const apiService = ApiService.getInstance()
 
-  const handleRestartMachine = (hostname: string) => {
-    console.log(`Restarting machine ${hostname}`)
-    // TODO: Implement API call to restart machine
-  }
+  // Convert API data to component format
+  const convertToEcuModule = (apiModule: any): EcuModule => ({
+    hostname: apiModule.hostname,
+    status: apiModule.status,
+    diskUsagePercentage: apiModule.disk.usage_percentage,
+    diskFreeBytes: apiModule.disk.free_bytes,
+    diskTotalBytes: apiModule.disk.total_bytes,
+  })
 
-  const handleShutdownMachine = (hostname: string) => {
-    console.log(`Shutting down machine ${hostname}`)
-    // TODO: Implement API call to shutdown machine
-  }
+  const convertToPtpStatus = (apiPtp: any): PtpStatus => ({
+    hostname: apiPtp.hostname,
+    localStatus: {
+      clockId: apiPtp.local_status.clock_id,
+      masterOffsetNs: apiPtp.local_status.master_offset_ns,
+      gmPresent: apiPtp.local_status.gm_present,
+    },
+    remoteStatuses: apiPtp.remote_statuses.map((remote: any) => ({
+      deviceName: remote.device_name,
+      ipAddress: remote.ip_address,
+      isReachable: remote.is_reachable,
+      offsetNs: remote.status?.master_offset_ns,
+    })),
+  })
 
-  const handleGlobalRecordingToggle = (enabled: boolean) => {
-    setGlobalRecordingEnabled(enabled)
-    console.log(`Global recording ${enabled ? 'enabled' : 'disabled'}`)
+  const convertToRecordingStatus = (apiRec: any): RecordingStatus => ({
+    hostname: apiRec.hostname,
+    status: apiRec.status,
+    active: apiRec.active,
+    hardwareId: apiRec.hardware_id,
+  })
+
+  const convertToTopicStatus = (apiTopic: any): ModuleTopicStatus => ({
+    hostname: apiTopic.hostname,
+    topics: apiTopic.topics.map((topic: any) => ({
+      topicName: topic.topic_name,
+      rateHz: topic.rate_hz,
+      status: topic.status,
+    })),
+  })
+
+  // Data fetching function
+  const fetchAllData = useCallback(async () => {
+    if (isLoading) return
     
-    if (enabled) {
-      // Start recording
-      console.log('Starting recording...')
-      setRecordingStatuses(prev => prev.map(r => ({ ...r, status: 'recording' as const })))
-      // TODO: Implement API call to start recording
-    } else {
-      // Stop recording
-      console.log('Stopping recording...')
-      setRecordingStatuses(prev => prev.map(r => ({ ...r, status: 'stopped' as const })))
-      // TODO: Implement API call to stop recording
+    setIsLoading(true)
+    try {
+      // Fetch all data in parallel
+      const [modulesData, ptpData, recordingData] = await Promise.allSettled([
+        apiService.getModules(),
+        apiService.getPtpStatus(),
+        apiService.getRecordingStatus(),
+      ])
+
+      // Update modules
+      if (modulesData.status === 'fulfilled') {
+        setModules(modulesData.value.map(convertToEcuModule))
+      }
+
+      // Update PTP status
+      if (ptpData.status === 'fulfilled') {
+        setPtpStatuses(ptpData.value.map(convertToPtpStatus))
+      }
+
+      // Update recording status
+      if (recordingData.status === 'fulfilled') {
+        setRecordingStatuses(recordingData.value.map(convertToRecordingStatus))
+      }
+
+      // Fetch topic statuses for each module
+      if (modulesData.status === 'fulfilled') {
+        const topicPromises = modulesData.value
+          .filter(module => module.enabled_services.includes('ros2'))
+          .map(async (module) => {
+            try {
+              const topics = await apiService.getTopicStatus(module.hostname)
+              return {
+                hostname: module.hostname,
+                topics: topics.map(topic => ({
+                  topicName: topic.topic_name,
+                  rateHz: topic.rate_hz,
+                  status: topic.status,
+                })),
+              }
+            } catch (error) {
+              console.error(`Failed to fetch topics for ${module.hostname}:`, error)
+              return {
+                hostname: module.hostname,
+                topics: [],
+              }
+            }
+          })
+
+        const topicResults = await Promise.all(topicPromises)
+        setTopicStatuses(topicResults)
+      }
+
+      setLastUpdated(new Date())
+    } catch (error) {
+      console.error('Failed to fetch data:', error)
+      // On error, keep using mock data
+    } finally {
+      setIsLoading(false)
+    }
+  }, [apiService, isLoading])
+
+  // Set up auto-refresh
+  useAutoRefresh(fetchAllData, { enabled: true, interval: 5000 })
+
+  const handleRestartSensors = async (hostname: string) => {
+    try {
+      await apiService.restartModuleSensors(hostname)
+      console.log(`Restarted sensors for ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to restart sensors for ${hostname}:`, error)
     }
   }
 
-  const handleSystemRestart = () => {
-    console.log('System restart requested')
-    // TODO: Implement API call to restart all systems
+  const handleRestartMachine = async (hostname: string) => {
+    try {
+      await apiService.restartModule(hostname)
+      console.log(`Restarted machine ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to restart machine ${hostname}:`, error)
+    }
   }
 
-  const handleSystemShutdown = () => {
-    console.log('System shutdown requested')
-    // TODO: Implement API call to shutdown all systems
+  const handleShutdownMachine = async (hostname: string) => {
+    try {
+      await apiService.shutdownModule(hostname)
+      console.log(`Shut down machine ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to shutdown machine ${hostname}:`, error)
+    }
+  }
+
+  const handleGlobalRecordingToggle = async (enabled: boolean) => {
+    setGlobalRecordingEnabled(enabled)
+    
+    try {
+      if (enabled) {
+        await apiService.startRecording()
+        console.log('Started recording')
+      } else {
+        await apiService.stopRecording()
+        console.log('Stopped recording')
+      }
+      // Refresh data immediately after recording operation
+      fetchAllData()
+    } catch (error) {
+      console.error('Failed to toggle recording:', error)
+      // Revert the switch state on error
+      setGlobalRecordingEnabled(!enabled)
+    }
+  }
+
+  const handleSystemRestart = async () => {
+    try {
+      await apiService.restartSystem()
+      console.log('System restart requested')
+    } catch (error) {
+      console.error('Failed to restart system:', error)
+    }
+  }
+
+  const handleSystemShutdown = async () => {
+    try {
+      await apiService.shutdownSystem()
+      console.log('System shutdown requested')
+    } catch (error) {
+      console.error('Failed to shutdown system:', error)
+    }
   }
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">DRS Dashboard</h1>
-          <PowerControl 
-            onSystemRestart={handleSystemRestart}
-            onSystemShutdown={handleSystemShutdown}
-          />
+          <div className="flex items-center space-x-4">
+            <h1 className="text-3xl font-bold">DRS Dashboard</h1>
+            {isLoading && (
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                <span>Updating...</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-muted-foreground">
+              Last updated: {lastUpdated.toLocaleTimeString()}
+            </span>
+            <PowerControl 
+              onSystemRestart={handleSystemRestart}
+              onSystemShutdown={handleSystemShutdown}
+            />
+          </div>
         </div>
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-semibold mb-4">Module Status</h2>
             <EcuStatusTable 
-              modules={mockModules}
+              modules={modules}
               onRestartSensors={handleRestartSensors}
               onRestartMachine={handleRestartMachine}
               onShutdownMachine={handleShutdownMachine}
@@ -219,11 +372,11 @@ function App() {
           </div>
           
           <div>
-            <PtpSyncStatus ptpStatuses={mockPtpStatuses} />
+            <PtpSyncStatus ptpStatuses={ptpStatuses} />
           </div>
           
           <div>
-            <TopicRateStatus moduleTopicStatuses={mockModuleTopicStatuses} />
+            <TopicRateStatus moduleTopicStatuses={topicStatuses} />
           </div>
         </div>
       </div>
