@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	modulev1 "github.com/drs-api/tools/drs-cli/gen/drs/module/v1"
-	ros2bridgev1 "github.com/drs-api/tools/drs-cli/gen/drs/ros2bridge/v1"
+	modulev1 "github.com/drs-api/tools/drs-cli/drs/module/v1"
+	ros2bridgev1 "github.com/drs-api/tools/drs-cli/drs/ros2bridge/v1"
 )
 
 type Client struct {
@@ -136,6 +136,14 @@ func (c *Client) GetPTPStatus(includeRemote bool) (*modulev1.GetPTPStatusRespons
 
 	req := &modulev1.GetPTPStatusRequest{IncludeRemoteDevices: includeRemote}
 	return c.monitoring.GetPTPStatus(ctx, req)
+}
+
+func (c *Client) GetEnvironment() (*modulev1.GetEnvironmentResponse, error) {
+	ctx, cancel := c.GetContext()
+	defer cancel()
+
+	req := &modulev1.GetEnvironmentRequest{}
+	return c.monitoring.GetEnvironment(ctx, req)
 }
 
 // SensingService methods

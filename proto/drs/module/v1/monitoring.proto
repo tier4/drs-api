@@ -10,6 +10,7 @@ service MonitoringService {
   // Resource state operations
   rpc GetDiskUsage(GetDiskUsageRequest) returns (GetDiskUsageResponse);
   rpc GetPTPStatus(GetPTPStatusRequest) returns (GetPTPStatusResponse);
+  rpc GetEnvironment(GetEnvironmentRequest) returns (GetEnvironmentResponse);
 }
 
 message GetDiskUsageRequest {
@@ -27,4 +28,13 @@ message GetPTPStatusRequest {
 message GetPTPStatusResponse {
   PTPStatus local_status = 1;
   repeated RemotePTPStatus remote_statuses = 2;
+}
+
+message GetEnvironmentRequest {
+  // No parameters needed
+}
+
+message GetEnvironmentResponse {
+  string sensing_system_id = 1;
+  string module_id = 2;
 }

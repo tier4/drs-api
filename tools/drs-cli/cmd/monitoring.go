@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/drs-api/tools/drs-cli/internal/client"
-	modulev1 "github.com/drs-api/tools/drs-cli/gen/drs/module/v1"
+	modulev1 "github.com/drs-api/tools/drs-cli/drs/module/v1"
 )
 
 var monitoringCmd = &cobra.Command{
@@ -78,6 +78,30 @@ var ptpCmd = &cobra.Command{
 	},
 }
 
+var envCmd = &cobra.Command{
+	Use:   "env",
+	Short: "Get environment variables",
+	Long:  "Get SENSING_SYSTEM_ID and MODULE_ID environment variables from the module manager",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
+		if err != nil {
+			return err
+		}
+		defer c.Close()
+
+		resp, err := c.GetEnvironment()
+		if err != nil {
+			return fmt.Errorf("failed to get environment: %v", err)
+		}
+
+		fmt.Printf("Environment Variables:\n")
+		fmt.Printf("  SENSING_SYSTEM_ID: %s\n", resp.SensingSystemId)
+		fmt.Printf("  MODULE_ID:         %s\n", resp.ModuleId)
+
+		return nil
+	},
+}
+
 func printPTPStatus(status *modulev1.PTPStatus, indent string) {
 	if status == nil {
 		fmt.Printf("%sStatus: No data available\n", indent)
@@ -109,6 +133,7 @@ func init() {
 	// Commands will be added to moduleCmd in module.go
 	monitoringCmd.AddCommand(diskCmd)
 	monitoringCmd.AddCommand(ptpCmd)
+	monitoringCmd.AddCommand(envCmd)
 	
 	// Add include-remote flag to ptp command
 	ptpCmd.Flags().BoolP("include-remote", "r", false, "include remote device PTP status")

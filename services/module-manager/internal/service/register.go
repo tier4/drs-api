@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/drs-api/services/module-manager/internal/config"
-	modulev1 "github.com/drs-api/services/module-manager/gen/drs/module/v1"
+	modulev1 "github.com/drs-api/services/module-manager/drs/module/v1"
 	"google.golang.org/grpc"
 )
 

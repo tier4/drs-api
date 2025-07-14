@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/drs-api/services/module-manager/internal/config"
-	modulev1 "github.com/drs-api/services/module-manager/gen/drs/module/v1"
+	modulev1 "github.com/drs-api/services/module-manager/drs/module/v1"
 	"github.com/drs-api/services/module-manager/internal/ptp"
 	"github.com/drs-api/services/module-manager/internal/storage"
 	"google.golang.org/grpc/codes"
@@ -114,4 +115,19 @@ func (s *MonitoringService) GetPTPStatus(ctx context.Context, req *modulev1.GetP
 	}
 	
 	return response, nil
+}
+
+func (s *MonitoringService) GetEnvironment(ctx context.Context, req *modulev1.GetEnvironmentRequest) (*modulev1.GetEnvironmentResponse, error) {
+	log.Printf("Get environment request received")
+	
+	// Get environment variables
+	sensingSystemID := os.Getenv("SENSING_SYSTEM_ID")
+	moduleID := os.Getenv("MODULE_ID")
+	
+	log.Printf("Environment variables - SENSING_SYSTEM_ID: %s, MODULE_ID: %s", sensingSystemID, moduleID)
+	
+	return &modulev1.GetEnvironmentResponse{
+		SensingSystemId: sensingSystemID,
+		ModuleId:        moduleID,
+	}, nil
 }
