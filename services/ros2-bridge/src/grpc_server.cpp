@@ -1,43 +1,50 @@
 #include "ros2_bridge/grpc_server.hpp"
-#include "ros2_bridge/ros2_handler.hpp"
-
-#include <grpcpp/server_builder.h>
+#include <rclcpp/rclcpp.hpp>
 
 namespace ros2_bridge {
 
-GrpcServer::GrpcServer(std::shared_ptr<rclcpp::Node> node, int port)
-    : node_(node), port_(port) {
-    ros2_handler_ = std::make_shared<ROS2Handler>(node_);
+GrpcServer::GrpcServer() : started_(false) {
+    // Configure server settings
+    builder_.SetMaxReceiveMessageSize(64 * 1024 * 1024); // 64MB
+    builder_.SetMaxSendMessageSize(64 * 1024 * 1024);    // 64MB
 }
 
-GrpcServer::~GrpcServer() {
-    Shutdown();
+void GrpcServer::RegisterService(grpc::Service* service) {
+    if (started_) {
+        throw std::runtime_error("Cannot register service after server has started");
+    }
+    
+    builder_.RegisterService(service);
 }
 
-void GrpcServer::Run() {
-    std::string server_address = "0.0.0.0:" + std::to_string(port_);
-
-    grpc::ServerBuilder builder;
-    builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+bool GrpcServer::Start(const std::string& server_address) {
+    if (started_) {
+        return false;
+    }
     
-    // Register the ROS2 bridge service
-    builder.RegisterService(ros2_handler_.get());
-
-    server_ = builder.BuildAndStart();
+    // Listen on the given address
+    builder_.AddListeningPort(server_address, grpc::InsecureServerCredentials());
     
-    if (server_) {
-        RCLCPP_INFO(node_->get_logger(), 
-                    "gRPC server listening on %s", server_address.c_str());
-        server_->Wait();
-    } else {
-        RCLCPP_ERROR(node_->get_logger(), 
-                     "Failed to start gRPC server on %s", server_address.c_str());
+    // Build and start the server
+    server_ = builder_.BuildAndStart();
+    if (!server_) {
+        return false;
+    }
+    
+    started_ = true;
+    return true;
+}
+
+void GrpcServer::Stop() {
+    if (server_ && started_) {
+        server_->Shutdown();
+        started_ = false;
     }
 }
 
-void GrpcServer::Shutdown() {
-    if (server_) {
-        server_->Shutdown();
+void GrpcServer::Wait() {
+    if (server_ && started_) {
+        server_->Wait();
     }
 }
 

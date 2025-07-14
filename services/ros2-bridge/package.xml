@@ -14,6 +14,7 @@
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>proto_recorder_msgs</depend>
 
   <build_depend>grpc</build_depend>
   <build_depend>protobuf</build_depend>
