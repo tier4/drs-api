@@ -13,32 +13,32 @@ import (
 	ros2bridgev1 "github.com/drs-api/services/api-gateway/drs/ros2bridge/v1"
 )
 
-// ECUHandler handles ECU-related REST API endpoints
-type ECUHandler struct {
+// ModuleHandler handles module-related REST API endpoints
+type ModuleHandler struct {
 	clientManager *grpc.ClientManager
 }
 
-// NewECUHandler creates a new ECU handler
-func NewECUHandler(clientManager *grpc.ClientManager) *ECUHandler {
-	return &ECUHandler{
+// NewModuleHandler creates a new module handler
+func NewModuleHandler(clientManager *grpc.ClientManager) *ModuleHandler {
+	return &ModuleHandler{
 		clientManager: clientManager,
 	}
 }
 
-// GetAllECUs handles GET /ecus - returns status of all ECUs
-func (h *ECUHandler) GetAllECUs(c *gin.Context) {
-	ecuNames := h.clientManager.GetECUNames()
-	ecuStatuses := make([]models.ECUStatus, 0, len(ecuNames))
+// GetAllModules handles GET /modules - returns status of all modules
+func (h *ModuleHandler) GetAllModules(c *gin.Context) {
+	moduleNames := h.clientManager.GetModuleNames()
+	moduleStatuses := make([]models.ModuleStatus, 0, len(moduleNames))
 
-	// Use goroutines to fetch ECU statuses concurrently
+	// Use goroutines to fetch module statuses concurrently
 	var wg sync.WaitGroup
-	statusChan := make(chan models.ECUStatus, len(ecuNames))
+	statusChan := make(chan models.ModuleStatus, len(moduleNames))
 
-	for _, hostname := range ecuNames {
+	for _, hostname := range moduleNames {
 		wg.Add(1)
 		go func(hostname string) {
 			defer wg.Done()
-			status := h.getECUStatus(hostname)
+			status := h.getModuleStatus(hostname)
 			statusChan <- status
 		}(hostname)
 	}
@@ -51,23 +51,23 @@ func (h *ECUHandler) GetAllECUs(c *gin.Context) {
 
 	// Collect results
 	for status := range statusChan {
-		ecuStatuses = append(ecuStatuses, status)
+		moduleStatuses = append(moduleStatuses, status)
 	}
 
-	c.JSON(http.StatusOK, models.ECUListResponse{
-		ECUs: ecuStatuses,
+	c.JSON(http.StatusOK, models.ModuleListResponse{
+		Modules: moduleStatuses,
 	})
 }
 
-// GetECU handles GET /ecus/{hostname} - returns status of a single ECU
-func (h *ECUHandler) GetECU(c *gin.Context) {
+// GetModule handles GET /modules/{hostname} - returns status of a single module
+func (h *ModuleHandler) GetModule(c *gin.Context) {
 	hostname := c.Param("hostname")
 	
-	status := h.getECUStatus(hostname)
+	status := h.getModuleStatus(hostname)
 	if status.Status == "ERROR" && status.StatusDetail.Services.DRSSensor == "" {
 		c.JSON(http.StatusNotFound, models.ErrorResponse{
-			Error:   "ecu_not_found",
-			Message: "ECU not found or unreachable",
+			Error:   "module_not_found",
+			Message: "Module not found or unreachable",
 			Details: map[string]interface{}{
 				"hostname": hostname,
 			},
@@ -78,14 +78,14 @@ func (h *ECUHandler) GetECU(c *gin.Context) {
 	c.JSON(http.StatusOK, status)
 }
 
-// getECUStatus fetches the status of a single ECU
-func (h *ECUHandler) getECUStatus(hostname string) models.ECUStatus {
-	clients, err := h.clientManager.GetECUClients(hostname)
+// getModuleStatus fetches the status of a single module
+func (h *ModuleHandler) getModuleStatus(hostname string) models.ModuleStatus {
+	clients, err := h.clientManager.GetModuleClients(hostname)
 	if err != nil {
-		return models.ECUStatus{
+		return models.ModuleStatus{
 			Hostname:    hostname,
 			Status:      "ERROR",
-			StatusDetail: models.ECUStatusDetail{},
+			StatusDetail: models.ModuleStatusDetail{},
 			LastUpdated: time.Now(),
 		}
 	}
@@ -93,7 +93,7 @@ func (h *ECUHandler) getECUStatus(hostname string) models.ECUStatus {
 	ctx, cancel := h.clientManager.GetContext()
 	defer cancel()
 
-	status := models.ECUStatus{
+	status := models.ModuleStatus{
 		Hostname:    hostname,
 		Status:      "OK",
 		LastUpdated: time.Now(),
@@ -145,8 +145,8 @@ func (h *ECUHandler) getECUStatus(hostname string) models.ECUStatus {
 	return status
 }
 
-// getServiceStatus fetches service status from ECU
-func (h *ECUHandler) getServiceStatus(clients *grpc.ECUClients, hostname string) models.ServiceStatus {
+// getServiceStatus fetches service status from module
+func (h *ModuleHandler) getServiceStatus(clients *grpc.ModuleClients, hostname string) models.ServiceStatus {
 	ctx, cancel := h.clientManager.GetContext()
 	defer cancel()
 
@@ -170,8 +170,8 @@ func (h *ECUHandler) getServiceStatus(clients *grpc.ECUClients, hostname string)
 	return serviceStatus
 }
 
-// getRecordingStatus fetches recording status from ECU
-func (h *ECUHandler) getRecordingStatus(clients *grpc.ECUClients, hostname string) models.RecordingInfo {
+// getRecordingStatus fetches recording status from module
+func (h *ModuleHandler) getRecordingStatus(clients *grpc.ModuleClients, hostname string) models.RecordingInfo {
 	ctx, cancel := h.clientManager.GetContext()
 	defer cancel()
 
@@ -198,7 +198,7 @@ func (h *ECUHandler) getRecordingStatus(clients *grpc.ECUClients, hostname strin
 }
 
 // convertServiceState converts gRPC service state to string
-func (h *ECUHandler) convertServiceState(state modulev1.Service_ServiceState) string {
+func (h *ModuleHandler) convertServiceState(state modulev1.Service_ServiceState) string {
 	switch state {
 	case modulev1.Service_SERVICE_STATE_ACTIVE:
 		return "active"
@@ -216,7 +216,7 @@ func (h *ECUHandler) convertServiceState(state modulev1.Service_ServiceState) st
 }
 
 // determineOverallStatus determines the overall status based on various factors
-func (h *ECUHandler) determineOverallStatus(status models.ECUStatus) string {
+func (h *ModuleHandler) determineOverallStatus(status models.ModuleStatus) string {
 	// Check if any critical services are failed
 	if status.StatusDetail.Services.DRSSensor == "failed" || status.StatusDetail.Services.DRSRecorder == "failed" {
 		return "ERROR"

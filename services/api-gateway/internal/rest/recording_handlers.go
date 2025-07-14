@@ -24,20 +24,20 @@ func NewRecordingHandler(clientManager *grpc.ClientManager) *RecordingHandler {
 	}
 }
 
-// GetRecordingStatus handles GET /recording/status - returns recording status of all ECUs
+// GetRecordingStatus handles GET /recording/status - returns recording status of all modules
 func (h *RecordingHandler) GetRecordingStatus(c *gin.Context) {
-	ecuNames := h.clientManager.GetECUNames()
+	moduleNames := h.clientManager.GetModuleNames()
 	recordingStatuses := make([]models.RecordingStatus, 0)
 
 	var wg sync.WaitGroup
-	statusChan := make(chan models.RecordingStatus, len(ecuNames))
+	statusChan := make(chan models.RecordingStatus, len(moduleNames))
 
-	for _, hostname := range ecuNames {
+	for _, hostname := range moduleNames {
 		wg.Add(1)
 		go func(hostname string) {
 			defer wg.Done()
 			
-			clients, err := h.clientManager.GetECUClients(hostname)
+			clients, err := h.clientManager.GetModuleClients(hostname)
 			if err != nil || clients.Recording == nil {
 				statusChan <- models.RecordingStatus{
 					Hostname: hostname,
@@ -123,13 +123,13 @@ func (h *RecordingHandler) ResumeRecording(c *gin.Context) {
 
 // GetPTPStatus handles GET /ptp/status - returns PTP status of all ECUs
 func (h *RecordingHandler) GetPTPStatus(c *gin.Context) {
-	ecuNames := h.clientManager.GetECUNames()
+	moduleNames := h.clientManager.GetModuleNames()
 	ptpStatuses := make([]models.PTPStatus, 0)
 
 	var wg sync.WaitGroup
-	statusChan := make(chan models.PTPStatus, len(ecuNames))
+	statusChan := make(chan models.PTPStatus, len(moduleNames))
 
-	for _, hostname := range ecuNames {
+	for _, hostname := range moduleNames {
 		wg.Add(1)
 		go func(hostname string) {
 			defer wg.Done()
@@ -142,7 +142,7 @@ func (h *RecordingHandler) GetPTPStatus(c *gin.Context) {
 				return
 			}
 
-			clients, err := h.clientManager.GetECUClients(hostname)
+			clients, err := h.clientManager.GetModuleClients(hostname)
 			if err != nil {
 				statusChan <- models.PTPStatus{
 					Hostname: hostname,
@@ -221,11 +221,11 @@ func (h *RecordingHandler) GetPTPStatus(c *gin.Context) {
 func (h *RecordingHandler) GetTopicStatus(c *gin.Context) {
 	hostname := c.Param("hostname")
 	
-	clients, err := h.clientManager.GetECUClients(hostname)
+	clients, err := h.clientManager.GetModuleClients(hostname)
 	if err != nil || clients.Recording == nil {
 		c.JSON(http.StatusNotFound, models.ErrorResponse{
-			Error:   "ecu_not_found",
-			Message: "ECU not found or ROS2 bridge not available",
+			Error:   "module_not_found",
+			Message: "Module not found or ROS2 bridge not available",
 			Details: map[string]interface{}{
 				"hostname": hostname,
 			},
@@ -271,19 +271,19 @@ func (h *RecordingHandler) GetTopicStatus(c *gin.Context) {
 	})
 }
 
-// performRecordingOperation performs a recording operation on all ECUs with ROS2 bridge
+// performRecordingOperation performs a recording operation on all modules with ROS2 bridge
 func (h *RecordingHandler) performRecordingOperation(c *gin.Context, operation string) {
-	ecuNames := h.clientManager.GetECUNames()
+	moduleNames := h.clientManager.GetModuleNames()
 	
 	var wg sync.WaitGroup
-	results := make(chan models.RecordingOperationResponse, len(ecuNames))
+	results := make(chan models.RecordingOperationResponse, len(moduleNames))
 
-	for _, hostname := range ecuNames {
+	for _, hostname := range moduleNames {
 		wg.Add(1)
 		go func(hostname string) {
 			defer wg.Done()
 			
-			clients, err := h.clientManager.GetECUClients(hostname)
+			clients, err := h.clientManager.GetModuleClients(hostname)
 			if err != nil || clients.Recording == nil {
 				results <- models.RecordingOperationResponse{
 					Success: false,
@@ -381,7 +381,7 @@ func (h *RecordingHandler) performRecordingOperation(c *gin.Context, operation s
 	} else {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
 			Error:   "recording_operation_failed",
-			Message: "Some ECUs failed to perform the recording operation",
+			Message: "Some modules failed to perform the recording operation",
 			Details: map[string]interface{}{
 				"messages": messages,
 			},

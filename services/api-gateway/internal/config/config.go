@@ -10,10 +10,10 @@ import (
 
 // Config represents the API Gateway configuration
 type Config struct {
-	Server ServerConfig    `yaml:"server"`
-	ECUs   map[string]ECU  `yaml:"ecus"`
-	GRPC   GRPCConfig      `yaml:"grpc"`
-	CORS   CORSConfig      `yaml:"cors"`
+	Server  ServerConfig      `yaml:"server"`
+	Modules map[string]Module `yaml:"modules"`
+	GRPC    GRPCConfig        `yaml:"grpc"`
+	CORS    CORSConfig        `yaml:"cors"`
 }
 
 // ServerConfig represents the HTTP server configuration
@@ -24,8 +24,8 @@ type ServerConfig struct {
 	WriteTimeout time.Duration `yaml:"write_timeout"`
 }
 
-// ECU represents a single ECU/host configuration
-type ECU struct {
+// Module represents a single module (ECU with sensors) configuration
+type Module struct {
 	Address            string   `yaml:"address"`
 	EnabledServices    []string `yaml:"enabled_services"`
 	HasROS2Bridge      bool     `yaml:"has_ros2_bridge"`
@@ -112,14 +112,14 @@ func (c *Config) GetServerAddress() string {
 	return fmt.Sprintf("%s:%d", c.Server.Host, c.Server.Port)
 }
 
-// IsServiceEnabled checks if a service is enabled for a given ECU
+// IsServiceEnabled checks if a service is enabled for a given module
 func (c *Config) IsServiceEnabled(hostname, service string) bool {
-	ecu, exists := c.ECUs[hostname]
+	module, exists := c.Modules[hostname]
 	if !exists {
 		return false
 	}
 
-	for _, enabledService := range ecu.EnabledServices {
+	for _, enabledService := range module.EnabledServices {
 		if enabledService == service {
 			return true
 		}
@@ -127,28 +127,28 @@ func (c *Config) IsServiceEnabled(hostname, service string) bool {
 	return false
 }
 
-// GetECUAddress returns the address for a given ECU
-func (c *Config) GetECUAddress(hostname string) (string, bool) {
-	ecu, exists := c.ECUs[hostname]
+// GetModuleAddress returns the address for a given module
+func (c *Config) GetModuleAddress(hostname string) (string, bool) {
+	module, exists := c.Modules[hostname]
 	if !exists {
 		return "", false
 	}
-	return ecu.Address, true
+	return module.Address, true
 }
 
-// GetROS2BridgeAddress returns the ROS2 bridge address for a given ECU
+// GetROS2BridgeAddress returns the ROS2 bridge address for a given module
 func (c *Config) GetROS2BridgeAddress(hostname string) (string, bool) {
-	ecu, exists := c.ECUs[hostname]
-	if !exists || !ecu.HasROS2Bridge {
+	module, exists := c.Modules[hostname]
+	if !exists || !module.HasROS2Bridge {
 		return "", false
 	}
-	return ecu.ROS2BridgeAddress, true
+	return module.ROS2BridgeAddress, true
 }
 
-// GetECUNames returns a list of all ECU hostnames
-func (c *Config) GetECUNames() []string {
-	names := make([]string, 0, len(c.ECUs))
-	for name := range c.ECUs {
+// GetModuleNames returns a list of all module hostnames
+func (c *Config) GetModuleNames() []string {
+	names := make([]string, 0, len(c.Modules))
+	for name := range c.Modules {
 		names = append(names, name)
 	}
 	return names

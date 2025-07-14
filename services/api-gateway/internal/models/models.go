@@ -2,20 +2,20 @@ package models
 
 import "time"
 
-// ECUStatus represents the status of a single ECU for the dashboard
-type ECUStatus struct {
+// ModuleStatus represents the status of a single module for the dashboard
+type ModuleStatus struct {
 	Hostname       string            `json:"hostname"`
 	Address        string            `json:"address"`
 	Status         string            `json:"status"` // OK, WARN, ERROR
-	StatusDetail   ECUStatusDetail   `json:"status_detail"`
+	StatusDetail   ModuleStatusDetail   `json:"status_detail"`
 	Disk           DiskInfo          `json:"disk"`
 	Environment    EnvironmentInfo   `json:"environment"`
 	EnabledServices []string         `json:"enabled_services"`
 	LastUpdated    time.Time         `json:"last_updated"`
 }
 
-// ECUStatusDetail provides detailed status information
-type ECUStatusDetail struct {
+// ModuleStatusDetail provides detailed status information
+type ModuleStatusDetail struct {
 	Services  ServiceStatus  `json:"services"`
 	Recording RecordingInfo  `json:"recording"`
 	PTP       PTPInfo        `json:"ptp"`
@@ -51,9 +51,9 @@ type EnvironmentInfo struct {
 	ModuleID        string `json:"module_id"`
 }
 
-// ECUListResponse represents the response for GET /ecus
-type ECUListResponse struct {
-	ECUs []ECUStatus `json:"ecus"`
+// ModuleListResponse represents the response for GET /modules
+type ModuleListResponse struct {
+	Modules []ModuleStatus `json:"modules"`
 }
 
 // RecordingStatusResponse represents the response for GET /recording/status
@@ -61,7 +61,7 @@ type RecordingStatusResponse struct {
 	RecordingStatus []RecordingStatus `json:"recording_status"`
 }
 
-// RecordingStatus represents recording status for a single ECU
+// RecordingStatus represents recording status for a single module
 type RecordingStatus struct {
 	Hostname   string `json:"hostname"`
 	Status     string `json:"status"`
@@ -74,7 +74,7 @@ type PTPStatusResponse struct {
 	PTPStatus []PTPStatus `json:"ptp_status"`
 }
 
-// PTPStatus represents PTP status for a single ECU
+// PTPStatus represents PTP status for a single module
 type PTPStatus struct {
 	Hostname      string        `json:"hostname"`
 	LocalStatus   PTPLocalInfo  `json:"local_status"`

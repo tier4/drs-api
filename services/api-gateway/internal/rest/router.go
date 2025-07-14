@@ -52,22 +52,22 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 	v1 := router.Group("/api/v1")
 	{
 		// Initialize handlers
-		ecuHandler := NewECUHandler(clientManager)
+		moduleHandler := NewModuleHandler(clientManager)
 		systemHandler := NewSystemHandler(clientManager)
 		recordingHandler := NewRecordingHandler(clientManager)
 
-		// ECU endpoints
-		v1.GET("/ecus", ecuHandler.GetAllECUs)
-		v1.GET("/ecus/:hostname", ecuHandler.GetECU)
+		// Module endpoints
+		v1.GET("/modules", moduleHandler.GetAllModules)
+		v1.GET("/modules/:hostname", moduleHandler.GetModule)
 
 		// System control endpoints
 		v1.POST("/system/restart", systemHandler.SystemRestart)
 		v1.POST("/system/shutdown", systemHandler.SystemShutdown)
 		
-		// Per-ECU system control
-		v1.POST("/ecus/:hostname/restart", systemHandler.ECURestart)
-		v1.POST("/ecus/:hostname/shutdown", systemHandler.ECUShutdown)
-		v1.POST("/ecus/:hostname/services/restart", systemHandler.ServicesRestart)
+		// Per-module system control
+		v1.POST("/modules/:hostname/restart", systemHandler.ModuleRestart)
+		v1.POST("/modules/:hostname/shutdown", systemHandler.ModuleShutdown)
+		v1.POST("/modules/:hostname/services/restart", systemHandler.ServicesRestart)
 
 		// Recording endpoints
 		v1.GET("/recording/status", recordingHandler.GetRecordingStatus)
@@ -80,15 +80,15 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 		v1.GET("/ptp/status", recordingHandler.GetPTPStatus)
 
 		// Topic status endpoint
-		v1.GET("/ecus/:hostname/topics/status", recordingHandler.GetTopicStatus)
+		v1.GET("/modules/:hostname/topics/status", recordingHandler.GetTopicStatus)
 
 		// Service management endpoints
-		v1.GET("/ecus/:hostname/services", func(c *gin.Context) {
+		v1.GET("/modules/:hostname/services", func(c *gin.Context) {
 			hostname := c.Param("hostname")
 			
-			clients, err := clientManager.GetECUClients(hostname)
+			clients, err := clientManager.GetModuleClients(hostname)
 			if err != nil {
-				c.JSON(404, gin.H{"error": "ECU not found"})
+				c.JSON(404, gin.H{"error": "Module not found"})
 				return
 			}
 
@@ -109,13 +109,13 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 			c.JSON(200, gin.H{"services": resp.Services})
 		})
 
-		v1.POST("/ecus/:hostname/services/:service_name/start", func(c *gin.Context) {
+		v1.POST("/modules/:hostname/services/:service_name/start", func(c *gin.Context) {
 			hostname := c.Param("hostname")
 			serviceName := c.Param("service_name")
 			
-			clients, err := clientManager.GetECUClients(hostname)
+			clients, err := clientManager.GetModuleClients(hostname)
 			if err != nil {
-				c.JSON(404, gin.H{"error": "ECU not found"})
+				c.JSON(404, gin.H{"error": "Module not found"})
 				return
 			}
 
@@ -142,13 +142,13 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 			})
 		})
 
-		v1.POST("/ecus/:hostname/services/:service_name/stop", func(c *gin.Context) {
+		v1.POST("/modules/:hostname/services/:service_name/stop", func(c *gin.Context) {
 			hostname := c.Param("hostname")
 			serviceName := c.Param("service_name")
 			
-			clients, err := clientManager.GetECUClients(hostname)
+			clients, err := clientManager.GetModuleClients(hostname)
 			if err != nil {
-				c.JSON(404, gin.H{"error": "ECU not found"})
+				c.JSON(404, gin.H{"error": "Module not found"})
 				return
 			}
 
@@ -175,13 +175,13 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 			})
 		})
 
-		v1.POST("/ecus/:hostname/services/:service_name/restart", func(c *gin.Context) {
+		v1.POST("/modules/:hostname/services/:service_name/restart", func(c *gin.Context) {
 			hostname := c.Param("hostname")
 			serviceName := c.Param("service_name")
 			
-			clients, err := clientManager.GetECUClients(hostname)
+			clients, err := clientManager.GetModuleClients(hostname)
 			if err != nil {
-				c.JSON(404, gin.H{"error": "ECU not found"})
+				c.JSON(404, gin.H{"error": "Module not found"})
 				return
 			}
 

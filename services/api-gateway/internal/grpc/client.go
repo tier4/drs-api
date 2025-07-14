@@ -13,16 +13,16 @@ import (
 	ros2bridgev1 "github.com/drs-api/services/api-gateway/drs/ros2bridge/v1"
 )
 
-// ClientManager manages gRPC connections to multiple ECUs
+// ClientManager manages gRPC connections to multiple modules
 type ClientManager struct {
 	config      *config.Config
 	connections map[string]*grpc.ClientConn
-	clients     map[string]*ECUClients
+	clients     map[string]*ModuleClients
 	mu          sync.RWMutex
 }
 
-// ECUClients holds all gRPC clients for a single ECU
-type ECUClients struct {
+// ModuleClients holds all gRPC clients for a single module
+type ModuleClients struct {
 	ServiceManager modulev1.ServiceManagerServiceClient
 	SystemControl  modulev1.SystemControlServiceClient
 	Monitoring     modulev1.MonitoringServiceClient
@@ -35,12 +35,12 @@ func NewClientManager(cfg *config.Config) *ClientManager {
 	return &ClientManager{
 		config:      cfg,
 		connections: make(map[string]*grpc.ClientConn),
-		clients:     make(map[string]*ECUClients),
+		clients:     make(map[string]*ModuleClients),
 	}
 }
 
-// GetECUClients returns the gRPC clients for a given ECU
-func (cm *ClientManager) GetECUClients(hostname string) (*ECUClients, error) {
+// GetModuleClients returns the gRPC clients for a given module
+func (cm *ClientManager) GetModuleClients(hostname string) (*ModuleClients, error) {
 	cm.mu.RLock()
 	clients, exists := cm.clients[hostname]
 	cm.mu.RUnlock()
@@ -50,11 +50,11 @@ func (cm *ClientManager) GetECUClients(hostname string) (*ECUClients, error) {
 	}
 
 	// Create new connection if not exists
-	return cm.createECUClients(hostname)
+	return cm.createModuleClients(hostname)
 }
 
-// createECUClients creates gRPC clients for a given ECU
-func (cm *ClientManager) createECUClients(hostname string) (*ECUClients, error) {
+// createModuleClients creates gRPC clients for a given module
+func (cm *ClientManager) createModuleClients(hostname string) (*ModuleClients, error) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
@@ -63,38 +63,38 @@ func (cm *ClientManager) createECUClients(hostname string) (*ECUClients, error) 
 		return clients, nil
 	}
 
-	// Get ECU configuration
-	ecuConfig, exists := cm.config.ECUs[hostname]
+	// Get module configuration
+	moduleConfig, exists := cm.config.Modules[hostname]
 	if !exists {
-		return nil, fmt.Errorf("ECU %s not found in configuration", hostname)
+		return nil, fmt.Errorf("Module %s not found in configuration", hostname)
 	}
 
 	// Create module-manager connection
 	conn, err := grpc.Dial(
-		ecuConfig.Address,
+		moduleConfig.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithTimeout(cm.config.GRPC.Timeout),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to ECU %s at %s: %v", hostname, ecuConfig.Address, err)
+		return nil, fmt.Errorf("failed to connect to module %s at %s: %v", hostname, moduleConfig.Address, err)
 	}
 
-	clients := &ECUClients{
+	clients := &ModuleClients{
 		ServiceManager: modulev1.NewServiceManagerServiceClient(conn),
 		SystemControl:  modulev1.NewSystemControlServiceClient(conn),
 		Monitoring:     modulev1.NewMonitoringServiceClient(conn),
 	}
 
 	// Create ROS2 bridge connection if enabled
-	if ecuConfig.HasROS2Bridge {
+	if moduleConfig.HasROS2Bridge {
 		ros2Conn, err := grpc.Dial(
-			ecuConfig.ROS2BridgeAddress,
+			moduleConfig.ROS2BridgeAddress,
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
 			grpc.WithTimeout(cm.config.GRPC.Timeout),
 		)
 		if err != nil {
 			// Log error but don't fail, as ROS2 bridge might not be available
-			fmt.Printf("Warning: failed to connect to ROS2 bridge for ECU %s at %s: %v\n", hostname, ecuConfig.ROS2BridgeAddress, err)
+			fmt.Printf("Warning: failed to connect to ROS2 bridge for module %s at %s: %v\n", hostname, moduleConfig.ROS2BridgeAddress, err)
 		} else {
 			clients.Recording = ros2bridgev1.NewRecordingServiceClient(ros2Conn)
 			clients.Sensing = ros2bridgev1.NewSensingServiceClient(ros2Conn)
@@ -120,7 +120,7 @@ func (cm *ClientManager) Close() {
 	}
 
 	cm.connections = make(map[string]*grpc.ClientConn)
-	cm.clients = make(map[string]*ECUClients)
+	cm.clients = make(map[string]*ModuleClients)
 }
 
 // GetContext returns a context with timeout for gRPC calls
@@ -128,22 +128,22 @@ func (cm *ClientManager) GetContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), cm.config.GRPC.Timeout)
 }
 
-// IsServiceEnabled checks if a service is enabled for a given ECU
+// IsServiceEnabled checks if a service is enabled for a given module
 func (cm *ClientManager) IsServiceEnabled(hostname, service string) bool {
 	return cm.config.IsServiceEnabled(hostname, service)
 }
 
-// GetECUNames returns a list of all ECU hostnames
-func (cm *ClientManager) GetECUNames() []string {
-	return cm.config.GetECUNames()
+// GetModuleNames returns a list of all module hostnames
+func (cm *ClientManager) GetModuleNames() []string {
+	return cm.config.GetModuleNames()
 }
 
-// HealthCheck performs a health check on all ECUs
+// HealthCheck performs a health check on all modules
 func (cm *ClientManager) HealthCheck() map[string]bool {
 	results := make(map[string]bool)
 	
-	for _, hostname := range cm.GetECUNames() {
-		clients, err := cm.GetECUClients(hostname)
+	for _, hostname := range cm.GetModuleNames() {
+		clients, err := cm.GetModuleClients(hostname)
 		if err != nil {
 			results[hostname] = false
 			continue
