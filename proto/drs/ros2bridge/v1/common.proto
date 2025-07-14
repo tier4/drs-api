@@ -51,7 +51,6 @@ message TopicStatus {
   string message_type = 3;                     // ROS2 message type
   double rate_hz = 4;                          // Current rate in Hz
   RateStatus rate_status = 5;                  // Rate status assessment
-  google.protobuf.Timestamp last_update = 6;   // Last status update
   
   enum RateStatus {
     RATE_STATUS_UNSPECIFIED = 0;

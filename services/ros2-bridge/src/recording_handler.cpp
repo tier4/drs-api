@@ -227,11 +227,6 @@ void RecordingHandler::convertTopicStatus(
             break;
     }
     
-    // Set current timestamp as last_update (since original message doesn't have timestamp)
-    auto now = std::chrono::system_clock::now();
-    auto time_t = std::chrono::system_clock::to_time_t(now);
-    proto_topic_status->mutable_last_update()->set_seconds(time_t);
-    proto_topic_status->mutable_last_update()->set_nanos(0);
 }
 
 bool RecordingHandler::publishCommand(rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr publisher, bool value) {

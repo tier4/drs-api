@@ -225,11 +225,6 @@ var listTopicStatusesCmd = &cobra.Command{
 			fmt.Printf("    Type: %s\n", topic.MessageType)
 			fmt.Printf("    Rate: %.1f Hz\n", topic.RateHz)
 			fmt.Printf("    Status: %s\n", getRateStatusString(topic.RateStatus))
-			
-			if topic.LastUpdate != nil {
-				timestamp := time.Unix(topic.LastUpdate.Seconds, int64(topic.LastUpdate.Nanos))
-				fmt.Printf("    Last Update: %s\n", timestamp.Format(time.RFC3339))
-			}
 			fmt.Println()
 		}
 

@@ -37,7 +37,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&address, "address", "localhost:50051", "module-manager server address")
+	rootCmd.PersistentFlags().StringVar(&address, "address", "localhost:50051", "server address (50051 for module-manager, 50052 for ros2-bridge)")
 	rootCmd.PersistentFlags().IntVar(&timeout, "timeout", 30, "request timeout in seconds")
 }
 

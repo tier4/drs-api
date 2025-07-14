@@ -1,6 +1,6 @@
 # DRS CLI
 
-A command-line client for interacting with DRS gRPC services. Currently supports the module-manager service and is designed to be extensible for other DRS services like ros2-bridge.
+A command-line client for interacting with DRS gRPC services. Supports both module-manager service (port 50051) and ros2-bridge service (port 50052).
 
 ## Installation
 
@@ -88,26 +88,52 @@ All module-manager related commands are under the `module` subcommand:
 ./bin/drs-cli module monitoring ptp --include-remote
 ```
 
-### Future Services
+### ROS2-Bridge Service Commands
 
-The CLI is designed to support additional DRS services:
+All ros2-bridge related commands are under the `ros2bridge` subcommand and require connecting to port 50052:
+
+#### Sensing Commands
 
 ```bash
-# Future ros2-bridge commands (planned)
-./bin/drs-cli bridge subscribe /topic
-./bin/drs-cli bridge call-service /service
+# Get current position from NavSatFix
+./bin/drs-cli --address localhost:50052 ros2bridge sensing position
 
-# Future storage service commands (planned)  
-./bin/drs-cli storage list-recordings
-./bin/drs-cli storage download recording123
+# List ROS2 nodes
+./bin/drs-cli --address localhost:50052 ros2bridge sensing list-nodes
+
+# Filter nodes by namespace
+./bin/drs-cli --address localhost:50052 ros2bridge sensing list-nodes --filter "namespace:=/sensing"
+```
+
+#### Recording Commands
+
+```bash
+# Recording control (affects all ECUs)
+./bin/drs-cli --address localhost:50052 ros2bridge recording start
+./bin/drs-cli --address localhost:50052 ros2bridge recording stop
+./bin/drs-cli --address localhost:50052 ros2bridge recording pause
+./bin/drs-cli --address localhost:50052 ros2bridge recording resume
+
+# Get recording status
+./bin/drs-cli --address localhost:50052 ros2bridge recording list
+./bin/drs-cli --address localhost:50052 ros2bridge recording get main_ecu
+
+# Topic status monitoring
+./bin/drs-cli --address localhost:50052 ros2bridge recording list-topics main_ecu
+./bin/drs-cli --address localhost:50052 ros2bridge recording list-topics main_ecu --filter "topic_name:=/sensing/*"
 ```
 
 ## Configuration
 
 ### Command Line Flags
 
-- `--address`: Server address (default: localhost:50051)
+- `--address`: Server address (default: localhost:50051 for module-manager, use localhost:50052 for ros2-bridge)
 - `--timeout`: Request timeout in seconds (default: 30)
+
+### Service Endpoints
+
+- **module-manager**: `localhost:50051` (default)
+- **ros2-bridge**: `localhost:50052` (must specify with --address)
 
 ### Examples
 
@@ -218,12 +244,25 @@ The CLI is structured to support multiple DRS services:
 
 ```
 drs-cli
-├── module          # module-manager service
+├── module          # module-manager service (port 50051)
 │   ├── services   # ServiceManagerService
 │   ├── system     # SystemControlService
 │   └── monitoring # MonitoringService
-├── bridge         # ros2-bridge service (future)
-└── storage        # storage service (future)
+└── ros2bridge     # ros2-bridge service (port 50052)
+    ├── sensing    # SensingService
+    │   ├── position
+    │   └── list-nodes
+    └── recording  # RecordingService
+        ├── start/stop/pause/resume
+        ├── get/list
+        └── list-topics
 ```
 
 This design ensures clean separation of concerns and easy addition of new services as the DRS ecosystem grows.
+
+## Port Reference
+
+| Service | Port | Usage |
+|---------|------|-------|
+| module-manager | 50051 | `./bin/drs-cli module ...` (default) |
+| ros2-bridge | 50052 | `./bin/drs-cli --address localhost:50052 ros2bridge ...` |
