@@ -187,14 +187,6 @@ function App() {
     hardwareId: apiRec.hardware_id,
   })
 
-  const convertToTopicStatus = (apiTopic: any): ModuleTopicStatus => ({
-    hostname: apiTopic.hostname,
-    topics: apiTopic.topics.map((topic: any) => ({
-      topicName: topic.topic_name,
-      rateHz: topic.rate_hz,
-      status: topic.status,
-    })),
-  })
 
   // Data fetching function
   const fetchAllData = useCallback(async () => {
