@@ -24,60 +24,27 @@ find_package(Protobuf QUIET)
 find_package(gRPC QUIET)
 
 # Proto file generation
-set(PROTO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../proto)
-set(PROTO_GENERATED_DIR ${CMAKE_CURRENT_BINARY_DIR}/gen)
+set(PROTO_GENERATED_DIR ${CMAKE_CURRENT_SOURCE_DIR}/gen)
+set(GENERATE_PROTO_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/../../scripts/generate-proto.sh)
 
-# Find protoc and grpc_cpp_plugin
-find_program(PROTOC protoc)
-find_program(GRPC_CPP_PLUGIN grpc_cpp_plugin)
-
-if(NOT PROTOC)
-  message(FATAL_ERROR "protoc not found")
-endif()
-
-if(NOT GRPC_CPP_PLUGIN)
-  message(FATAL_ERROR "grpc_cpp_plugin not found")
-endif()
-
-# Define proto files
-set(PROTO_FILES
-  ${PROTO_DIR}/drs/ros2bridge/v1/common.proto
-  ${PROTO_DIR}/drs/ros2bridge/v1/sensing_service.proto
-  ${PROTO_DIR}/drs/ros2bridge/v1/recording_service.proto
-)
-
-# Generate C++ files from proto
-set(PROTO_SOURCES)
-set(PROTO_HEADERS)
-
-foreach(proto_file ${PROTO_FILES})
-  get_filename_component(proto_name ${proto_file} NAME_WE)
-  get_filename_component(proto_dir ${proto_file} DIRECTORY)
-  file(RELATIVE_PATH proto_rel_dir ${PROTO_DIR} ${proto_dir})
-  
-  set(proto_gen_dir ${PROTO_GENERATED_DIR}/${proto_rel_dir})
-  file(MAKE_DIRECTORY ${proto_gen_dir})
-  
-  set(proto_pb_cc ${proto_gen_dir}/${proto_name}.pb.cc)
-  set(proto_pb_h ${proto_gen_dir}/${proto_name}.pb.h)
-  set(proto_grpc_cc ${proto_gen_dir}/${proto_name}.grpc.pb.cc)
-  set(proto_grpc_h ${proto_gen_dir}/${proto_name}.grpc.pb.h)
-  
-  list(APPEND PROTO_SOURCES ${proto_pb_cc} ${proto_grpc_cc})
-  list(APPEND PROTO_HEADERS ${proto_pb_h} ${proto_grpc_h})
-  
-  add_custom_command(
-    OUTPUT ${proto_pb_cc} ${proto_pb_h} ${proto_grpc_cc} ${proto_grpc_h}
-    COMMAND ${PROTOC}
-    ARGS -I ${PROTO_DIR}
-         --cpp_out=${PROTO_GENERATED_DIR}
-         --grpc_out=${PROTO_GENERATED_DIR}
-         --plugin=protoc-gen-grpc=${GRPC_CPP_PLUGIN}
-         ${proto_file}
-    DEPENDS ${proto_file}
-    COMMENT "Generating C++ code from ${proto_file}"
+# Check if proto files need to be generated
+if(NOT EXISTS ${PROTO_GENERATED_DIR}/drs/ros2bridge/v1/common.pb.h)
+  message(STATUS "Proto files not found. Generating...")
+  execute_process(
+    COMMAND ${GENERATE_PROTO_SCRIPT} --cpp-only
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../..
+    RESULT_VARIABLE PROTO_GEN_RESULT
   )
-endforeach()
+  if(NOT PROTO_GEN_RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to generate proto files. Please run: ${GENERATE_PROTO_SCRIPT} --cpp-only")
+  endif()
+endif()
+
+# Add generated proto files
+file(GLOB_RECURSE PROTO_SOURCES 
+  "${PROTO_GENERATED_DIR}/*.pb.cc"
+  "${PROTO_GENERATED_DIR}/*.grpc.pb.cc"
+)
 
 include_directories(
   include
