@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.20.10:8080/api/v1'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 console.log('API Base URL:', API_BASE_URL)
 
 export interface ModuleStatus {
@@ -82,6 +82,8 @@ export class ApiService {
         headers: {
           'Content-Type': 'application/json',
         },
+        // Remove credentials to avoid CORS issues with credentials
+        // credentials: 'include',
       })
       clearTimeout(timeoutId)
       return response
