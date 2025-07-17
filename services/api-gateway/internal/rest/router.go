@@ -22,12 +22,18 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 	// Setup CORS middleware
 	router.Use(func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
+		
+		// Check if wildcard is allowed
 		for _, allowedOrigin := range cfg.CORS.AllowedOrigins {
-			if origin == allowedOrigin {
+			if allowedOrigin == "*" {
+				c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+				break
+			} else if origin == allowedOrigin {
 				c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 				break
 			}
 		}
+		
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
