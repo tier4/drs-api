@@ -10,7 +10,6 @@ import (
 	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
 	"github.com/tier4/drs-api/services/api-gateway/internal/models"
 	modulev1 "github.com/tier4/drs-api/services/api-gateway/drs/module/v1"
-	ros2bridgev1 "github.com/tier4/drs-api/services/api-gateway/drs/ros2bridge/v1"
 )
 
 // ModuleHandler handles module-related REST API endpoints
@@ -137,11 +136,6 @@ func (h *ModuleHandler) getModuleStatus(hostname string) models.ModuleStatus {
 		status.StatusDetail.Services = serviceStatus
 	}
 
-	// Get recording status
-	if clients.Recording != nil {
-		recordingStatus := h.getRecordingStatus(clients, hostname)
-		status.StatusDetail.Recording = recordingStatus
-	}
 
 	// Determine overall status
 	status.Status = h.determineOverallStatus(status)
@@ -174,32 +168,6 @@ func (h *ModuleHandler) getServiceStatus(clients *grpc.ModuleClients, hostname s
 	return serviceStatus
 }
 
-// getRecordingStatus fetches recording status from module
-func (h *ModuleHandler) getRecordingStatus(clients *grpc.ModuleClients, hostname string) models.RecordingInfo {
-	ctx, cancel := h.clientManager.GetContext()
-	defer cancel()
-
-	recordingInfo := models.RecordingInfo{
-		Status: "unknown",
-		Active: false,
-	}
-
-	// Get recording status
-	if listResp, err := clients.Recording.ListRecordings(ctx, &ros2bridgev1.ListRecordingsRequest{}); err == nil {
-		for _, recording := range listResp.Recordings {
-			if recording.IsRecording {
-				recordingInfo.Status = "recording"
-				recordingInfo.Active = true
-				break
-			} else {
-				recordingInfo.Status = "stopped"
-				recordingInfo.Active = false
-			}
-		}
-	}
-
-	return recordingInfo
-}
 
 // convertServiceState converts gRPC service state to string
 func (h *ModuleHandler) convertServiceState(state modulev1.Service_ServiceState) string {

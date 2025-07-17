@@ -91,22 +91,6 @@ func (cm *ClientManager) createModuleClients(hostname string) (*ModuleClients, e
 		Monitoring:     modulev1.NewMonitoringServiceClient(conn),
 	}
 
-	// Create ROS2 bridge connection if enabled
-	if moduleConfig.HasROS2Bridge {
-		ros2Conn, err := grpc.Dial(
-			moduleConfig.ROS2BridgeAddress,
-			grpc.WithTransportCredentials(insecure.NewCredentials()),
-			grpc.WithTimeout(cm.config.GRPC.Timeout),
-		)
-		if err != nil {
-			// Log error but don't fail, as ROS2 bridge might not be available
-			fmt.Printf("Warning: failed to connect to ROS2 bridge for module %s at %s: %v\n", hostname, moduleConfig.ROS2BridgeAddress, err)
-		} else {
-			clients.Recording = ros2bridgev1.NewRecordingServiceClient(ros2Conn)
-			clients.Sensing = ros2bridgev1.NewSensingServiceClient(ros2Conn)
-			cm.connections[hostname+"-ros2"] = ros2Conn
-		}
-	}
 
 	cm.connections[hostname] = conn
 	cm.clients[hostname] = clients

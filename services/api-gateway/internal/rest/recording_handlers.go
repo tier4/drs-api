@@ -192,13 +192,14 @@ func (h *RecordingHandler) GetPTPStatus(c *gin.Context) {
 func (h *RecordingHandler) GetTopicStatus(c *gin.Context) {
 	hostname := c.Param("hostname")
 	
-	clients, err := h.clientManager.GetModuleClients(hostname)
-	if err != nil || clients.Recording == nil {
-		c.JSON(http.StatusNotFound, models.ErrorResponse{
-			Error:   "module_not_found",
-			Message: "Module not found or ROS2 bridge not available",
+	// Get ROS2 bridge clients
+	ros2Bridge, err := h.clientManager.GetROS2BridgeClients()
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
+			Error:   "ros2_bridge_unavailable",
+			Message: "ROS2 bridge is not available",
 			Details: map[string]interface{}{
-				"hostname": hostname,
+				"error": err.Error(),
 			},
 		})
 		return
@@ -208,7 +209,7 @@ func (h *RecordingHandler) GetTopicStatus(c *gin.Context) {
 	defer cancel()
 
 	// Get topic statuses
-	resp, err := clients.Recording.ListTopicStatuses(ctx, &ros2bridgev1.ListTopicStatusesRequest{
+	resp, err := ros2Bridge.Recording.ListTopicStatuses(ctx, &ros2bridgev1.ListTopicStatusesRequest{
 		HardwareId: hostname, // Use hostname as hardware ID
 	})
 	if err != nil {
