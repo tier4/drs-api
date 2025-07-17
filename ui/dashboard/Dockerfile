@@ -28,7 +28,6 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY nginx-proxy.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 3000
 EXPOSE 3000
