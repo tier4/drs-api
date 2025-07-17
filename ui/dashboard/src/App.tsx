@@ -153,6 +153,7 @@ function App() {
   const [globalRecordingEnabled, setGlobalRecordingEnabled] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+  const [apiError, setApiError] = useState<string | null>(null)
 
   const apiService = ApiService.getInstance()
 
@@ -193,6 +194,7 @@ function App() {
     if (isLoading) return
     
     setIsLoading(true)
+    setApiError(null)
     try {
       // Fetch all data in parallel
       const [modulesData, ptpData, recordingData] = await Promise.allSettled([
@@ -201,19 +203,36 @@ function App() {
         apiService.getRecordingStatus(),
       ])
 
+      // Check if all API calls failed
+      let allFailed = true
+      let errorMessages: string[] = []
+
       // Update modules
       if (modulesData.status === 'fulfilled') {
         setModules(modulesData.value.map(convertToEcuModule))
+        allFailed = false
+      } else {
+        errorMessages.push('Modules API failed')
       }
 
       // Update PTP status
       if (ptpData.status === 'fulfilled') {
         setPtpStatuses(ptpData.value.map(convertToPtpStatus))
+        allFailed = false
+      } else {
+        errorMessages.push('PTP API failed')
       }
 
       // Update recording status
       if (recordingData.status === 'fulfilled') {
         setRecordingStatuses(recordingData.value.map(convertToRecordingStatus))
+        allFailed = false
+      } else {
+        errorMessages.push('Recording API failed')
+      }
+
+      if (allFailed) {
+        setApiError(`API Gateway is not accessible. ${errorMessages.join(', ')}. Using mock data.`)
       }
 
       // Fetch topic statuses for each module
@@ -247,7 +266,7 @@ function App() {
       setLastUpdated(new Date())
     } catch (error) {
       console.error('Failed to fetch data:', error)
-      // On error, keep using mock data
+      setApiError('Failed to connect to API Gateway. Using mock data.')
     } finally {
       setIsLoading(false)
     }
@@ -344,6 +363,17 @@ function App() {
             />
           </div>
         </div>
+        {apiError && (
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <span className="font-medium">API Connection Error:</span>
+              <span className="ml-2">{apiError}</span>
+            </div>
+          </div>
+        )}
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-semibold mb-4">Module Status</h2>

@@ -1,4 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.20.10:8080/api/v1'
+console.log('API Base URL:', API_BASE_URL)
 
 export interface ModuleStatus {
   hostname: string
@@ -91,15 +92,24 @@ export class ApiService {
   }
 
   async getModules(): Promise<ModuleStatus[]> {
+    const url = `${API_BASE_URL}/modules`
+    console.log('Fetching modules from:', url)
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules`)
+      const response = await this.fetchWithTimeout(url)
+      console.log('Response status:', response.status)
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Error response:', errorText)
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
+      console.log('Modules data:', data)
       return data.modules || []
     } catch (error) {
       console.error('Failed to fetch modules:', error)
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        console.error('Network error - API may not be accessible at:', url)
+      }
       throw error
     }
   }
