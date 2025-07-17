@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://192.168.20.10:8080/api/v1'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.20.10:8080/api/v1'
 
 export interface ModuleStatus {
   hostname: string

@@ -13,7 +13,11 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Accept build-time variables
+ARG VITE_API_BASE_URL=http://localhost:8080/api/v1
+
 # Build the application
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
 # Production stage
