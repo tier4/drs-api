@@ -161,25 +161,29 @@ function App() {
   const convertToEcuModule = (apiModule: any): EcuModule => ({
     hostname: apiModule.hostname,
     status: apiModule.status,
-    diskUsagePercentage: apiModule.disk.usage_percentage,
-    diskFreeBytes: apiModule.disk.free_bytes,
-    diskTotalBytes: apiModule.disk.total_bytes,
+    diskUsagePercentage: apiModule.disk?.usage_percentage || 0,
+    diskFreeBytes: apiModule.disk?.free_bytes || 0,
+    diskTotalBytes: apiModule.disk?.total_bytes || 0,
   })
 
-  const convertToPtpStatus = (apiPtp: any): PtpStatus => ({
-    hostname: apiPtp.hostname,
-    localStatus: {
-      clockId: apiPtp.local_status.clock_id,
-      masterOffsetNs: apiPtp.local_status.master_offset_ns,
-      gmPresent: apiPtp.local_status.gm_present,
-    },
-    remoteStatuses: apiPtp.remote_statuses.map((remote: any) => ({
-      deviceName: remote.device_name,
-      ipAddress: remote.ip_address,
-      isReachable: remote.is_reachable,
-      offsetNs: remote.status?.master_offset_ns,
-    })),
-  })
+  const convertToPtpStatus = (apiPtp: any): PtpStatus | null => {
+    if (!apiPtp || !apiPtp.hostname) return null
+    
+    return {
+      hostname: apiPtp.hostname,
+      localStatus: {
+        clockId: apiPtp.local_status?.clock_id || '',
+        masterOffsetNs: apiPtp.local_status?.master_offset_ns || 0,
+        gmPresent: apiPtp.local_status?.gm_present || false,
+      },
+      remoteStatuses: (apiPtp.remote_statuses || []).map((remote: any) => ({
+        deviceName: remote.device_name,
+        ipAddress: remote.ip_address,
+        isReachable: remote.is_reachable,
+        offsetNs: remote.status?.master_offset_ns,
+      })),
+    }
+  }
 
   const convertToRecordingStatus = (apiRec: any): RecordingStatus => ({
     hostname: apiRec.hostname,
@@ -217,7 +221,11 @@ function App() {
 
       // Update PTP status
       if (ptpData.status === 'fulfilled') {
-        setPtpStatuses(ptpData.value.map(convertToPtpStatus))
+        const validPtpStatuses = ptpData.value
+          .filter((apiPtp: any) => apiPtp.local_status && apiPtp.local_status.clock_id) // Only include modules with PTP enabled
+          .map(convertToPtpStatus)
+          .filter((status): status is PtpStatus => status !== null)
+        setPtpStatuses(validPtpStatuses)
         allFailed = false
       } else {
         errorMessages.push('PTP API failed')
@@ -238,7 +246,7 @@ function App() {
       // Fetch topic statuses for each module
       if (modulesData.status === 'fulfilled') {
         const topicPromises = modulesData.value
-          .filter(module => module.enabled_services.includes('ros2'))
+          .filter(module => module.enabled_services && module.enabled_services.includes('ros2'))
           .map(async (module) => {
             try {
               const topics = await apiService.getTopicStatus(module.hostname)

@@ -128,6 +128,11 @@ func (cm *ClientManager) GetContext() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), cm.config.GRPC.Timeout)
 }
 
+// GetConfig returns the configuration
+func (cm *ClientManager) GetConfig() *config.Config {
+	return cm.config
+}
+
 // IsServiceEnabled checks if a service is enabled for a given module
 func (cm *ClientManager) IsServiceEnabled(hostname, service string) bool {
 	return cm.config.IsServiceEnabled(hostname, service)

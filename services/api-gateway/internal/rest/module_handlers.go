@@ -93,10 +93,14 @@ func (h *ModuleHandler) getModuleStatus(hostname string) models.ModuleStatus {
 	ctx, cancel := h.clientManager.GetContext()
 	defer cancel()
 
+	// Get enabled services for this module
+	moduleConfig, _ := h.clientManager.GetConfig().Modules[hostname]
+	
 	status := models.ModuleStatus{
-		Hostname:    hostname,
-		Status:      "OK",
-		LastUpdated: time.Now(),
+		Hostname:        hostname,
+		Status:          "OK",
+		EnabledServices: moduleConfig.EnabledServices,
+		LastUpdated:     time.Now(),
 	}
 
 	// Get environment variables
