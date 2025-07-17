@@ -126,28 +126,25 @@ func (h *RecordingHandler) GetPTPStatus(c *gin.Context) {
 	moduleNames := h.clientManager.GetModuleNames()
 	ptpStatuses := make([]models.PTPStatus, 0)
 
-	var wg sync.WaitGroup
-	statusChan := make(chan models.PTPStatus, len(moduleNames))
-
+	// Filter modules that have PTP service enabled
+	ptpEnabledModules := make([]string, 0)
 	for _, hostname := range moduleNames {
+		if h.clientManager.IsServiceEnabled(hostname, "ptp") {
+			ptpEnabledModules = append(ptpEnabledModules, hostname)
+		}
+	}
+
+	var wg sync.WaitGroup
+	statusChan := make(chan models.PTPStatus, len(ptpEnabledModules))
+
+	for _, hostname := range ptpEnabledModules {
 		wg.Add(1)
 		go func(hostname string) {
 			defer wg.Done()
-			
-			if !h.clientManager.IsServiceEnabled(hostname, "ptp") {
-				statusChan <- models.PTPStatus{
-					Hostname: hostname,
-					LocalStatus: models.PTPLocalInfo{},
-				}
-				return
-			}
 
 			clients, err := h.clientManager.GetModuleClients(hostname)
 			if err != nil {
-				statusChan <- models.PTPStatus{
-					Hostname: hostname,
-					LocalStatus: models.PTPLocalInfo{},
-				}
+				// Skip modules that are not accessible
 				return
 			}
 
@@ -159,10 +156,7 @@ func (h *RecordingHandler) GetPTPStatus(c *gin.Context) {
 				IncludeRemoteDevices: true,
 			})
 			if err != nil {
-				statusChan <- models.PTPStatus{
-					Hostname: hostname,
-					LocalStatus: models.PTPLocalInfo{},
-				}
+				// Skip modules that fail to respond
 				return
 			}
 
