@@ -10,7 +10,7 @@ export function useAutoRefresh(
   options: UseAutoRefreshOptions = {}
 ) {
   const { enabled = true, interval = 5000 } = options
-  const savedCallback = useRef<() => void | Promise<void>>()
+  const savedCallback = useRef<() => void | Promise<void>>(callback)
 
   // Remember the latest callback
   useEffect(() => {
