@@ -246,7 +246,7 @@ function App() {
       // Fetch topic statuses for each module
       if (modulesData.status === 'fulfilled') {
         const topicPromises = modulesData.value
-          .filter(module => module.enabled_services && module.enabled_services.includes('ros2'))
+          .filter(module => module.hostname.startsWith('ecu'))
           .map(async (module) => {
             try {
               const topics = await apiService.getTopicStatus(module.hostname)
