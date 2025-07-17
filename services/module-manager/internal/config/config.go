@@ -37,11 +37,10 @@ type ServiceMapping struct {
 }
 
 type SystemConfig struct {
-	EnableReboot    bool `yaml:"enable_reboot"`
-	EnableShutdown  bool `yaml:"enable_shutdown"`
-	MaxDelaySeconds int  `yaml:"max_delay_seconds"`
-	AllowReboot     bool `yaml:"allow_reboot"`
-	AllowShutdown   bool `yaml:"allow_shutdown"`
+	EnableReboot   bool `yaml:"enable_reboot"`
+	EnableShutdown bool `yaml:"enable_shutdown"`
+	AllowReboot    bool `yaml:"allow_reboot"`
+	AllowShutdown  bool `yaml:"allow_shutdown"`
 }
 
 type PTPConfig struct {
@@ -79,11 +78,10 @@ func LoadConfig(configPath string) (*Config, error) {
 			},
 		},
 		System: SystemConfig{
-			EnableReboot:    true,
-			EnableShutdown:  true,
-			MaxDelaySeconds: 300,
-			AllowReboot:     true,
-			AllowShutdown:   true,
+			EnableReboot:   true,
+			EnableShutdown: true,
+			AllowReboot:    true,
+			AllowShutdown:  true,
 		},
 		PTP: PTPConfig{
 			Enabled:       true,
@@ -160,10 +158,6 @@ func validateConfig(config *Config) error {
 		return fmt.Errorf("monitor_path cannot be empty")
 	}
 
-	// Validate system settings
-	if config.System.MaxDelaySeconds < 0 {
-		return fmt.Errorf("max_delay_seconds cannot be negative")
-	}
 
 	return nil
 }

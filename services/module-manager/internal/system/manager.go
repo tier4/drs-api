@@ -20,9 +20,9 @@ func (m *Manager) Reboot(delaySeconds int) error {
 
 	var cmd *exec.Cmd
 	if delaySeconds == 0 {
-		cmd = exec.Command("sudo", "reboot", "now")
+		cmd = exec.Command("reboot")
 	} else {
-		cmd = exec.Command("sudo", "shutdown", "-r", fmt.Sprintf("+%d", delaySeconds/60))
+		cmd = exec.Command("shutdown", "-r", fmt.Sprintf("+%d", delaySeconds/60))
 	}
 
 	return cmd.Run()
@@ -35,9 +35,9 @@ func (m *Manager) Shutdown(delaySeconds int) error {
 
 	var cmd *exec.Cmd
 	if delaySeconds == 0 {
-		cmd = exec.Command("sudo", "shutdown", "now")
+		cmd = exec.Command("poweroff")
 	} else {
-		cmd = exec.Command("sudo", "shutdown", fmt.Sprintf("+%d", delaySeconds/60))
+		cmd = exec.Command("shutdown", fmt.Sprintf("+%d", delaySeconds/60))
 	}
 
 	return cmd.Run()
@@ -50,12 +50,12 @@ const (
 
 // DRS Service Management
 func (m *Manager) StopDrsService() error {
-	cmd := exec.Command("sudo", "systemctl", "stop", DrsServiceName)
+	cmd := exec.Command("systemctl", "stop", DrsServiceName)
 	return cmd.Run()
 }
 
 func (m *Manager) RestartDrsService() error {
-	cmd := exec.Command("sudo", "systemctl", "restart", DrsServiceName)
+	cmd := exec.Command("systemctl", "restart", DrsServiceName)
 	return cmd.Run()
 }
 
@@ -65,12 +65,12 @@ func (m *Manager) GetDrsServiceStatus() (string, error) {
 
 // Recorder Service Management
 func (m *Manager) StopRecorderService() error {
-	cmd := exec.Command("sudo", "systemctl", "stop", RecorderServiceName)
+	cmd := exec.Command("systemctl", "stop", RecorderServiceName)
 	return cmd.Run()
 }
 
 func (m *Manager) RestartRecorderService() error {
-	cmd := exec.Command("sudo", "systemctl", "restart", RecorderServiceName)
+	cmd := exec.Command("systemctl", "restart", RecorderServiceName)
 	return cmd.Run()
 }
 
@@ -134,7 +134,7 @@ func (m *Manager) GetServiceInfo(serviceName string) (*ServiceInfo, error) {
 }
 
 func (m *Manager) startService(serviceName string) (string, error) {
-	cmd := exec.Command("sudo", "systemctl", "start", serviceName)
+	cmd := exec.Command("systemctl", "start", serviceName)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("failed to start service %s: %s (exit code: %v)", serviceName, string(output), err)
@@ -143,7 +143,7 @@ func (m *Manager) startService(serviceName string) (string, error) {
 }
 
 func (m *Manager) stopService(serviceName string) (string, error) {
-	cmd := exec.Command("sudo", "systemctl", "stop", serviceName)
+	cmd := exec.Command("systemctl", "stop", serviceName)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("failed to stop service %s: %s (exit code: %v)", serviceName, string(output), err)
@@ -152,7 +152,7 @@ func (m *Manager) stopService(serviceName string) (string, error) {
 }
 
 func (m *Manager) restartService(serviceName string) (string, error) {
-	cmd := exec.Command("sudo", "systemctl", "restart", serviceName)
+	cmd := exec.Command("systemctl", "restart", serviceName)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("failed to restart service %s: %s (exit code: %v)", serviceName, string(output), err)
@@ -161,7 +161,7 @@ func (m *Manager) restartService(serviceName string) (string, error) {
 }
 
 func (m *Manager) enableService(serviceName string) (string, error) {
-	cmd := exec.Command("sudo", "systemctl", "enable", serviceName)
+	cmd := exec.Command("systemctl", "enable", serviceName)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("failed to enable service %s: %s (exit code: %v)", serviceName, string(output), err)
@@ -170,7 +170,7 @@ func (m *Manager) enableService(serviceName string) (string, error) {
 }
 
 func (m *Manager) disableService(serviceName string) (string, error) {
-	cmd := exec.Command("sudo", "systemctl", "disable", serviceName)
+	cmd := exec.Command("systemctl", "disable", serviceName)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("failed to disable service %s: %s (exit code: %v)", serviceName, string(output), err)
