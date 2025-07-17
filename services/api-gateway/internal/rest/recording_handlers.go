@@ -26,73 +26,50 @@ func NewRecordingHandler(clientManager *grpc.ClientManager) *RecordingHandler {
 
 // GetRecordingStatus handles GET /recording/status - returns recording status of all modules
 func (h *RecordingHandler) GetRecordingStatus(c *gin.Context) {
-	moduleNames := h.clientManager.GetModuleNames()
-	recordingStatuses := make([]models.RecordingStatus, 0)
-
-	var wg sync.WaitGroup
-	statusChan := make(chan models.RecordingStatus, len(moduleNames))
-
-	for _, hostname := range moduleNames {
-		wg.Add(1)
-		go func(hostname string) {
-			defer wg.Done()
-			
-			clients, err := h.clientManager.GetModuleClients(hostname)
-			if err != nil || clients.Recording == nil {
-				statusChan <- models.RecordingStatus{
-					Hostname: hostname,
-					Status:   "unknown",
-					Active:   false,
-				}
-				return
-			}
-
-			ctx, cancel := h.clientManager.GetContext()
-			defer cancel()
-
-			// Get recording status
-			resp, err := clients.Recording.ListRecordings(ctx, &ros2bridgev1.ListRecordingsRequest{})
-			if err != nil {
-				statusChan <- models.RecordingStatus{
-					Hostname: hostname,
-					Status:   "error",
-					Active:   false,
-				}
-				return
-			}
-
-			// Find active recording
-			status := models.RecordingStatus{
-				Hostname: hostname,
-				Status:   "stopped",
-				Active:   false,
-			}
-
-			for _, recording := range resp.Recordings {
-				if recording.IsRecording {
-					status.Status = "recording"
-					status.Active = true
-					status.HardwareID = recording.HardwareId
-					break
-				} else {
-					status.Status = "stopped"
-					status.Active = false
-					status.HardwareID = recording.HardwareId
-				}
-			}
-
-			statusChan <- status
-		}(hostname)
+	// Get ROS2 bridge clients
+	ros2Bridge, err := h.clientManager.GetROS2BridgeClients()
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
+			Error:   "ros2_bridge_unavailable",
+			Message: "ROS2 bridge is not available",
+			Details: map[string]interface{}{
+				"error": err.Error(),
+			},
+		})
+		return
 	}
 
-	// Wait for all goroutines to complete
-	go func() {
-		wg.Wait()
-		close(statusChan)
-	}()
+	ctx, cancel := h.clientManager.GetContext()
+	defer cancel()
 
-	// Collect results
-	for status := range statusChan {
+	// Get recording status from ROS2 bridge
+	resp, err := ros2Bridge.Recording.ListRecordings(ctx, &ros2bridgev1.ListRecordingsRequest{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "recording_query_failed",
+			Message: "Failed to query recording status",
+			Details: map[string]interface{}{
+				"error": err.Error(),
+			},
+		})
+		return
+	}
+
+	// Convert to response format
+	recordingStatuses := make([]models.RecordingStatus, 0, len(resp.Recordings))
+	for _, recording := range resp.Recordings {
+		status := models.RecordingStatus{
+			Hostname:   recording.HardwareId, // Use hardware_id as hostname
+			HardwareID: recording.HardwareId,
+			Active:     recording.IsRecording,
+		}
+
+		if recording.IsRecording {
+			status.Status = "recording"
+		} else {
+			status.Status = "stopped"
+		}
+
 		recordingStatuses = append(recordingStatuses, status)
 	}
 
@@ -265,120 +242,68 @@ func (h *RecordingHandler) GetTopicStatus(c *gin.Context) {
 	})
 }
 
-// performRecordingOperation performs a recording operation on all modules with ROS2 bridge
+// performRecordingOperation performs a recording operation via ROS2 bridge
 func (h *RecordingHandler) performRecordingOperation(c *gin.Context, operation string) {
-	moduleNames := h.clientManager.GetModuleNames()
-	
-	var wg sync.WaitGroup
-	results := make(chan models.RecordingOperationResponse, len(moduleNames))
-
-	for _, hostname := range moduleNames {
-		wg.Add(1)
-		go func(hostname string) {
-			defer wg.Done()
-			
-			clients, err := h.clientManager.GetModuleClients(hostname)
-			if err != nil || clients.Recording == nil {
-				results <- models.RecordingOperationResponse{
-					Success: false,
-					Message: "ECU not found or ROS2 bridge not available",
-				}
-				return
-			}
-
-			ctx, cancel := h.clientManager.GetContext()
-			defer cancel()
-
-			switch operation {
-			case "start":
-				resp, err := clients.Recording.StartRecording(ctx, &ros2bridgev1.StartRecordingRequest{})
-				if err != nil {
-					results <- models.RecordingOperationResponse{
-						Success: false,
-						Message: err.Error(),
-					}
-				} else {
-					results <- models.RecordingOperationResponse{
-						Success: resp.Success,
-						Message: resp.Message,
-						Status:  "recording",
-					}
-				}
-			case "stop":
-				resp, err := clients.Recording.StopRecording(ctx, &ros2bridgev1.StopRecordingRequest{})
-				if err != nil {
-					results <- models.RecordingOperationResponse{
-						Success: false,
-						Message: err.Error(),
-					}
-				} else {
-					results <- models.RecordingOperationResponse{
-						Success: resp.Success,
-						Message: resp.Message,
-						Status:  "stopped",
-					}
-				}
-			case "pause":
-				resp, err := clients.Recording.PauseRecording(ctx, &ros2bridgev1.PauseRecordingRequest{})
-				if err != nil {
-					results <- models.RecordingOperationResponse{
-						Success: false,
-						Message: err.Error(),
-					}
-				} else {
-					results <- models.RecordingOperationResponse{
-						Success: resp.Success,
-						Message: resp.Message,
-						Status:  "paused",
-					}
-				}
-			case "resume":
-				resp, err := clients.Recording.ResumeRecording(ctx, &ros2bridgev1.ResumeRecordingRequest{})
-				if err != nil {
-					results <- models.RecordingOperationResponse{
-						Success: false,
-						Message: err.Error(),
-					}
-				} else {
-					results <- models.RecordingOperationResponse{
-						Success: resp.Success,
-						Message: resp.Message,
-						Status:  "recording",
-					}
-				}
-			}
-		}(hostname)
+	// Get ROS2 bridge clients
+	ros2Bridge, err := h.clientManager.GetROS2BridgeClients()
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, models.RecordingOperationResponse{
+			Success: false,
+			Message: "ROS2 bridge is not available: " + err.Error(),
+		})
+		return
 	}
 
-	// Wait for all operations to complete
-	go func() {
-		wg.Wait()
-		close(results)
-	}()
+	ctx, cancel := h.clientManager.GetContext()
+	defer cancel()
 
-	// Check results
-	allSuccess := true
-	messages := []string{}
-	for result := range results {
-		if !result.Success {
-			allSuccess = false
+	var success bool
+	var message string
+
+	switch operation {
+	case "start":
+		resp, err := ros2Bridge.Recording.StartRecording(ctx, &ros2bridgev1.StartRecordingRequest{})
+		if err != nil {
+			success = false
+			message = "Failed to start recording: " + err.Error()
+		} else {
+			success = resp.Success
+			message = resp.Message
 		}
-		messages = append(messages, result.Message)
+	case "stop":
+		resp, err := ros2Bridge.Recording.StopRecording(ctx, &ros2bridgev1.StopRecordingRequest{})
+		if err != nil {
+			success = false
+			message = "Failed to stop recording: " + err.Error()
+		} else {
+			success = resp.Success
+			message = resp.Message
+		}
+	case "pause":
+		resp, err := ros2Bridge.Recording.PauseRecording(ctx, &ros2bridgev1.PauseRecordingRequest{})
+		if err != nil {
+			success = false
+			message = "Failed to pause recording: " + err.Error()
+		} else {
+			success = resp.Success
+			message = resp.Message
+		}
+	case "resume":
+		resp, err := ros2Bridge.Recording.ResumeRecording(ctx, &ros2bridgev1.ResumeRecordingRequest{})
+		if err != nil {
+			success = false
+			message = "Failed to resume recording: " + err.Error()
+		} else {
+			success = resp.Success
+			message = resp.Message
+		}
+	default:
+		success = false
+		message = "Unknown operation: " + operation
 	}
 
-	if allSuccess {
-		c.JSON(http.StatusOK, models.RecordingOperationResponse{
-			Success: true,
-			Message: "Recording operation completed successfully",
-			Status:  operation,
-		})
-	} else {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
-			Error:   "recording_operation_failed",
-			Message: "Some modules failed to perform the recording operation",
-			Details: map[string]interface{}{
-				"messages": messages,
-			},
-		})
-	}
+	c.JSON(http.StatusOK, models.RecordingOperationResponse{
+		Success: success,
+		Message: message,
+	})
 }

@@ -15,10 +15,12 @@ import (
 
 // ClientManager manages gRPC connections to multiple modules
 type ClientManager struct {
-	config      *config.Config
-	connections map[string]*grpc.ClientConn
-	clients     map[string]*ModuleClients
-	mu          sync.RWMutex
+	config         *config.Config
+	connections    map[string]*grpc.ClientConn
+	clients        map[string]*ModuleClients
+	ros2BridgeConn *grpc.ClientConn
+	ros2Bridge     *ROS2BridgeClients
+	mu             sync.RWMutex
 }
 
 // ModuleClients holds all gRPC clients for a single module
@@ -26,8 +28,12 @@ type ModuleClients struct {
 	ServiceManager modulev1.ServiceManagerServiceClient
 	SystemControl  modulev1.SystemControlServiceClient
 	Monitoring     modulev1.MonitoringServiceClient
-	Recording      ros2bridgev1.RecordingServiceClient
-	Sensing        ros2bridgev1.SensingServiceClient
+}
+
+// ROS2BridgeClients holds gRPC clients for ROS2 bridge
+type ROS2BridgeClients struct {
+	Recording ros2bridgev1.RecordingServiceClient
+	Sensing   ros2bridgev1.SensingServiceClient
 }
 
 // NewClientManager creates a new client manager
@@ -119,8 +125,17 @@ func (cm *ClientManager) Close() {
 		}
 	}
 
+	// Close ROS2 bridge connection
+	if cm.ros2BridgeConn != nil {
+		if err := cm.ros2BridgeConn.Close(); err != nil {
+			fmt.Printf("Error closing ROS2 bridge connection: %v\n", err)
+		}
+	}
+
 	cm.connections = make(map[string]*grpc.ClientConn)
 	cm.clients = make(map[string]*ModuleClients)
+	cm.ros2BridgeConn = nil
+	cm.ros2Bridge = nil
 }
 
 // GetContext returns a context with timeout for gRPC calls
@@ -131,6 +146,45 @@ func (cm *ClientManager) GetContext() (context.Context, context.CancelFunc) {
 // GetConfig returns the configuration
 func (cm *ClientManager) GetConfig() *config.Config {
 	return cm.config
+}
+
+// GetROS2BridgeClients returns the gRPC clients for ROS2 bridge
+func (cm *ClientManager) GetROS2BridgeClients() (*ROS2BridgeClients, error) {
+	cm.mu.RLock()
+	if cm.ros2Bridge != nil {
+		defer cm.mu.RUnlock()
+		return cm.ros2Bridge, nil
+	}
+	cm.mu.RUnlock()
+
+	// Get ROS2 bridge address from config
+	address, enabled := cm.config.GetROS2BridgeAddress()
+	if !enabled {
+		return nil, fmt.Errorf("ROS2 bridge is not enabled")
+	}
+
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+
+	// Double check after acquiring write lock
+	if cm.ros2Bridge != nil {
+		return cm.ros2Bridge, nil
+	}
+
+	// Create connection
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to ROS2 bridge at %s: %v", address, err)
+	}
+
+	// Create clients
+	cm.ros2BridgeConn = conn
+	cm.ros2Bridge = &ROS2BridgeClients{
+		Recording: ros2bridgev1.NewRecordingServiceClient(conn),
+		Sensing:   ros2bridgev1.NewSensingServiceClient(conn),
+	}
+
+	return cm.ros2Bridge, nil
 }
 
 // IsServiceEnabled checks if a service is enabled for a given module

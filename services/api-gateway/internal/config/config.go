@@ -10,10 +10,11 @@ import (
 
 // Config represents the API Gateway configuration
 type Config struct {
-	Server  ServerConfig      `yaml:"server"`
-	Modules map[string]Module `yaml:"modules"`
-	GRPC    GRPCConfig        `yaml:"grpc"`
-	CORS    CORSConfig        `yaml:"cors"`
+	Server     ServerConfig      `yaml:"server"`
+	Modules    map[string]Module `yaml:"modules"`
+	GRPC       GRPCConfig        `yaml:"grpc"`
+	ROS2Bridge ROS2BridgeConfig  `yaml:"ros2_bridge"`
+	CORS       CORSConfig        `yaml:"cors"`
 }
 
 // ServerConfig represents the HTTP server configuration
@@ -26,16 +27,20 @@ type ServerConfig struct {
 
 // Module represents a single module (ECU with sensors) configuration
 type Module struct {
-	Address            string   `yaml:"address"`
-	EnabledServices    []string `yaml:"enabled_services"`
-	HasROS2Bridge      bool     `yaml:"has_ros2_bridge"`
-	ROS2BridgeAddress  string   `yaml:"ros2_bridge_address,omitempty"`
+	Address         string   `yaml:"address"`
+	EnabledServices []string `yaml:"enabled_services"`
 }
 
 // GRPCConfig represents gRPC client configuration
 type GRPCConfig struct {
 	Timeout  time.Duration `yaml:"timeout"`
 	MaxRetry int           `yaml:"max_retry"`
+}
+
+// ROS2BridgeConfig represents ROS2 bridge configuration
+type ROS2BridgeConfig struct {
+	Address string `yaml:"address"`
+	Enabled bool   `yaml:"enabled"`
 }
 
 // CORSConfig represents CORS configuration
@@ -136,13 +141,12 @@ func (c *Config) GetModuleAddress(hostname string) (string, bool) {
 	return module.Address, true
 }
 
-// GetROS2BridgeAddress returns the ROS2 bridge address for a given module
-func (c *Config) GetROS2BridgeAddress(hostname string) (string, bool) {
-	module, exists := c.Modules[hostname]
-	if !exists || !module.HasROS2Bridge {
+// GetROS2BridgeAddress returns the global ROS2 bridge address if enabled
+func (c *Config) GetROS2BridgeAddress() (string, bool) {
+	if !c.ROS2Bridge.Enabled {
 		return "", false
 	}
-	return module.ROS2BridgeAddress, true
+	return c.ROS2Bridge.Address, true
 }
 
 // GetModuleNames returns a list of all module hostnames
