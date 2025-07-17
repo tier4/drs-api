@@ -39,8 +39,6 @@ type ServiceMapping struct {
 type SystemConfig struct {
 	EnableReboot   bool `yaml:"enable_reboot"`
 	EnableShutdown bool `yaml:"enable_shutdown"`
-	AllowReboot    bool `yaml:"allow_reboot"`
-	AllowShutdown  bool `yaml:"allow_shutdown"`
 }
 
 type PTPConfig struct {
@@ -80,8 +78,6 @@ func LoadConfig(configPath string) (*Config, error) {
 		System: SystemConfig{
 			EnableReboot:   true,
 			EnableShutdown: true,
-			AllowReboot:    true,
-			AllowShutdown:  true,
 		},
 		PTP: PTPConfig{
 			Enabled:       true,
