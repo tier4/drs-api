@@ -63,10 +63,6 @@ export function RecordingControl({
   globalRecordingEnabled,
   onGlobalRecordingToggle
 }: RecordingControlProps) {
-  const isAnyRecording = recordingStatuses.some(r => r.recording_status === 'recording')
-  const hasAnyError = recordingStatuses.some(r => r.health_status === 'ERROR')
-  const hasAnyWarn = recordingStatuses.some(r => r.health_status === 'WARN')
-
   return (
     <Card>
       <CardHeader>
@@ -82,27 +78,7 @@ export function RecordingControl({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {/* Recording Status Display */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium">Recording Status:</span>
-              <Badge variant={isAnyRecording ? 'default' : 'destructive'}>
-                {isAnyRecording ? 'RECORDING' : 'STOPPED'}
-              </Badge>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium">Health Status:</span>
-              <Badge variant={hasAnyError ? 'destructive' : hasAnyWarn ? 'secondary' : 'default'}>
-                {hasAnyError ? 'ERROR' : hasAnyWarn ? 'WARNING' : 'OK'}
-              </Badge>
-            </div>
-          </div>
-
-          {/* Per-Module Recording Status */}
-          <div>
-            <h4 className="text-sm font-medium mb-2">Module Status</h4>
-            <Table>
+        <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Module</TableHead>
@@ -132,8 +108,6 @@ export function RecordingControl({
                 ))}
               </TableBody>
             </Table>
-          </div>
-        </div>
       </CardContent>
     </Card>
   )
