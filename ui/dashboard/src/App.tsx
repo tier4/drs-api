@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
-import { EcuStatusTable } from '@/components/EcuStatusTable'
-import type { EcuModule } from '@/components/EcuStatusTable'
+import { ModuleStatusTable } from '@/components/ModuleStatusTable'
+import type { Module } from '@/components/ModuleStatusTable'
 import { PtpSyncStatus } from '@/components/PtpSyncStatus'
 import type { PtpStatus } from '@/components/PtpSyncStatus'
 import { TopicRateStatus } from '@/components/TopicRateStatus'
@@ -10,7 +10,7 @@ import { ApiService } from '@/services/api'
 import { useAutoRefresh } from '@/hooks/useAutoRefresh'
 
 // Mock data based on API design - matching the visual from docs/new_ui.md
-const mockModules: EcuModule[] = [
+const mockModules: Module[] = [
   {
     hostname: 'ecu0',
     moduleId: 'a3b2c1d4aaa',
@@ -139,7 +139,7 @@ const mockModuleTopicStatuses: ModuleTopicStatus[] = [
 ]
 
 function App() {
-  const [modules, setModules] = useState<EcuModule[]>(mockModules)
+  const [modules, setModules] = useState<Module[]>(mockModules)
   const [ptpStatuses, setPtpStatuses] = useState<PtpStatus[]>(mockPtpStatuses)
   const [topicStatuses, setTopicStatuses] = useState<ModuleTopicStatus[]>(mockModuleTopicStatuses)
   const [isLoading, setIsLoading] = useState(false)
@@ -149,8 +149,8 @@ function App() {
   const apiService = ApiService.getInstance()
 
   // Convert API data to component format
-  const convertToEcuModule = (apiModule: any): EcuModule => {
-    const module: EcuModule = {
+  const convertToModule = (apiModule: any): Module => {
+    const module: Module = {
       hostname: apiModule.hostname,
       moduleId: apiModule.environment?.module_id,
       dataStatus: 'OK', // Default value
@@ -213,7 +213,7 @@ function App() {
 
       // Update modules
       if (modulesData.status === 'fulfilled') {
-        const convertedModules = modulesData.value.map(convertToEcuModule)
+        const convertedModules = modulesData.value.map(convertToModule)
         // Sort modules alphabetically by hostname
         convertedModules.sort((a, b) => a.hostname.localeCompare(b.hostname))
         setModules(convertedModules)
@@ -370,7 +370,7 @@ function App() {
         <div className="space-y-6">
           <div>
             <h2 className="text-xl font-semibold mb-4">Module Status</h2>
-            <EcuStatusTable 
+            <ModuleStatusTable 
               modules={modules}
               onRestartSensors={handleRestartSensors}
               onRestartMachine={handleRestartMachine}

@@ -26,7 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 
-export interface EcuModule {
+export interface Module {
   hostname: string
   moduleId?: string
   services?: {
@@ -40,8 +40,8 @@ export interface EcuModule {
   diskTotalBytes: number
 }
 
-interface EcuStatusTableProps {
-  modules: EcuModule[]
+interface ModuleStatusTableProps {
+  modules: Module[]
   onRestartSensors?: (hostname: string) => void
   onRestartMachine?: (hostname: string) => void
   onShutdownMachine?: (hostname: string) => void
@@ -76,7 +76,7 @@ const getRecordingStatusBadge = (status?: string) => {
   }
 }
 
-const getDataStatusBadge = (status: EcuModule['dataStatus']) => {
+const getDataStatusBadge = (status: Module['dataStatus']) => {
   // Handle empty string case for NAS
   if (!status || (status as any) === '') return '-'
   switch (status) {
@@ -100,12 +100,12 @@ const formatBytes = (bytes: number): string => {
   return `${gb.toFixed(0)}GB`
 }
 
-export function EcuStatusTable({ 
+export function ModuleStatusTable({ 
   modules, 
   onRestartSensors, 
   onRestartMachine, 
   onShutdownMachine 
-}: EcuStatusTableProps) {
+}: ModuleStatusTableProps) {
   const [dialogState, setDialogState] = useState<{
     isOpen: boolean
     action: 'restart-sensors' | 'restart-machine' | 'shutdown-machine' | null
