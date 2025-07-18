@@ -30,13 +30,6 @@ const formatOffset = (offsetNs: number): string => {
   }
 }
 
-const getOffsetProgress = (offsetNs: number): number => {
-  // Convert to percentage (assuming ±10µs is 100%)
-  const maxOffset = 10000 // 10µs in nanoseconds
-  const percentage = Math.min((Math.abs(offsetNs) / maxOffset) * 100, 100)
-  return percentage
-}
-
 export function PtpSyncStatusNew({ ptpStatuses }: PtpSyncStatusNewProps) {
   // Calculate overall system status
   const systemStatus = ptpStatuses.every(ptp => 
@@ -114,22 +107,6 @@ export function PtpSyncStatusNew({ ptpStatuses }: PtpSyncStatusNewProps) {
               </CardHeader>
               
               <CardContent>
-                {/* Offset Visualization */}
-                <div className="mb-4">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                    <span>Offset from Master</span>
-                    <span>{Math.abs(ptp.localStatus.masterOffsetNs)}ns</span>
-                  </div>
-                  <Progress 
-                    value={getOffsetProgress(ptp.localStatus.masterOffsetNs)} 
-                    className={`h-2 ${
-                      localStatus.color === 'default' ? '[&>div]:bg-green-500' :
-                      localStatus.color === 'secondary' ? '[&>div]:bg-yellow-500' :
-                      '[&>div]:bg-red-500'
-                    }`}
-                  />
-                </div>
-
                 {/* Remote Devices */}
                 {ptp.remoteStatuses.length > 0 && (
                   <div>
