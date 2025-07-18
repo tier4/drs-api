@@ -213,7 +213,10 @@ function App() {
 
       // Update modules
       if (modulesData.status === 'fulfilled') {
-        setModules(modulesData.value.map(convertToEcuModule))
+        const convertedModules = modulesData.value.map(convertToEcuModule)
+        // Sort modules alphabetically by hostname
+        convertedModules.sort((a, b) => a.hostname.localeCompare(b.hostname))
+        setModules(convertedModules)
         allFailed = false
       } else {
         errorMessages.push('Modules API failed')
