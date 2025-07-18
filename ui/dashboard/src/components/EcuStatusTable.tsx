@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import {
   DropdownMenu,
@@ -36,46 +37,46 @@ interface EcuStatusTableProps {
 }
 
 
-const getServiceStatusIcon = (status?: string) => {
+const getServiceStatusBadge = (status?: string) => {
   if (!status) return '-'
   switch (status.toLowerCase()) {
     case 'active':
-      return <span className="text-green-600">● Active</span>
+      return <Badge variant="default">Active</Badge>
     case 'inactive':
-      return <span className="text-gray-400">○ Inactive</span>
+      return <Badge variant="secondary">Inactive</Badge>
     case 'failed':
-      return <span className="text-red-600">○ Failed</span>
+      return <Badge variant="destructive">Failed</Badge>
     default:
-      return status
+      return <Badge variant="outline">{status}</Badge>
   }
 }
 
-const getRecordingStatusIcon = (status?: string) => {
+const getRecordingStatusBadge = (status?: string) => {
   if (!status || status === '') return '-'
   switch (status.toLowerCase()) {
     case 'recording':
-      return <span className="text-green-600">● Recording</span>
+      return <Badge variant="default">Recording</Badge>
     case 'stopped':
-      return <span className="text-gray-400">○ Stopped</span>
+      return <Badge variant="secondary">Stopped</Badge>
     case 'paused':
-      return <span className="text-yellow-600">⏸ Paused</span>
+      return <Badge variant="outline">Paused</Badge>
     default:
-      return status
+      return <Badge variant="outline">{status}</Badge>
   }
 }
 
-const getDataStatusIcon = (status: EcuModule['dataStatus']) => {
+const getDataStatusBadge = (status: EcuModule['dataStatus']) => {
   // Handle empty string case for NAS
   if (!status || (status as any) === '') return '-'
   switch (status) {
     case 'OK':
-      return <span className="text-green-600">✓ OK</span>
+      return <Badge variant="default">OK</Badge>
     case 'WARN':
-      return <span className="text-yellow-600">⚠ WARN</span>
+      return <Badge variant="secondary">WARN</Badge>
     case 'ERROR':
-      return <span className="text-red-600">✗ ERROR</span>
+      return <Badge variant="destructive">ERROR</Badge>
     default:
-      return status
+      return <Badge variant="outline">{status}</Badge>
   }
 }
 
@@ -119,13 +120,15 @@ export function EcuStatusTable({
                 {module.services ? (
                   <div className="space-y-1">
                     {module.services.drs_sensor && (
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">sensor</span> {getServiceStatusIcon(module.services.drs_sensor)}
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">sensor</span>
+                        {getServiceStatusBadge(module.services.drs_sensor)}
                       </div>
                     )}
                     {module.services.drs_recorder && (
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">recorder</span> {getServiceStatusIcon(module.services.drs_recorder)}
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">recorder</span>
+                        {getServiceStatusBadge(module.services.drs_recorder)}
                       </div>
                     )}
                   </div>
@@ -134,14 +137,10 @@ export function EcuStatusTable({
                 )}
               </TableCell>
               <TableCell>
-                <div className="text-sm">
-                  {getRecordingStatusIcon(module.recordingStatus)}
-                </div>
+                {getRecordingStatusBadge(module.recordingStatus)}
               </TableCell>
               <TableCell>
-                <div className="text-sm">
-                  {getDataStatusIcon(module.dataStatus)}
-                </div>
+                {getDataStatusBadge(module.dataStatus)}
               </TableCell>
               <TableCell>
                 <div className="flex items-center space-x-2">
