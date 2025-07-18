@@ -51,7 +51,7 @@ const getServiceStatusIcon = (status?: string) => {
 }
 
 const getRecordingStatusIcon = (status?: string) => {
-  if (!status) return '-'
+  if (!status || status === '') return '-'
   switch (status.toLowerCase()) {
     case 'recording':
       return <span className="text-green-600">● Recording</span>
@@ -65,6 +65,8 @@ const getRecordingStatusIcon = (status?: string) => {
 }
 
 const getDataStatusIcon = (status: EcuModule['dataStatus']) => {
+  // Handle empty string case for NAS
+  if (!status || (status as any) === '') return '-'
   switch (status) {
     case 'OK':
       return <span className="text-green-600">✓ OK</span>
