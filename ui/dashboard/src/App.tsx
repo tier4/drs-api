@@ -9,7 +9,7 @@ import { PowerControl } from '@/components/PowerControl'
 import { ApiService } from '@/services/api'
 import { useAutoRefresh } from '@/hooks/useAutoRefresh'
 
-// Mock data based on API design
+// Mock data based on API design - matching the visual from docs/new_ui.md
 const mockModules: EcuModule[] = [
   {
     hostname: 'ecu0',
@@ -149,11 +149,11 @@ function App() {
   const apiService = ApiService.getInstance()
 
   // Convert API data to component format
-  const convertToEcuModule = (apiModule: any, recordingStatus?: any): EcuModule => {
+  const convertToEcuModule = (apiModule: any): EcuModule => {
     const module: EcuModule = {
       hostname: apiModule.hostname,
       moduleId: apiModule.environment?.module_id,
-      dataStatus: recordingStatus?.health_status || apiModule.status || 'OK',
+      dataStatus: apiModule.status_detail?.recording?.data_status || apiModule.status || 'OK',
       diskUsagePercentage: apiModule.disk?.usage_percentage || 0,
       diskFreeBytes: apiModule.disk?.free_bytes || 0,
       diskTotalBytes: apiModule.disk?.total_bytes || 0,
@@ -162,7 +162,7 @@ function App() {
     // Only add services for ecu modules, not for nas
     if (apiModule.hostname.startsWith('ecu')) {
       module.services = apiModule.status_detail?.services
-      module.recordingStatus = recordingStatus?.recording_status || apiModule.status_detail?.recording?.status
+      module.recordingStatus = apiModule.status_detail?.recording?.status
     }
     
     return module
@@ -208,17 +208,7 @@ function App() {
 
       // Update modules
       if (modulesData.status === 'fulfilled') {
-        // Get recording status to merge with module data
-        const recordingMap = new Map<string, any>()
-        if (recordingData.status === 'fulfilled') {
-          recordingData.value.forEach((rec: any) => {
-            recordingMap.set(rec.hostname, rec)
-          })
-        }
-        
-        const convertedModules = modulesData.value.map((module: any) => 
-          convertToEcuModule(module, recordingMap.get(module.hostname))
-        )
+        const convertedModules = modulesData.value.map(convertToEcuModule)
         // Sort modules alphabetically by hostname
         convertedModules.sort((a, b) => a.hostname.localeCompare(b.hostname))
         setModules(convertedModules)

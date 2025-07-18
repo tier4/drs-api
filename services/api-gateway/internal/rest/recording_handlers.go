@@ -70,16 +70,16 @@ func (h *RecordingHandler) GetRecordingStatus(c *gin.Context) {
 			status.RecordingStatus = "stopped"
 		}
 
-		// Map error level enum to health status
+		// Map error level enum to data status
 		switch recording.ErrorLevel {
 		case ros2bridgev1.Recording_ERROR_LEVEL_OK:
-			status.HealthStatus = "OK"
+			status.DataStatus = "OK"
 		case ros2bridgev1.Recording_ERROR_LEVEL_WARN:
-			status.HealthStatus = "WARN"
+			status.DataStatus = "WARN"
 		case ros2bridgev1.Recording_ERROR_LEVEL_ERROR:
-			status.HealthStatus = "ERROR"
+			status.DataStatus = "ERROR"
 		default:
-			status.HealthStatus = "OK"
+			status.DataStatus = "OK"
 		}
 
 		recordingStatuses = append(recordingStatuses, status)

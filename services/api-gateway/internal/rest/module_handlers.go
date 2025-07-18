@@ -210,15 +210,29 @@ func (h *ModuleHandler) getRecordingStatus(hostname string) *models.RecordingInf
 			if recording.IsRecording {
 				status = "recording"
 			}
+			
+			// Map error level to data status
+			dataStatus := "OK"
+			switch recording.ErrorLevel {
+			case ros2bridgev1.Recording_ERROR_LEVEL_OK:
+				dataStatus = "OK"
+			case ros2bridgev1.Recording_ERROR_LEVEL_WARN:
+				dataStatus = "WARN"
+			case ros2bridgev1.Recording_ERROR_LEVEL_ERROR:
+				dataStatus = "ERROR"
+			}
+			
 			return &models.RecordingInfo{
-				Status: status,
+				Status:     status,
+				DataStatus: dataStatus,
 			}
 		}
 	}
 
 	// Default to stopped if not found
 	return &models.RecordingInfo{
-		Status: "stopped",
+		Status:     "stopped",
+		DataStatus: "OK",
 	}
 }
 

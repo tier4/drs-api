@@ -32,7 +32,7 @@ export interface ModuleStatus {
 export interface RecordingStatus {
   hostname: string
   recording_status: 'recording' | 'stopped'
-  health_status: 'OK' | 'WARN' | 'ERROR'
+  data_status: 'OK' | 'WARN' | 'ERROR'
   hardware_id?: string
 }
 

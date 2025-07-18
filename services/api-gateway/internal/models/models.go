@@ -29,7 +29,8 @@ type ServiceStatus struct {
 
 // RecordingInfo represents recording status
 type RecordingInfo struct {
-	Status string `json:"status"` // recording, stopped, paused
+	Status     string `json:"status"`      // recording, stopped, paused
+	DataStatus string `json:"data_status"` // OK, WARN, ERROR
 }
 
 // PTPInfo represents PTP synchronization information
@@ -64,7 +65,7 @@ type RecordingStatusResponse struct {
 type RecordingStatus struct {
 	Hostname        string `json:"hostname"`
 	RecordingStatus string `json:"recording_status"` // "recording" | "stopped"
-	HealthStatus    string `json:"health_status"`    // "OK" | "WARN" | "ERROR"
+	DataStatus      string `json:"data_status"`      // "OK" | "WARN" | "ERROR"
 	HardwareID      string `json:"hardware_id"`
 }
 
