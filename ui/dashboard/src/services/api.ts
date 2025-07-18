@@ -12,7 +12,6 @@ export interface ModuleStatus {
     }
     recording: {
       status: string
-      active: boolean
     }
     ptp: {
       offset_ns: number
@@ -32,8 +31,8 @@ export interface ModuleStatus {
 
 export interface RecordingStatus {
   hostname: string
-  status: 'recording' | 'stopped' | 'paused'
-  active: boolean
+  recording_status: 'recording' | 'stopped'
+  health_status: 'OK' | 'WARN' | 'ERROR'
   hardware_id?: string
 }
 
