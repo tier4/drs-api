@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Table,
   TableBody,
@@ -14,6 +15,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export interface EcuModule {
   hostname: string
@@ -95,9 +106,64 @@ export function EcuStatusTable({
   onRestartMachine, 
   onShutdownMachine 
 }: EcuStatusTableProps) {
+  const [dialogState, setDialogState] = useState<{
+    isOpen: boolean
+    action: 'restart-sensors' | 'restart-machine' | 'shutdown-machine' | null
+    hostname: string | null
+  }>({
+    isOpen: false,
+    action: null,
+    hostname: null
+  })
+
+  const handleAction = () => {
+    if (!dialogState.hostname || !dialogState.action) return
+
+    switch (dialogState.action) {
+      case 'restart-sensors':
+        onRestartSensors?.(dialogState.hostname)
+        break
+      case 'restart-machine':
+        onRestartMachine?.(dialogState.hostname)
+        break
+      case 'shutdown-machine':
+        onShutdownMachine?.(dialogState.hostname)
+        break
+    }
+    
+    setDialogState({ isOpen: false, action: null, hostname: null })
+  }
+
+  const openDialog = (action: 'restart-sensors' | 'restart-machine' | 'shutdown-machine', hostname: string) => {
+    setDialogState({ isOpen: true, action, hostname })
+  }
+
+  const getDialogContent = () => {
+    switch (dialogState.action) {
+      case 'restart-sensors':
+        return {
+          title: 'Restart Sensors',
+          description: `Are you sure you want to restart sensors on ${dialogState.hostname}? This will temporarily stop data recording.`
+        }
+      case 'restart-machine':
+        return {
+          title: 'Restart Machine',
+          description: `Are you sure you want to restart ${dialogState.hostname}? This will stop all services and reboot the machine.`
+        }
+      case 'shutdown-machine':
+        return {
+          title: 'Shutdown Machine',
+          description: `Are you sure you want to shutdown ${dialogState.hostname}? This will stop all services and power off the machine.`
+        }
+      default:
+        return { title: '', description: '' }
+    }
+  }
+
   return (
-    <div className="rounded-md border">
-      <Table>
+    <>
+      <div className="rounded-md border">
+        <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Module</TableHead>
@@ -161,14 +227,14 @@ export function EcuStatusTable({
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => onRestartSensors?.(module.hostname)}>
+                    <DropdownMenuItem onClick={() => openDialog('restart-sensors', module.hostname)}>
                       Restart sensors
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onRestartMachine?.(module.hostname)}>
+                    <DropdownMenuItem onClick={() => openDialog('restart-machine', module.hostname)}>
                       Restart machine
                     </DropdownMenuItem>
                     <DropdownMenuItem 
-                      onClick={() => onShutdownMachine?.(module.hostname)}
+                      onClick={() => openDialog('shutdown-machine', module.hostname)}
                       className="text-destructive"
                     >
                       Shutdown machine
@@ -181,5 +247,21 @@ export function EcuStatusTable({
         </TableBody>
       </Table>
     </div>
+
+    <AlertDialog open={dialogState.isOpen} onOpenChange={(open) => !open && setDialogState({ isOpen: false, action: null, hostname: null })}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{getDialogContent().title}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {getDialogContent().description}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleAction}>Continue</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   )
 }
