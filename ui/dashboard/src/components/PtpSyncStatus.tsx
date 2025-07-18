@@ -1,15 +1,7 @@
-import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-
+import { Progress } from "@/components/ui/progress"
+import { AlertCircle, CheckCircle2, Clock, Wifi, WifiOff } from "lucide-react"
 export interface PtpStatus {
   hostname: string
   localStatus: {
@@ -29,135 +21,158 @@ interface PtpSyncStatusProps {
   ptpStatuses: PtpStatus[]
 }
 
-const getPtpStatusColor = (offsetNs: number, gmPresent: boolean): 'default' | 'secondary' | 'destructive' => {
-  if (!gmPresent) return 'destructive'
+const getOffsetStatus = (offsetNs: number, gmPresent: boolean) => {
+  if (!gmPresent) return { color: 'destructive', text: 'No GM', icon: AlertCircle }
   
   const absOffset = Math.abs(offsetNs)
-  if (absOffset < 1000) return 'default' // < 1µs
-  if (absOffset < 10000) return 'secondary' // < 10µs
-  return 'destructive' // > 10µs
+  if (absOffset < 1000) return { color: 'default', text: 'Excellent', icon: CheckCircle2 }
+  if (absOffset < 10000) return { color: 'secondary', text: 'Good', icon: Clock }
+  return { color: 'destructive', text: 'Poor', icon: AlertCircle }
 }
 
 const formatOffset = (offsetNs: number): string => {
   const absOffset = Math.abs(offsetNs)
+  const sign = offsetNs < 0 ? '-' : '+'
+  
   if (absOffset < 1000) {
-    return `${offsetNs}ns`
+    return `${sign}${absOffset}ns`
   } else if (absOffset < 1000000) {
-    return `${(offsetNs / 1000).toFixed(1)}µs`
+    return `${sign}${(absOffset / 1000).toFixed(1)}µs`
   } else {
-    return `${(offsetNs / 1000000).toFixed(1)}ms`
+    return `${sign}${(absOffset / 1000000).toFixed(1)}ms`
   }
-}
-
-const hasRemoteIssues = (remoteStatuses: PtpStatus['remoteStatuses']) => {
-  return remoteStatuses.some(remote => !remote.isReachable)
 }
 
 export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
-  // Initialize with modules that have issues automatically expanded
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(() => {
-    const initialExpanded = new Set<string>()
-    ptpStatuses.forEach(ptp => {
-      if (hasRemoteIssues(ptp.remoteStatuses)) {
-        initialExpanded.add(ptp.hostname)
-      }
-    })
-    return initialExpanded
-  })
+  // Calculate overall system status
+  const systemStatus = ptpStatuses.every(ptp => 
+    ptp.localStatus.gmPresent && Math.abs(ptp.localStatus.masterOffsetNs) < 10000
+  )
 
-  const toggleExpanded = (hostname: string) => {
-    const newExpanded = new Set(expandedModules)
-    if (newExpanded.has(hostname)) {
-      newExpanded.delete(hostname)
-    } else {
-      newExpanded.add(hostname)
-    }
-    setExpandedModules(newExpanded)
-  }
+  const totalDevices = ptpStatuses.reduce((acc, ptp) => 
+    acc + ptp.remoteStatuses.length, ptpStatuses.length
+  )
+  
+  const syncedDevices = ptpStatuses.reduce((acc, ptp) => {
+    const localSynced = ptp.localStatus.gmPresent && Math.abs(ptp.localStatus.masterOffsetNs) < 10000 ? 1 : 0
+    const remoteSynced = ptp.remoteStatuses.filter(r => 
+      r.isReachable && r.offsetNs !== undefined && Math.abs(r.offsetNs) < 10000
+    ).length
+    return acc + localSynced + remoteSynced
+  }, 0)
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Time Synchronization Status</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          {ptpStatuses.map((ptp) => {
-            const isExpanded = expandedModules.has(ptp.hostname)
-            const hasIssues = hasRemoteIssues(ptp.remoteStatuses)
-            const showExpanded = isExpanded
+    <div className="space-y-6">
+      {/* System Overview Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">System Time Synchronization</CardTitle>
+            <Badge 
+              variant={systemStatus ? 'default' : 'destructive'}
+              className="text-xs"
+            >
+              {systemStatus ? 'All Synced' : 'Issues Detected'}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Synchronized Devices</span>
+            <span className="font-medium">{syncedDevices} / {totalDevices}</span>
+          </div>
+          <Progress value={(syncedDevices / totalDevices) * 100} className="mt-2 h-2" />
+        </CardContent>
+      </Card>
 
-            return (
-              <div key={ptp.hostname} className="space-y-3">
+      {/* ECU Cards */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {ptpStatuses.map((ptp) => {
+          const localStatus = getOffsetStatus(ptp.localStatus.masterOffsetNs, ptp.localStatus.gmPresent)
+          const LocalIcon = localStatus.icon
+          
+          return (
+            <Card key={ptp.hostname}>
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <h4 className="font-medium">{ptp.hostname}</h4>
-                    <span className="text-xs text-muted-foreground">
-                      {ptp.localStatus.clockId}
-                    </span>
+                  <div>
+                    <h3 className="font-semibold">{ptp.hostname.toUpperCase()}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Clock ID: {ptp.localStatus.clockId}
+                    </p>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={getPtpStatusColor(ptp.localStatus.masterOffsetNs, ptp.localStatus.gmPresent)}>
-                      {ptp.localStatus.gmPresent ? 'SYNCED' : 'NO GM'}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
+                  <div className="text-right">
+                    <div className="flex items-center gap-2">
+                      <LocalIcon className={`h-4 w-4 ${
+                        localStatus.color === 'default' ? 'text-green-500' :
+                        localStatus.color === 'secondary' ? 'text-yellow-500' :
+                        'text-red-500'
+                      }`} />
+                      <Badge variant={localStatus.color as any} className="text-xs">
+                        {localStatus.text}
+                      </Badge>
+                    </div>
+                    <p className="text-xs font-mono mt-1">
                       {formatOffset(ptp.localStatus.masterOffsetNs)}
-                    </span>
+                    </p>
                   </div>
                 </div>
-
+              </CardHeader>
+              
+              <CardContent>
+                {/* Remote Devices */}
                 {ptp.remoteStatuses.length > 0 && (
                   <div>
-                    <button
-                      onClick={() => toggleExpanded(ptp.hostname)}
-                      className="flex items-center space-x-1 text-xs text-muted-foreground hover:text-foreground mb-2"
-                    >
-                      <span>Remote Devices ({ptp.remoteStatuses.length})</span>
-                      {hasIssues && (
-                        <Badge variant="destructive" className="text-xs ml-1">
-                          Issues
-                        </Badge>
-                      )}
-                      <span className="text-xs">
-                        {showExpanded ? '▼' : '▶'}
-                      </span>
-                    </button>
-                    
-                    {showExpanded && (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="text-xs">Device</TableHead>
-                            <TableHead className="text-xs">IP Address</TableHead>
-                            <TableHead className="text-xs">Status</TableHead>
-                            <TableHead className="text-xs">Offset</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {ptp.remoteStatuses.map((remote) => (
-                            <TableRow key={remote.deviceName}>
-                              <TableCell className="text-xs">{remote.deviceName}</TableCell>
-                              <TableCell className="text-xs">{remote.ipAddress}</TableCell>
-                              <TableCell>
-                                <Badge variant={remote.isReachable ? 'default' : 'destructive'} className="text-xs">
-                                  {remote.isReachable ? 'Online' : 'Offline'}
+                    <h4 className="text-sm font-medium mb-2">Connected Devices</h4>
+                    <div className="space-y-2">
+                      {ptp.remoteStatuses.map((remote) => {
+                        const remoteStatus = remote.isReachable && remote.offsetNs !== undefined
+                          ? getOffsetStatus(remote.offsetNs, true)
+                          : { color: 'destructive', text: 'Offline', icon: WifiOff }
+                        
+                        return (
+                          <div 
+                            key={remote.deviceName}
+                            className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                          >
+                            <div className="flex items-center gap-2">
+                              {remote.isReachable ? (
+                                <Wifi className="h-3 w-3 text-green-500" />
+                              ) : (
+                                <WifiOff className="h-3 w-3 text-red-500" />
+                              )}
+                              <div>
+                                <p className="text-sm font-medium">{remote.deviceName}</p>
+                                <p className="text-xs text-muted-foreground">{remote.ipAddress}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              {remote.isReachable && remote.offsetNs !== undefined ? (
+                                <>
+                                  <Badge 
+                                    variant={remoteStatus.color as any} 
+                                    className="text-xs"
+                                  >
+                                    {formatOffset(remote.offsetNs)}
+                                  </Badge>
+                                </>
+                              ) : (
+                                <Badge variant="destructive" className="text-xs">
+                                  Offline
                                 </Badge>
-                              </TableCell>
-                              <TableCell className="text-xs">
-                                {remote.offsetNs !== undefined ? formatOffset(remote.offsetNs) : 'N/A'}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
                   </div>
                 )}
-              </div>
-            )
-          })}
-        </div>
-      </CardContent>
-    </Card>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+    </div>
   )
 }

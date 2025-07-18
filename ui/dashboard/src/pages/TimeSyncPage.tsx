@@ -1,4 +1,4 @@
-import { PtpSyncStatusNew } from '@/components/PtpSyncStatusNew'
+import { PtpSyncStatus } from '@/components/PtpSyncStatus'
 import type { PtpStatus } from '@/components/PtpSyncStatus'
 
 interface TimeSyncPageProps {
@@ -8,7 +8,7 @@ interface TimeSyncPageProps {
 export function TimeSyncPage({ ptpStatuses }: TimeSyncPageProps) {
   return (
     <div>
-      <PtpSyncStatusNew ptpStatuses={ptpStatuses} />
+      <PtpSyncStatus ptpStatuses={ptpStatuses} />
     </div>
   )
 }
