@@ -1,4 +1,4 @@
-import { TopicRateStatus } from '@/components/TopicRateStatus'
+import { TopicRateStatusNew } from '@/components/TopicRateStatusNew'
 import type { ModuleTopicStatus } from '@/components/TopicRateStatus'
 
 interface TopicRatesPageProps {
@@ -8,7 +8,7 @@ interface TopicRatesPageProps {
 export function TopicRatesPage({ moduleTopicStatuses }: TopicRatesPageProps) {
   return (
     <div>
-      <TopicRateStatus moduleTopicStatuses={moduleTopicStatuses} />
+      <TopicRateStatusNew moduleTopicStatuses={moduleTopicStatuses} />
     </div>
   )
 }
