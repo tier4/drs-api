@@ -166,8 +166,8 @@ function App() {
       // For ECU modules, use recording data_status if available, otherwise use module status
       module.dataStatus = apiModule.status_detail?.recording?.data_status || apiModule.status || 'OK'
     } else {
-      // For NAS, use the module status directly
-      module.dataStatus = apiModule.status || 'OK'
+      // For NAS, set empty string since it doesn't have recording capability
+      module.dataStatus = '' as any
     }
     
     return module
