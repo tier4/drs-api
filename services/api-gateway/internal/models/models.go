@@ -67,6 +67,7 @@ type RecordingStatus struct {
 	Status     string `json:"status"`
 	Active     bool   `json:"active"`
 	HardwareID string `json:"hardware_id"`
+	ErrorLevel string `json:"error_level"`
 }
 
 // PTPStatusResponse represents the response for GET /ptp/status
