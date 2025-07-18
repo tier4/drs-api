@@ -12,6 +12,7 @@ export interface ModuleStatus {
     }
     recording: {
       status: string
+      data_status: string
     }
     ptp: {
       offset_ns: number

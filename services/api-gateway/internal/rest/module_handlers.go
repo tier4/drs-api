@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -204,13 +203,6 @@ func (h *ModuleHandler) getRecordingStatus(hostname string) *models.RecordingInf
 		return nil
 	}
 
-	// Debug: Log all recordings
-	log.Printf("[DEBUG] Module %s (module_id: %s) looking for recording status", hostname, envResp.ModuleId)
-	for _, recording := range resp.Recordings {
-		log.Printf("[DEBUG] Recording: hardware_id=%s, is_recording=%v, error_level=%v", 
-			recording.HardwareId, recording.IsRecording, recording.ErrorLevel)
-	}
-
 	// Find recording for this module by hardware ID
 	// Try matching by both module_id and hostname
 	for _, recording := range resp.Recordings {
@@ -231,12 +223,8 @@ func (h *ModuleHandler) getRecordingStatus(hostname string) *models.RecordingInf
 				dataStatus = "ERROR"
 			default:
 				// If error level is not recognized, default to OK
-				log.Printf("[DEBUG] Unknown error level for %s: %v", hostname, recording.ErrorLevel)
 				dataStatus = "OK"
 			}
-			
-			log.Printf("[DEBUG] Module %s: recording=%s, data_status=%s (error_level=%v)", 
-				hostname, status, dataStatus, recording.ErrorLevel)
 			
 			return &models.RecordingInfo{
 				Status:     status,

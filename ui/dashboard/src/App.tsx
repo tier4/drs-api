@@ -153,16 +153,21 @@ function App() {
     const module: EcuModule = {
       hostname: apiModule.hostname,
       moduleId: apiModule.environment?.module_id,
-      dataStatus: apiModule.status_detail?.recording?.data_status || apiModule.status || 'OK',
+      dataStatus: 'OK', // Default value
       diskUsagePercentage: apiModule.disk?.usage_percentage || 0,
       diskFreeBytes: apiModule.disk?.free_bytes || 0,
       diskTotalBytes: apiModule.disk?.total_bytes || 0,
     }
     
-    // Only add services for ecu modules, not for nas
+    // Only add services and recording for ecu modules, not for nas
     if (apiModule.hostname.startsWith('ecu')) {
       module.services = apiModule.status_detail?.services
       module.recordingStatus = apiModule.status_detail?.recording?.status
+      // For ECU modules, use recording data_status if available, otherwise use module status
+      module.dataStatus = apiModule.status_detail?.recording?.data_status || apiModule.status || 'OK'
+    } else {
+      // For NAS, use the module status directly
+      module.dataStatus = apiModule.status || 'OK'
     }
     
     return module
