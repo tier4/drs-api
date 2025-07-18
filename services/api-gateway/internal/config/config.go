@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"sort"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -155,5 +156,6 @@ func (c *Config) GetModuleNames() []string {
 	for name := range c.Modules {
 		names = append(names, name)
 	}
+	sort.Strings(names)
 	return names
 }
