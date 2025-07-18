@@ -16,7 +16,6 @@ export function ModulesPage({
 }: ModulesPageProps) {
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Module Status</h2>
       <ModuleStatusTable 
         modules={modules}
         onRestartSensors={onRestartSensors}
