@@ -186,15 +186,15 @@ export function EcuStatusTable({
                 {module.services ? (
                   <div className="space-y-1">
                     {module.services.drs_sensor && (
-                      <div className="grid grid-cols-[80px_auto] items-center gap-2">
+                      <div className="grid grid-cols-[65px_auto] items-center gap-1">
                         <span className="text-sm text-muted-foreground">sensor</span>
-                        {getServiceStatusBadge(module.services.drs_sensor)}
+                        <div>{getServiceStatusBadge(module.services.drs_sensor)}</div>
                       </div>
                     )}
                     {module.services.drs_recorder && (
-                      <div className="grid grid-cols-[80px_auto] items-center gap-2">
+                      <div className="grid grid-cols-[65px_auto] items-center gap-1">
                         <span className="text-sm text-muted-foreground">recorder</span>
-                        {getServiceStatusBadge(module.services.drs_recorder)}
+                        <div>{getServiceStatusBadge(module.services.drs_recorder)}</div>
                       </div>
                     )}
                   </div>
