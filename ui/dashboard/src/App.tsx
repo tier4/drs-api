@@ -1,12 +1,14 @@
 import { useState, useCallback } from 'react'
-import { ModuleStatusTable } from '@/components/ModuleStatusTable'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import type { Module } from '@/components/ModuleStatusTable'
-import { PtpSyncStatus } from '@/components/PtpSyncStatus'
 import type { PtpStatus } from '@/components/PtpSyncStatus'
-import { TopicRateStatus } from '@/components/TopicRateStatus'
 import type { ModuleTopicStatus } from '@/components/TopicRateStatus'
 import { PowerControl } from '@/components/PowerControl'
 import { RecordingSwitch } from '@/components/RecordingSwitch'
+import { Navigation } from '@/components/Navigation'
+import { ModulesPage } from '@/pages/ModulesPage'
+import { TimeSyncPage } from '@/pages/TimeSyncPage'
+import { TopicRatesPage } from '@/pages/TopicRatesPage'
 import { ApiService } from '@/services/api'
 import { useAutoRefresh } from '@/hooks/useAutoRefresh'
 
@@ -434,25 +436,29 @@ function App() {
             </div>
           </div>
         )}
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Module Status</h2>
-            <ModuleStatusTable 
-              modules={modules}
-              onRestartSensors={handleRestartSensors}
-              onRestartMachine={handleRestartMachine}
-              onShutdownMachine={handleShutdownMachine}
-            />
-          </div>
-          
-          <div>
-            <PtpSyncStatus ptpStatuses={ptpStatuses} />
-          </div>
-          
-          <div>
-            <TopicRateStatus moduleTopicStatuses={topicStatuses} />
-          </div>
-        </div>
+        <Navigation />
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <ModulesPage 
+                modules={modules}
+                onRestartSensors={handleRestartSensors}
+                onRestartMachine={handleRestartMachine}
+                onShutdownMachine={handleShutdownMachine}
+              />
+            } 
+          />
+          <Route 
+            path="/time-sync" 
+            element={<TimeSyncPage ptpStatuses={ptpStatuses} />} 
+          />
+          <Route 
+            path="/topic-rates" 
+            element={<TopicRatesPage moduleTopicStatuses={topicStatuses} />} 
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
     </div>
   )
