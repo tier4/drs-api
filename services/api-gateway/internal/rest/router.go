@@ -59,7 +59,7 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 	{
 		// Initialize handlers
 		moduleHandler := NewModuleHandler(clientManager)
-		systemHandler := NewSystemHandler(clientManager)
+		systemHandler := NewSystemHandler(clientManager, cfg)
 		recordingHandler := NewRecordingHandler(clientManager)
 
 		// Module endpoints

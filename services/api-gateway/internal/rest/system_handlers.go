@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/tier4/drs-api/services/api-gateway/internal/config"
 	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
 	"github.com/tier4/drs-api/services/api-gateway/internal/models"
 	modulev1 "github.com/tier4/drs-api/services/api-gateway/drs/module/v1"
@@ -14,12 +15,14 @@ import (
 // SystemHandler handles system control REST API endpoints
 type SystemHandler struct {
 	clientManager *grpc.ClientManager
+	config        *config.Config
 }
 
 // NewSystemHandler creates a new system handler
-func NewSystemHandler(clientManager *grpc.ClientManager) *SystemHandler {
+func NewSystemHandler(clientManager *grpc.ClientManager, cfg *config.Config) *SystemHandler {
 	return &SystemHandler{
 		clientManager: clientManager,
+		config:        cfg,
 	}
 }
 
@@ -175,10 +178,23 @@ func (h *SystemHandler) ServicesRestart(c *gin.Context) {
 func (h *SystemHandler) performSystemOperation(c *gin.Context, operation string, delaySeconds int32) {
 	moduleNames := h.clientManager.GetModuleNames()
 	
+	// Separate API Gateway host from other modules
+	var apiGatewayHost string
+	var otherModules []string
+	
+	for _, hostname := range moduleNames {
+		if h.config.APIGatewayHost != "" && hostname == h.config.APIGatewayHost {
+			apiGatewayHost = hostname
+		} else {
+			otherModules = append(otherModules, hostname)
+		}
+	}
+	
 	var wg sync.WaitGroup
 	results := make(chan models.SystemOperationResponse, len(moduleNames))
 
-	for _, hostname := range moduleNames {
+	// First, send operation to all non-API Gateway modules
+	for _, hostname := range otherModules {
 		wg.Add(1)
 		go func(hostname string) {
 			defer wg.Done()
@@ -232,11 +248,74 @@ func (h *SystemHandler) performSystemOperation(c *gin.Context, operation string,
 		}(hostname)
 	}
 
-	// Wait for all operations to complete
-	go func() {
+	// Wait for all non-API Gateway operations to complete
+	wg.Wait()
+	
+	// Now send operation to API Gateway host if it exists
+	if apiGatewayHost != "" {
+		wg.Add(1)
+		go func(hostname string) {
+			defer wg.Done()
+			
+			clients, err := h.clientManager.GetModuleClients(hostname)
+			if err != nil {
+				results <- models.SystemOperationResponse{
+					Success: false,
+					Message: err.Error(),
+				}
+				return
+			}
+
+			ctx, cancel := h.clientManager.GetContext()
+			defer cancel()
+
+			// Add extra delay for API Gateway host to ensure other modules have received their commands
+			apiGatewayDelay := delaySeconds
+			if apiGatewayDelay < 5 {
+				apiGatewayDelay = 5 // Minimum 5 seconds delay for API Gateway
+			}
+
+			switch operation {
+			case "restart":
+				resp, err := clients.SystemControl.Reboot(ctx, &modulev1.RebootRequest{
+					DelaySeconds: apiGatewayDelay,
+				})
+				if err != nil {
+					results <- models.SystemOperationResponse{
+						Success: false,
+						Message: err.Error(),
+					}
+				} else {
+					results <- models.SystemOperationResponse{
+						Success:      resp.Accepted,
+						Message:      resp.Message + " (API Gateway host - delayed)",
+						DelaySeconds: resp.ScheduledDelay,
+					}
+				}
+			case "shutdown":
+				resp, err := clients.SystemControl.Shutdown(ctx, &modulev1.ShutdownRequest{
+					DelaySeconds: apiGatewayDelay,
+				})
+				if err != nil {
+					results <- models.SystemOperationResponse{
+						Success: false,
+						Message: err.Error(),
+					}
+				} else {
+					results <- models.SystemOperationResponse{
+						Success:      resp.Accepted,
+						Message:      resp.Message + " (API Gateway host - delayed)",
+						DelaySeconds: resp.ScheduledDelay,
+					}
+				}
+			}
+		}(apiGatewayHost)
+		
 		wg.Wait()
-		close(results)
-	}()
+	}
+	
+	// Close results channel
+	close(results)
 
 	// Check results
 	allSuccess := true
