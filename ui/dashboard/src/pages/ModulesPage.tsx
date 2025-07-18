@@ -1,5 +1,5 @@
-import { ModuleStatusTable } from '@/components/ModuleStatusTable'
-import type { Module } from '@/components/ModuleStatusTable'
+import { ModuleStatus } from '@/components/ModuleStatus'
+import type { Module } from '@/components/ModuleStatus'
 
 interface ModulesPageProps {
   modules: Module[]
@@ -15,13 +15,11 @@ export function ModulesPage({
   onShutdownMachine,
 }: ModulesPageProps) {
   return (
-    <div>
-      <ModuleStatusTable 
-        modules={modules}
-        onRestartSensors={onRestartSensors}
-        onRestartMachine={onRestartMachine}
-        onShutdownMachine={onShutdownMachine}
-      />
-    </div>
+    <ModuleStatus 
+      modules={modules}
+      onRestartSensors={onRestartSensors}
+      onRestartMachine={onRestartMachine}
+      onShutdownMachine={onShutdownMachine}
+    />
   )
 }

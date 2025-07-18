@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import type { Module } from '@/components/ModuleStatusTable'
+import type { Module } from '@/components/ModuleStatus'
 import type { PtpStatus } from '@/components/PtpSyncStatus'
 import type { ModuleTopicStatus } from '@/components/TopicRateStatus'
 import { PowerControl } from '@/components/PowerControl'
