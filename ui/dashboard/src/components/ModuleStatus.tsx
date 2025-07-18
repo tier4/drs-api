@@ -182,56 +182,9 @@ export function ModuleStatus({
     }
   }
 
-  // Calculate system overview
-  const totalModules = modules.length
-  const activeModules = modules.filter(m => 
-    m.services?.drs_sensor === 'active' || m.services?.drs_recorder === 'active'
-  ).length
-  const recordingModules = modules.filter(m => m.recordingStatus === 'recording').length
-  const syncedModules = modules.filter(m => m.ptpStatus?.gmPresent).length
-
   return (
     <>
       <div className="space-y-6">
-        {/* System Overview */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Modules</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalModules}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active Services</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activeModules}</div>
-              <div className="text-xs text-muted-foreground">out of {totalModules}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Recording</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{recordingModules}</div>
-              <div className="text-xs text-muted-foreground">modules</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Time Synced</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{syncedModules}</div>
-              <div className="text-xs text-muted-foreground">modules</div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Module Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {modules.map((module) => {
