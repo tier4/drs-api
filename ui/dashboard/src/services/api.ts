@@ -71,15 +71,17 @@ export class ApiService {
     return ApiService.instance
   }
 
-  private async fetchWithTimeout(url: string, timeout = 5000): Promise<Response> {
+  private async fetchWithTimeout(url: string, timeout = 5000, options: RequestInit = {}): Promise<Response> {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeout)
     
     try {
       const response = await fetch(url, {
+        ...options,
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
+          ...options.headers,
         },
         // Remove credentials to avoid CORS issues with credentials
         // credentials: 'include',
@@ -159,7 +161,9 @@ export class ApiService {
 
   async startRecording(): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/recording/start`, 10000)
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/recording/start`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -173,7 +177,9 @@ export class ApiService {
 
   async stopRecording(): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/recording/stop`, 10000)
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/recording/stop`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -187,7 +193,9 @@ export class ApiService {
 
   async restartSystem(): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/system/restart`, 10000)
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/system/restart`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -201,7 +209,9 @@ export class ApiService {
 
   async shutdownSystem(): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/system/shutdown`, 10000)
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/system/shutdown`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -215,7 +225,9 @@ export class ApiService {
 
   async restartModuleSensors(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/restart`, 10000)
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/restart`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -229,7 +241,9 @@ export class ApiService {
 
   async restartModule(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/restart`, 10000)
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/restart`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -243,7 +257,9 @@ export class ApiService {
 
   async shutdownModule(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/shutdown`, 10000)
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/shutdown`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
