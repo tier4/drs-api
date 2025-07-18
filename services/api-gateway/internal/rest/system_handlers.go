@@ -113,8 +113,8 @@ func (h *SystemHandler) ServicesRestart(c *gin.Context) {
 	ctx, cancel := h.clientManager.GetContext()
 	defer cancel()
 
-	// Restart critical services
-	services := []string{"drs_sensor", "drs_recorder"}
+	// Restart only sensor service
+	services := []string{"drs_sensor"}
 	var wg sync.WaitGroup
 	results := make(chan models.ServiceOperationResponse, len(services))
 
@@ -136,7 +136,7 @@ func (h *SystemHandler) ServicesRestart(c *gin.Context) {
 			} else {
 				results <- models.ServiceOperationResponse{
 					Success: true,
-					Message: "Service restarted successfully",
+					Message: "Sensor service restarted successfully",
 				}
 			}
 		}(serviceName)
@@ -161,12 +161,12 @@ func (h *SystemHandler) ServicesRestart(c *gin.Context) {
 	if allSuccess {
 		c.JSON(http.StatusOK, models.ServiceOperationResponse{
 			Success: true,
-			Message: "All services restarted successfully",
+			Message: "Sensor service restarted successfully",
 		})
 	} else {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
 			Error:   "restart_failed",
-			Message: "Some services failed to restart",
+			Message: "Failed to restart sensor service",
 			Details: map[string]interface{}{
 				"messages": messages,
 			},
