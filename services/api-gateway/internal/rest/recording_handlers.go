@@ -61,25 +61,25 @@ func (h *RecordingHandler) GetRecordingStatus(c *gin.Context) {
 		status := models.RecordingStatus{
 			Hostname:   recording.HardwareId, // Use hardware_id as hostname
 			HardwareID: recording.HardwareId,
-			Active:     recording.IsRecording,
 		}
 
+		// Set recording status
 		if recording.IsRecording {
-			status.Status = "recording"
+			status.RecordingStatus = "recording"
 		} else {
-			status.Status = "stopped"
+			status.RecordingStatus = "stopped"
 		}
 
-		// Map error level enum to string
+		// Map error level enum to health status
 		switch recording.ErrorLevel {
 		case ros2bridgev1.Recording_ERROR_LEVEL_OK:
-			status.ErrorLevel = "OK"
+			status.HealthStatus = "OK"
 		case ros2bridgev1.Recording_ERROR_LEVEL_WARN:
-			status.ErrorLevel = "WARN"
+			status.HealthStatus = "WARN"
 		case ros2bridgev1.Recording_ERROR_LEVEL_ERROR:
-			status.ErrorLevel = "ERROR"
+			status.HealthStatus = "ERROR"
 		default:
-			status.ErrorLevel = "OK"
+			status.HealthStatus = "OK"
 		}
 
 		recordingStatuses = append(recordingStatuses, status)

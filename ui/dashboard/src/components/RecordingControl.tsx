@@ -12,9 +12,9 @@ import {
 
 export interface RecordingStatus {
   hostname: string
-  status: 'recording' | 'stopped' | 'paused'
-  active: boolean
-  hardwareId?: string
+  recording_status: 'recording' | 'stopped'
+  health_status: 'OK' | 'WARN' | 'ERROR'
+  hardware_id?: string
 }
 
 interface RecordingControlProps {
@@ -23,12 +23,10 @@ interface RecordingControlProps {
   onGlobalRecordingToggle: (enabled: boolean) => void
 }
 
-const getRecordingStatusColor = (status: RecordingStatus['status']): 'default' | 'secondary' | 'destructive' => {
+const getRecordingStatusColor = (status: RecordingStatus['recording_status']): 'default' | 'secondary' | 'destructive' => {
   switch (status) {
     case 'recording':
       return 'default'
-    case 'paused':
-      return 'secondary'
     case 'stopped':
       return 'destructive'
     default:
@@ -36,16 +34,27 @@ const getRecordingStatusColor = (status: RecordingStatus['status']): 'default' |
   }
 }
 
-const getRecordingStatusText = (status: RecordingStatus['status']): string => {
+const getRecordingStatusText = (status: RecordingStatus['recording_status']): string => {
   switch (status) {
     case 'recording':
       return 'Recording'
-    case 'paused':
-      return 'Paused'
     case 'stopped':
       return 'Stopped'
     default:
       return 'Unknown'
+  }
+}
+
+const getHealthStatusColor = (status: RecordingStatus['health_status']): 'default' | 'secondary' | 'destructive' => {
+  switch (status) {
+    case 'OK':
+      return 'default'
+    case 'WARN':
+      return 'secondary'
+    case 'ERROR':
+      return 'destructive'
+    default:
+      return 'secondary'
   }
 }
 
@@ -54,8 +63,9 @@ export function RecordingControl({
   globalRecordingEnabled,
   onGlobalRecordingToggle
 }: RecordingControlProps) {
-  const isAnyRecording = recordingStatuses.some(r => r.status === 'recording')
-  const isAnyPaused = recordingStatuses.some(r => r.status === 'paused')
+  const isAnyRecording = recordingStatuses.some(r => r.recording_status === 'recording')
+  const hasAnyError = recordingStatuses.some(r => r.health_status === 'ERROR')
+  const hasAnyWarn = recordingStatuses.some(r => r.health_status === 'WARN')
 
   return (
     <Card>
@@ -74,11 +84,19 @@ export function RecordingControl({
       <CardContent>
         <div className="space-y-4">
           {/* Recording Status Display */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">Recording Status:</span>
-            <Badge variant={isAnyRecording ? 'default' : 'secondary'}>
-              {isAnyRecording ? 'RECORDING' : isAnyPaused ? 'PAUSED' : 'STOPPED'}
-            </Badge>
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Recording Status:</span>
+              <Badge variant={isAnyRecording ? 'default' : 'destructive'}>
+                {isAnyRecording ? 'RECORDING' : 'STOPPED'}
+              </Badge>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium">Health Status:</span>
+              <Badge variant={hasAnyError ? 'destructive' : hasAnyWarn ? 'secondary' : 'default'}>
+                {hasAnyError ? 'ERROR' : hasAnyWarn ? 'WARNING' : 'OK'}
+              </Badge>
+            </div>
           </div>
 
           {/* Per-Module Recording Status */}
@@ -88,8 +106,8 @@ export function RecordingControl({
               <TableHeader>
                 <TableRow>
                   <TableHead>Module</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Active</TableHead>
+                  <TableHead>Recording Status</TableHead>
+                  <TableHead>Health Status</TableHead>
                   <TableHead>Hardware ID</TableHead>
                 </TableRow>
               </TableHeader>
@@ -98,17 +116,17 @@ export function RecordingControl({
                   <TableRow key={recording.hostname}>
                     <TableCell className="font-medium">{recording.hostname}</TableCell>
                     <TableCell>
-                      <Badge variant={getRecordingStatusColor(recording.status)}>
-                        {getRecordingStatusText(recording.status)}
+                      <Badge variant={getRecordingStatusColor(recording.recording_status)}>
+                        {getRecordingStatusText(recording.recording_status)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={recording.active ? 'default' : 'secondary'}>
-                        {recording.active ? 'Active' : 'Inactive'}
+                      <Badge variant={getHealthStatusColor(recording.health_status)}>
+                        {recording.health_status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {recording.hardwareId || 'N/A'}
+                      {recording.hardware_id || 'N/A'}
                     </TableCell>
                   </TableRow>
                 ))}
