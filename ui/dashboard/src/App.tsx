@@ -6,6 +6,7 @@ import type { PtpStatus } from '@/components/PtpSyncStatus'
 import { TopicRateStatus } from '@/components/TopicRateStatus'
 import type { ModuleTopicStatus } from '@/components/TopicRateStatus'
 import { PowerControl } from '@/components/PowerControl'
+import { RecordingSwitch } from '@/components/RecordingSwitch'
 import { ApiService } from '@/services/api'
 import { useAutoRefresh } from '@/hooks/useAutoRefresh'
 
@@ -145,6 +146,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [apiError, setApiError] = useState<string | null>(null)
+  const [isRecording, setIsRecording] = useState(false)
+  const [isRecordingLoading, setIsRecordingLoading] = useState(false)
 
   const apiService = ApiService.getInstance()
 
@@ -333,6 +336,37 @@ function App() {
     }
   }
 
+  const handleRecordingToggle = async (enabled: boolean) => {
+    if (isRecordingLoading) return
+    
+    setIsRecordingLoading(true)
+    try {
+      if (enabled) {
+        const success = await apiService.startRecording()
+        if (success) {
+          setIsRecording(true)
+          console.log('Recording started')
+        } else {
+          console.error('Failed to start recording')
+        }
+      } else {
+        const success = await apiService.stopRecording()
+        if (success) {
+          setIsRecording(false)
+          console.log('Recording stopped')
+        } else {
+          console.error('Failed to stop recording')
+        }
+      }
+    } catch (error) {
+      console.error('Failed to toggle recording:', error)
+      // Revert the state on error
+      setIsRecording(!enabled)
+    } finally {
+      setIsRecordingLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -350,6 +384,11 @@ function App() {
             <span className="text-sm text-muted-foreground">
               Last updated: {lastUpdated.toLocaleTimeString()}
             </span>
+            <RecordingSwitch 
+              isRecording={isRecording}
+              isLoading={isRecordingLoading}
+              onToggle={handleRecordingToggle}
+            />
             <PowerControl 
               onSystemRestart={handleSystemRestart}
               onSystemShutdown={handleSystemShutdown}
