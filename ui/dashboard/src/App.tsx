@@ -82,15 +82,15 @@ const mockPtpStatuses: PtpStatus[] = [
 const mockRecordingStatuses: RecordingStatus[] = [
   {
     hostname: 'ecu0',
-    status: 'recording',
-    active: true,
-    hardwareId: 'hw-001',
+    recording_status: 'recording',
+    health_status: 'OK',
+    hardware_id: 'hw-001',
   },
   {
     hostname: 'ecu1',
-    status: 'paused',
-    active: true,
-    hardwareId: 'hw-002',
+    recording_status: 'stopped',
+    health_status: 'WARN',
+    hardware_id: 'hw-002',
   },
   // NAS does not have recording functionality
 ]
@@ -187,9 +187,9 @@ function App() {
 
   const convertToRecordingStatus = (apiRec: any): RecordingStatus => ({
     hostname: apiRec.hostname,
-    status: apiRec.status,
-    active: apiRec.active,
-    hardwareId: apiRec.hardware_id,
+    recording_status: apiRec.recording_status,
+    health_status: apiRec.health_status,
+    hardware_id: apiRec.hardware_id,
   })
 
 
