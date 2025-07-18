@@ -38,6 +38,10 @@ export interface Module {
   diskUsagePercentage: number
   diskFreeBytes: number
   diskTotalBytes: number
+  ptpStatus?: {
+    gmPresent: boolean
+    offsetNs: number
+  }
 }
 
 interface ModuleStatusTableProps {
@@ -89,6 +93,25 @@ const getDataStatusBadge = (status: Module['dataStatus']) => {
     default:
       return <Badge variant="outline">{status}</Badge>
   }
+}
+
+const getPtpStatusBadge = (ptpStatus?: Module['ptpStatus']) => {
+  if (!ptpStatus) return '-'
+  
+  const getPtpStatusColor = (offsetNs: number, gmPresent: boolean): 'default' | 'secondary' | 'destructive' => {
+    if (!gmPresent) return 'destructive'
+    
+    const absOffset = Math.abs(offsetNs)
+    if (absOffset < 1000) return 'default' // < 1µs
+    if (absOffset < 10000) return 'secondary' // < 10µs
+    return 'destructive' // > 10µs
+  }
+  
+  return (
+    <Badge variant={getPtpStatusColor(ptpStatus.offsetNs, ptpStatus.gmPresent)}>
+      {ptpStatus.gmPresent ? 'SYNCED' : 'NO GM'}
+    </Badge>
+  )
 }
 
 const formatBytes = (bytes: number): string => {
@@ -169,6 +192,7 @@ export function ModuleStatusTable({
             <TableHead>Module</TableHead>
             <TableHead>Module ID</TableHead>
             <TableHead>Services</TableHead>
+            <TableHead>Time Sync</TableHead>
             <TableHead>Recording</TableHead>
             <TableHead>Data Status</TableHead>
             <TableHead>Disk Usage</TableHead>
@@ -201,6 +225,9 @@ export function ModuleStatusTable({
                 ) : (
                   <span className="text-muted-foreground">-</span>
                 )}
+              </TableCell>
+              <TableCell>
+                {getPtpStatusBadge(module.ptpStatus)}
               </TableCell>
               <TableCell>
                 {getRecordingStatusBadge(module.recordingStatus)}

@@ -215,8 +215,44 @@ function App() {
       let errorMessages: string[] = []
 
       // Update modules
+      let convertedModules: Module[] = []
       if (modulesData.status === 'fulfilled') {
-        const convertedModules = modulesData.value.map(convertToModule)
+        convertedModules = modulesData.value.map(convertToModule)
+        allFailed = false
+      } else {
+        errorMessages.push('Modules API failed')
+      }
+
+      // Update PTP status
+      let validPtpStatuses: PtpStatus[] = []
+      if (ptpData.status === 'fulfilled') {
+        validPtpStatuses = ptpData.value
+          .filter((apiPtp: any) => apiPtp.local_status && apiPtp.local_status.clock_id) // Only include modules with PTP enabled
+          .map(convertToPtpStatus)
+          .filter((status): status is PtpStatus => status !== null)
+        setPtpStatuses(validPtpStatuses)
+        allFailed = false
+      } else {
+        errorMessages.push('PTP API failed')
+      }
+
+      // Merge PTP status into modules
+      if (convertedModules.length > 0) {
+        const ptpStatusMap = new Map(validPtpStatuses.map(ptp => [ptp.hostname, ptp]))
+        convertedModules = convertedModules.map(module => {
+          const ptpStatus = ptpStatusMap.get(module.hostname)
+          if (ptpStatus) {
+            return {
+              ...module,
+              ptpStatus: {
+                gmPresent: ptpStatus.localStatus.gmPresent,
+                offsetNs: ptpStatus.localStatus.masterOffsetNs
+              }
+            }
+          }
+          return module
+        })
+        
         // Sort modules alphabetically by hostname
         convertedModules.sort((a, b) => a.hostname.localeCompare(b.hostname))
         setModules(convertedModules)
@@ -226,25 +262,10 @@ function App() {
           module.recordingStatus === 'recording'
         )
         setIsRecording(anyModuleRecording)
-        
-        allFailed = false
-      } else {
-        errorMessages.push('Modules API failed')
       }
 
-      // Update PTP status
-      if (ptpData.status === 'fulfilled') {
-        const validPtpStatuses = ptpData.value
-          .filter((apiPtp: any) => apiPtp.local_status && apiPtp.local_status.clock_id) // Only include modules with PTP enabled
-          .map(convertToPtpStatus)
-          .filter((status): status is PtpStatus => status !== null)
-        // Sort PTP statuses alphabetically by hostname
-        validPtpStatuses.sort((a, b) => a.hostname.localeCompare(b.hostname))
-        setPtpStatuses(validPtpStatuses)
-        allFailed = false
-      } else {
-        errorMessages.push('PTP API failed')
-      }
+      // Sort PTP statuses alphabetically by hostname
+      validPtpStatuses.sort((a, b) => a.hostname.localeCompare(b.hostname))
 
       // Recording status is now merged with module data
       if (recordingData.status === 'rejected') {
