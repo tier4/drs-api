@@ -194,7 +194,8 @@ export class ApiService {
   async restartSystem(): Promise<boolean> {
     try {
       const response = await this.fetchWithTimeout(`${API_BASE_URL}/system/restart`, 10000, {
-        method: 'POST'
+        method: 'POST',
+        body: JSON.stringify({})
       })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -210,7 +211,8 @@ export class ApiService {
   async shutdownSystem(): Promise<boolean> {
     try {
       const response = await this.fetchWithTimeout(`${API_BASE_URL}/system/shutdown`, 10000, {
-        method: 'POST'
+        method: 'POST',
+        body: JSON.stringify({})
       })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -242,7 +244,8 @@ export class ApiService {
   async restartModule(hostname: string): Promise<boolean> {
     try {
       const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/restart`, 10000, {
-        method: 'POST'
+        method: 'POST',
+        body: JSON.stringify({})
       })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -258,7 +261,8 @@ export class ApiService {
   async shutdownModule(hostname: string): Promise<boolean> {
     try {
       const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/shutdown`, 10000, {
-        method: 'POST'
+        method: 'POST',
+        body: JSON.stringify({})
       })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
