@@ -106,7 +106,6 @@ type TopicStatusResponse struct {
 type TopicStatus struct {
 	TopicName        string  `json:"topic_name"`
 	RateHz           float64 `json:"rate_hz"`
-	ExpectedRateHz   float64 `json:"expected_rate_hz"`
 	Status           string  `json:"status"` // OK, WARN, ERROR
 }
 

@@ -233,7 +233,6 @@ func (h *RecordingHandler) GetTopicStatus(c *gin.Context) {
 		topics = append(topics, models.TopicStatus{
 			TopicName:      topic.TopicName,
 			RateHz:         topic.RateHz,
-			ExpectedRateHz: 30.0, // Default expected rate
 			Status:         status,
 		})
 	}
