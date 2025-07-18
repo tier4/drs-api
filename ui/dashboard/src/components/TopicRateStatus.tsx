@@ -49,33 +49,6 @@ const formatRate = (rate: number): string => {
   return rate.toFixed(1)
 }
 
-const getRateIndicator = (actualRate: number, topicName: string) => {
-  // Expected rates based on topic type
-  const expectedRates: Record<string, { min: number, max: number }> = {
-    camera: { min: 20, max: 40 },
-    lidar: { min: 8, max: 12 },
-    imu: { min: 80, max: 120 },
-    gps: { min: 0.5, max: 2 },
-    radar: { min: 10, max: 20 },
-    vehicle: { min: 40, max: 60 }
-  }
-
-  let expected = null
-  for (const [key, range] of Object.entries(expectedRates)) {
-    if (topicName.toLowerCase().includes(key)) {
-      expected = range
-      break
-    }
-  }
-
-  if (!expected) return null
-
-  const percentage = ((actualRate - expected.min) / (expected.max - expected.min)) * 100
-  return {
-    percentage: Math.max(0, Math.min(100, percentage)),
-    expected
-  }
-}
 
 export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
   // Calculate summary statistics
@@ -124,7 +97,7 @@ export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
       </Card>
 
       {/* Module Cards */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
         {moduleTopicStatuses.map((module) => {
           const moduleErrors = module.topics.filter(t => t.status === 'ERROR').length
           const moduleWarnings = module.topics.filter(t => t.status === 'WARN').length
@@ -153,7 +126,6 @@ export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
                   {module.topics.map((topic) => {
                     const statusInfo = getStatusIcon(topic.status)
                     const StatusIcon = statusInfo.icon
-                    const rateInfo = getRateIndicator(topic.rateHz, topic.topicName)
 
                     return (
                       <div
@@ -167,15 +139,8 @@ export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
                           </span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <div className="text-sm font-medium">
-                              {formatRate(topic.rateHz)} Hz
-                            </div>
-                            {rateInfo && (
-                              <div className="text-xs text-muted-foreground">
-                                Expected: {rateInfo.expected.min}-{rateInfo.expected.max} Hz
-                              </div>
-                            )}
+                          <div className="text-sm font-medium">
+                            {formatRate(topic.rateHz)} Hz
                           </div>
                           <Badge 
                             variant={getStatusColor(topic.status)}
