@@ -3,8 +3,6 @@ import { EcuStatusTable } from '@/components/EcuStatusTable'
 import type { EcuModule } from '@/components/EcuStatusTable'
 import { PtpSyncStatus } from '@/components/PtpSyncStatus'
 import type { PtpStatus } from '@/components/PtpSyncStatus'
-import { RecordingControl } from '@/components/RecordingControl'
-import type { RecordingStatus } from '@/components/RecordingControl'
 import { TopicRateStatus } from '@/components/TopicRateStatus'
 import type { ModuleTopicStatus } from '@/components/TopicRateStatus'
 import { PowerControl } from '@/components/PowerControl'
@@ -15,24 +13,36 @@ import { useAutoRefresh } from '@/hooks/useAutoRefresh'
 const mockModules: EcuModule[] = [
   {
     hostname: 'ecu0',
-    status: 'OK',
-    diskUsagePercentage: 75.5,
-    diskFreeBytes: 1073741824, // 1GB
-    diskTotalBytes: 4294967296, // 4GB
+    moduleId: 'a3b2c1d4aaa',
+    services: {
+      drs_sensor: 'active',
+      drs_recorder: 'active',
+    },
+    recordingStatus: 'recording',
+    dataStatus: 'OK',
+    diskUsagePercentage: 75.0,
+    diskFreeBytes: 268435456000, // 250GB
+    diskTotalBytes: 1073741824000, // 1TB
   },
   {
     hostname: 'ecu1',
-    status: 'WARN',
-    diskUsagePercentage: 89.2,
-    diskFreeBytes: 536870912, // 0.5GB
-    diskTotalBytes: 4294967296, // 4GB
+    moduleId: 'f5e6d7c8aaa',
+    services: {
+      drs_sensor: 'active',
+      drs_recorder: 'failed',
+    },
+    recordingStatus: 'stopped',
+    dataStatus: 'WARN',
+    diskUsagePercentage: 90.0,
+    diskFreeBytes: 107374182400, // 100GB
+    diskTotalBytes: 1073741824000, // 1TB
   },
   {
     hostname: 'nas',
-    status: 'ERROR',
-    diskUsagePercentage: 95.8,
-    diskFreeBytes: 214748364, // 0.2GB
-    diskTotalBytes: 5368709120, // 5GB
+    dataStatus: 'OK',
+    diskUsagePercentage: 25.0,
+    diskFreeBytes: 805306368000, // 750GB
+    diskTotalBytes: 1073741824000, // 1TB
   },
 ]
 
@@ -76,23 +86,6 @@ const mockPtpStatuses: PtpStatus[] = [
     ],
   },
   // NAS does not have PTP functionality - only system and disk monitoring
-]
-
-// Mock Recording data based on API design
-const mockRecordingStatuses: RecordingStatus[] = [
-  {
-    hostname: 'ecu0',
-    recording_status: 'recording',
-    health_status: 'OK',
-    hardware_id: 'hw-001',
-  },
-  {
-    hostname: 'ecu1',
-    recording_status: 'stopped',
-    health_status: 'WARN',
-    hardware_id: 'hw-002',
-  },
-  // NAS does not have recording functionality
 ]
 
 // Mock Topic Rate data based on API design
@@ -148,9 +141,7 @@ const mockModuleTopicStatuses: ModuleTopicStatus[] = [
 function App() {
   const [modules, setModules] = useState<EcuModule[]>(mockModules)
   const [ptpStatuses, setPtpStatuses] = useState<PtpStatus[]>(mockPtpStatuses)
-  const [recordingStatuses, setRecordingStatuses] = useState<RecordingStatus[]>(mockRecordingStatuses)
   const [topicStatuses, setTopicStatuses] = useState<ModuleTopicStatus[]>(mockModuleTopicStatuses)
-  const [globalRecordingEnabled, setGlobalRecordingEnabled] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [apiError, setApiError] = useState<string | null>(null)
@@ -158,13 +149,24 @@ function App() {
   const apiService = ApiService.getInstance()
 
   // Convert API data to component format
-  const convertToEcuModule = (apiModule: any): EcuModule => ({
-    hostname: apiModule.hostname,
-    status: apiModule.status,
-    diskUsagePercentage: apiModule.disk?.usage_percentage || 0,
-    diskFreeBytes: apiModule.disk?.free_bytes || 0,
-    diskTotalBytes: apiModule.disk?.total_bytes || 0,
-  })
+  const convertToEcuModule = (apiModule: any, recordingStatus?: any): EcuModule => {
+    const module: EcuModule = {
+      hostname: apiModule.hostname,
+      moduleId: apiModule.environment?.module_id,
+      dataStatus: recordingStatus?.health_status || apiModule.status || 'OK',
+      diskUsagePercentage: apiModule.disk?.usage_percentage || 0,
+      diskFreeBytes: apiModule.disk?.free_bytes || 0,
+      diskTotalBytes: apiModule.disk?.total_bytes || 0,
+    }
+    
+    // Only add services for ecu modules, not for nas
+    if (apiModule.hostname.startsWith('ecu')) {
+      module.services = apiModule.status_detail?.services
+      module.recordingStatus = recordingStatus?.recording_status || apiModule.status_detail?.recording?.status
+    }
+    
+    return module
+  }
 
   const convertToPtpStatus = (apiPtp: any): PtpStatus | null => {
     if (!apiPtp || !apiPtp.hostname) return null
@@ -184,13 +186,6 @@ function App() {
       })),
     }
   }
-
-  const convertToRecordingStatus = (apiRec: any): RecordingStatus => ({
-    hostname: apiRec.hostname,
-    recording_status: apiRec.recording_status,
-    health_status: apiRec.health_status,
-    hardware_id: apiRec.hardware_id,
-  })
 
 
   // Data fetching function
@@ -213,7 +208,17 @@ function App() {
 
       // Update modules
       if (modulesData.status === 'fulfilled') {
-        const convertedModules = modulesData.value.map(convertToEcuModule)
+        // Get recording status to merge with module data
+        const recordingMap = new Map<string, any>()
+        if (recordingData.status === 'fulfilled') {
+          recordingData.value.forEach((rec: any) => {
+            recordingMap.set(rec.hostname, rec)
+          })
+        }
+        
+        const convertedModules = modulesData.value.map((module: any) => 
+          convertToEcuModule(module, recordingMap.get(module.hostname))
+        )
         // Sort modules alphabetically by hostname
         convertedModules.sort((a, b) => a.hostname.localeCompare(b.hostname))
         setModules(convertedModules)
@@ -236,14 +241,8 @@ function App() {
         errorMessages.push('PTP API failed')
       }
 
-      // Update recording status
-      if (recordingData.status === 'fulfilled') {
-        const convertedRecordingStatuses = recordingData.value.map(convertToRecordingStatus)
-        // Sort recording statuses alphabetically by hostname
-        convertedRecordingStatuses.sort((a, b) => a.hostname.localeCompare(b.hostname))
-        setRecordingStatuses(convertedRecordingStatuses)
-        allFailed = false
-      } else {
+      // Recording status is now merged with module data
+      if (recordingData.status === 'rejected') {
         errorMessages.push('Recording API failed')
       }
 
@@ -320,25 +319,6 @@ function App() {
     }
   }
 
-  const handleGlobalRecordingToggle = async (enabled: boolean) => {
-    setGlobalRecordingEnabled(enabled)
-    
-    try {
-      if (enabled) {
-        await apiService.startRecording()
-        console.log('Started recording')
-      } else {
-        await apiService.stopRecording()
-        console.log('Stopped recording')
-      }
-      // Refresh data immediately after recording operation
-      fetchAllData()
-    } catch (error) {
-      console.error('Failed to toggle recording:', error)
-      // Revert the switch state on error
-      setGlobalRecordingEnabled(!enabled)
-    }
-  }
 
   const handleSystemRestart = async () => {
     try {
@@ -400,14 +380,6 @@ function App() {
               onRestartSensors={handleRestartSensors}
               onRestartMachine={handleRestartMachine}
               onShutdownMachine={handleShutdownMachine}
-            />
-          </div>
-          
-          <div>
-            <RecordingControl
-              recordingStatuses={recordingStatuses}
-              globalRecordingEnabled={globalRecordingEnabled}
-              onGlobalRecordingToggle={handleGlobalRecordingToggle}
             />
           </div>
           

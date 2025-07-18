@@ -10,6 +10,7 @@ import (
 	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
 	"github.com/tier4/drs-api/services/api-gateway/internal/models"
 	modulev1 "github.com/tier4/drs-api/services/api-gateway/drs/module/v1"
+	ros2bridgev1 "github.com/tier4/drs-api/services/api-gateway/drs/ros2bridge/v1"
 )
 
 // ModuleHandler handles module-related REST API endpoints
@@ -136,6 +137,12 @@ func (h *ModuleHandler) getModuleStatus(hostname string) models.ModuleStatus {
 		status.StatusDetail.Services = serviceStatus
 	}
 
+	// Get recording status from ROS2 bridge
+	if hostname != "nas" { // NAS doesn't have recording capability
+		if recordingStatus := h.getRecordingStatus(hostname); recordingStatus != nil {
+			status.StatusDetail.Recording = *recordingStatus
+		}
+	}
 
 	// Determine overall status
 	status.Status = h.determineOverallStatus(status)
@@ -168,6 +175,52 @@ func (h *ModuleHandler) getServiceStatus(clients *grpc.ModuleClients, hostname s
 	return serviceStatus
 }
 
+
+// getRecordingStatus fetches recording status from ROS2 bridge
+func (h *ModuleHandler) getRecordingStatus(hostname string) *models.RecordingInfo {
+	ros2Bridge, err := h.clientManager.GetROS2BridgeClients()
+	if err != nil {
+		return nil
+	}
+
+	ctx, cancel := h.clientManager.GetContext()
+	defer cancel()
+
+	// Get module environment to find hardware ID
+	clients, err := h.clientManager.GetModuleClients(hostname)
+	if err != nil {
+		return nil
+	}
+
+	envResp, err := clients.Monitoring.GetEnvironment(ctx, &modulev1.GetEnvironmentRequest{})
+	if err != nil {
+		return nil
+	}
+
+	// Get recording status from ROS2 bridge
+	resp, err := ros2Bridge.Recording.ListRecordings(ctx, &ros2bridgev1.ListRecordingsRequest{})
+	if err != nil {
+		return nil
+	}
+
+	// Find recording for this module by hardware ID
+	for _, recording := range resp.Recordings {
+		if recording.HardwareId == envResp.ModuleId {
+			status := "stopped"
+			if recording.IsRecording {
+				status = "recording"
+			}
+			return &models.RecordingInfo{
+				Status: status,
+			}
+		}
+	}
+
+	// Default to stopped if not found
+	return &models.RecordingInfo{
+		Status: "stopped",
+	}
+}
 
 // convertServiceState converts gRPC service state to string
 func (h *ModuleHandler) convertServiceState(state modulev1.Service_ServiceState) string {
