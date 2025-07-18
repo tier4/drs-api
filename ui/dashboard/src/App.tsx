@@ -220,6 +220,13 @@ function App() {
         // Sort modules alphabetically by hostname
         convertedModules.sort((a, b) => a.hostname.localeCompare(b.hostname))
         setModules(convertedModules)
+        
+        // Check if any module is recording
+        const anyModuleRecording = convertedModules.some(module => 
+          module.recordingStatus === 'recording'
+        )
+        setIsRecording(anyModuleRecording)
+        
         allFailed = false
       } else {
         errorMessages.push('Modules API failed')

@@ -10,7 +10,9 @@ interface RecordingSwitchProps {
 export function RecordingSwitch({ isRecording, isLoading, onToggle }: RecordingSwitchProps) {
   return (
     <div className="flex items-center space-x-2">
-      <span className="text-sm text-muted-foreground">Recording</span>
+      <span className="text-sm text-muted-foreground">
+        {isRecording ? "Recording" : "Stopped"}
+      </span>
       <div className="relative">
         <Switch 
           checked={isRecording} 
