@@ -228,6 +228,8 @@ function App() {
           .filter((apiPtp: any) => apiPtp.local_status && apiPtp.local_status.clock_id) // Only include modules with PTP enabled
           .map(convertToPtpStatus)
           .filter((status): status is PtpStatus => status !== null)
+        // Sort PTP statuses alphabetically by hostname
+        validPtpStatuses.sort((a, b) => a.hostname.localeCompare(b.hostname))
         setPtpStatuses(validPtpStatuses)
         allFailed = false
       } else {
@@ -236,7 +238,10 @@ function App() {
 
       // Update recording status
       if (recordingData.status === 'fulfilled') {
-        setRecordingStatuses(recordingData.value.map(convertToRecordingStatus))
+        const convertedRecordingStatuses = recordingData.value.map(convertToRecordingStatus)
+        // Sort recording statuses alphabetically by hostname
+        convertedRecordingStatuses.sort((a, b) => a.hostname.localeCompare(b.hostname))
+        setRecordingStatuses(convertedRecordingStatuses)
         allFailed = false
       } else {
         errorMessages.push('Recording API failed')
