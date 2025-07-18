@@ -276,6 +276,8 @@ function App() {
           })
 
         const topicResults = await Promise.all(topicPromises)
+        // Sort topic statuses alphabetically by hostname
+        topicResults.sort((a, b) => a.hostname.localeCompare(b.hostname))
         setTopicStatuses(topicResults)
       }
 
