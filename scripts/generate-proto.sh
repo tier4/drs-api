@@ -99,8 +99,8 @@ check_tools() {
 if [[ "$GENERATE_GO" == "true" ]]; then
     mkdir -p ${SERVICES_DIR}/module-manager/gen/drs/module/v1
     # Also create directories for API Gateway
-    mkdir -p ${SERVICES_DIR}/api-gateway/drs/module/v1
-    mkdir -p ${SERVICES_DIR}/api-gateway/drs/ros2bridge/v1
+    mkdir -p ${SERVICES_DIR}/api-gateway/gen/drs/module/v1
+    mkdir -p ${SERVICES_DIR}/api-gateway/gen/drs/ros2bridge/v1
 fi
 
 if [[ "$GENERATE_CPP" == "true" ]]; then
@@ -113,26 +113,26 @@ check_tools
 if [[ "$GENERATE_GO" == "true" ]]; then
     echo "Generating Go code for module manager service..."
     protoc -I ${PROTO_DIR} \
-        --go_out=${SERVICES_DIR}/module-manager \
+        --go_out=${SERVICES_DIR}/module-manager/gen \
         --go_opt=paths=source_relative \
-        --go-grpc_out=${SERVICES_DIR}/module-manager \
+        --go-grpc_out=${SERVICES_DIR}/module-manager/gen \
         --go-grpc_opt=paths=source_relative \
         ${PROTO_DIR}/drs/module/v1/*.proto
     
     echo "Generating Go code for API gateway..."
     # Generate module proto files for API Gateway
     protoc -I ${PROTO_DIR} \
-        --go_out=${SERVICES_DIR}/api-gateway \
+        --go_out=${SERVICES_DIR}/api-gateway/gen \
         --go_opt=paths=source_relative \
-        --go-grpc_out=${SERVICES_DIR}/api-gateway \
+        --go-grpc_out=${SERVICES_DIR}/api-gateway/gen \
         --go-grpc_opt=paths=source_relative \
         ${PROTO_DIR}/drs/module/v1/*.proto
     
     # Generate ROS2 bridge proto files for API Gateway
     protoc -I ${PROTO_DIR} \
-        --go_out=${SERVICES_DIR}/api-gateway \
+        --go_out=${SERVICES_DIR}/api-gateway/gen \
         --go_opt=paths=source_relative \
-        --go-grpc_out=${SERVICES_DIR}/api-gateway \
+        --go-grpc_out=${SERVICES_DIR}/api-gateway/gen \
         --go-grpc_opt=paths=source_relative \
         ${PROTO_DIR}/drs/ros2bridge/v1/*.proto
 fi
@@ -152,7 +152,7 @@ echo ""
 echo "Generated files:"
 if [[ "$GENERATE_GO" == "true" ]]; then
     echo "  - Go (module-manager): ${SERVICES_DIR}/module-manager/gen/"
-    echo "  - Go (api-gateway): ${SERVICES_DIR}/api-gateway/drs/"
+    echo "  - Go (api-gateway): ${SERVICES_DIR}/api-gateway/gen/"
 fi
 if [[ "$GENERATE_CPP" == "true" ]]; then
     echo "  - C++ (ros2-bridge): ${SERVICES_DIR}/ros2-bridge/gen/"

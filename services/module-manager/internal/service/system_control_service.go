@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/tier4/drs-api/services/module-manager/internal/config"
-	modulev1 "github.com/tier4/drs-api/services/module-manager/drs/module/v1"
+	modulev1 "github.com/tier4/drs-api/services/module-manager/gen/drs/module/v1"
 	"github.com/tier4/drs-api/services/module-manager/internal/system"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

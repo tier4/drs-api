@@ -7,7 +7,7 @@ import (
 
 	"github.com/tier4/drs-api/services/api-gateway/internal/config"
 	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
-	modulev1 "github.com/tier4/drs-api/services/api-gateway/drs/module/v1"
+	modulev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/module/v1"
 )
 
 // Router sets up the HTTP router with all endpoints

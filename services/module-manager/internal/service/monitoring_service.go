@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/tier4/drs-api/services/module-manager/internal/config"
-	modulev1 "github.com/tier4/drs-api/services/module-manager/drs/module/v1"
+	modulev1 "github.com/tier4/drs-api/services/module-manager/gen/drs/module/v1"
 	"github.com/tier4/drs-api/services/module-manager/internal/ptp"
 	"github.com/tier4/drs-api/services/module-manager/internal/storage"
 	"google.golang.org/grpc/codes"

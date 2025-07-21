@@ -9,8 +9,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/tier4/drs-api/services/api-gateway/internal/config"
-	modulev1 "github.com/tier4/drs-api/services/api-gateway/drs/module/v1"
-	ros2bridgev1 "github.com/tier4/drs-api/services/api-gateway/drs/ros2bridge/v1"
+	modulev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/module/v1"
+	ros2bridgev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/ros2bridge/v1"
 )
 
 // ClientManager manages gRPC connections to multiple modules

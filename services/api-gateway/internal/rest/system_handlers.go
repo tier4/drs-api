@@ -9,7 +9,7 @@ import (
 	"github.com/tier4/drs-api/services/api-gateway/internal/config"
 	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
 	"github.com/tier4/drs-api/services/api-gateway/internal/models"
-	modulev1 "github.com/tier4/drs-api/services/api-gateway/drs/module/v1"
+	modulev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/module/v1"
 )
 
 // SystemHandler handles system control REST API endpoints
