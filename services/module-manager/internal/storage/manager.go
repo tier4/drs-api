@@ -40,8 +40,8 @@ func (m *Manager) GetDiskUsage(path string) (*DiskUsage, error) {
 	}
 
 	total := stat.Blocks * uint64(stat.Bsize)
-	free := stat.Bavail * uint64(stat.Bsize)
-	used := total - free
+	free := stat.Bfree * uint64(stat.Bsize)
+	used := (stat.Blocks - stat.Bfree) * uint64(stat.Bsize)
 
 	usage := &DiskUsage{
 		TotalBytes:      total,
