@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import type { Module } from '@/components/ModuleStatus'
 import type { PtpStatus } from '@/components/PtpSyncStatus'
@@ -150,6 +150,7 @@ function App() {
   const [apiError, setApiError] = useState<string | null>(null)
   const [isRecording, setIsRecording] = useState(false)
   const [isRecordingLoading, setIsRecordingLoading] = useState(false)
+  const recordingToggleTimestamp = useRef<number>(0)
 
   const apiService = ApiService.getInstance()
 
@@ -263,7 +264,12 @@ function App() {
         const anyModuleRecording = convertedModules.some(module => 
           module.recordingStatus === 'recording'
         )
-        setIsRecording(anyModuleRecording)
+        
+        // Don't override recording state if recently toggled (within 10 seconds)
+        const timeSinceToggle = Date.now() - recordingToggleTimestamp.current
+        if (timeSinceToggle > 10000) {
+          setIsRecording(anyModuleRecording)
+        }
       }
 
       // Sort PTP statuses alphabetically by hostname
@@ -369,23 +375,29 @@ function App() {
   const handleRecordingToggle = async (enabled: boolean) => {
     if (isRecordingLoading) return
     
+    // Optimistic update - immediately update UI
+    setIsRecording(enabled)
     setIsRecordingLoading(true)
+    recordingToggleTimestamp.current = Date.now()
+    
     try {
       if (enabled) {
         const success = await apiService.startRecording()
-        if (success) {
-          setIsRecording(true)
-          console.log('Recording started')
-        } else {
+        if (!success) {
+          // Revert only on failure
+          setIsRecording(false)
           console.error('Failed to start recording')
+        } else {
+          console.log('Recording started')
         }
       } else {
         const success = await apiService.stopRecording()
-        if (success) {
-          setIsRecording(false)
-          console.log('Recording stopped')
-        } else {
+        if (!success) {
+          // Revert only on failure
+          setIsRecording(true)
           console.error('Failed to stop recording')
+        } else {
+          console.log('Recording stopped')
         }
       }
     } catch (error) {
