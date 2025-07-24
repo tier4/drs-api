@@ -101,6 +101,9 @@ if [[ "$GENERATE_GO" == "true" ]]; then
     # Also create directories for API Gateway
     mkdir -p ${SERVICES_DIR}/api-gateway/gen/drs/module/v1
     mkdir -p ${SERVICES_DIR}/api-gateway/gen/drs/ros2bridge/v1
+    # Also create directories for drs-cli
+    mkdir -p ${SCRIPT_DIR}/../tools/drs-cli/gen/drs/module/v1
+    mkdir -p ${SCRIPT_DIR}/../tools/drs-cli/gen/drs/ros2bridge/v1
 fi
 
 if [[ "$GENERATE_CPP" == "true" ]]; then
@@ -135,6 +138,23 @@ if [[ "$GENERATE_GO" == "true" ]]; then
         --go-grpc_out=${SERVICES_DIR}/api-gateway/gen \
         --go-grpc_opt=paths=source_relative \
         ${PROTO_DIR}/drs/ros2bridge/v1/*.proto
+    
+    echo "Generating Go code for drs-cli..."
+    # Generate module proto files for drs-cli
+    protoc -I ${PROTO_DIR} \
+        --go_out=${SCRIPT_DIR}/../tools/drs-cli/gen \
+        --go_opt=paths=source_relative \
+        --go-grpc_out=${SCRIPT_DIR}/../tools/drs-cli/gen \
+        --go-grpc_opt=paths=source_relative \
+        ${PROTO_DIR}/drs/module/v1/*.proto
+    
+    # Generate ROS2 bridge proto files for drs-cli
+    protoc -I ${PROTO_DIR} \
+        --go_out=${SCRIPT_DIR}/../tools/drs-cli/gen \
+        --go_opt=paths=source_relative \
+        --go-grpc_out=${SCRIPT_DIR}/../tools/drs-cli/gen \
+        --go-grpc_opt=paths=source_relative \
+        ${PROTO_DIR}/drs/ros2bridge/v1/*.proto
 fi
 
 # Generate C++ code if requested
@@ -153,6 +173,7 @@ echo "Generated files:"
 if [[ "$GENERATE_GO" == "true" ]]; then
     echo "  - Go (module-manager): ${SERVICES_DIR}/module-manager/gen/"
     echo "  - Go (api-gateway): ${SERVICES_DIR}/api-gateway/gen/"
+    echo "  - Go (drs-cli): ${SCRIPT_DIR}/../tools/drs-cli/gen/"
 fi
 if [[ "$GENERATE_CPP" == "true" ]]; then
     echo "  - C++ (ros2-bridge): ${SERVICES_DIR}/ros2-bridge/gen/"
