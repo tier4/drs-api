@@ -17,6 +17,7 @@ if [ -z "${TARGET}" ]; then
     echo ""
     echo "Available targets:"
     echo "  module-manager  - Build module-manager static binaries"
+    echo "  api-gateway    - Build api-gateway static binaries"
     echo "  drs-cli        - Build drs-cli static binaries"
     echo "  all            - Build all static binaries"
     exit 1
@@ -71,11 +72,16 @@ case "${TARGET}" in
     module-manager)
         build_binaries "module-manager" "services/module-manager" "cmd/server/main.go"
         ;;
+    api-gateway)
+        build_binaries "api-gateway" "services/api-gateway" "cmd/server/main.go"
+        ;;
     drs-cli)
         build_binaries "drs-cli" "tools/drs-cli" "."
         ;;
     all)
         build_binaries "module-manager" "services/module-manager" "cmd/server/main.go"
+        echo ""
+        build_binaries "api-gateway" "services/api-gateway" "cmd/server/main.go"
         echo ""
         build_binaries "drs-cli" "tools/drs-cli" "."
         ;;
