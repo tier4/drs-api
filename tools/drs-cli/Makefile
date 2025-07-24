@@ -1,4 +1,4 @@
-.PHONY: build clean test lint deps install
+.PHONY: build clean test lint deps install build-static build-arm64-static
 
 # Binary name
 BINARY_NAME := drs-cli
@@ -7,6 +7,13 @@ OUTPUT_DIR := bin
 # Build the binary
 build:
 	go build -o $(OUTPUT_DIR)/$(BINARY_NAME) .
+
+# Build static binaries
+build-static:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-w -s -extldflags "-static"' -o $(OUTPUT_DIR)/$(BINARY_NAME)-amd64-static .
+
+build-arm64-static:
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -ldflags '-w -s -extldflags "-static"' -o $(OUTPUT_DIR)/$(BINARY_NAME)-arm64-static .
 
 # Build for multiple platforms
 build-all: build-linux build-arm64 build-darwin

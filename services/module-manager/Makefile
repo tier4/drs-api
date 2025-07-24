@@ -1,4 +1,4 @@
-.PHONY: build build-static build-arm64 build-arm64-static clean all all-static
+.PHONY: build build-static build-arm64 build-arm64-static clean all all-static test
 
 # Build version (local architecture)
 build:
