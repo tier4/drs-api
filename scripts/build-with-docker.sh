@@ -48,6 +48,7 @@ build_binaries() {
             ./scripts/generate-proto.sh --go-only && \
             
             cd ${target_dir} && \
+            go mod tidy && \
             go mod download && \
             
             echo 'Building ${target_name}-amd64-static...' && \
