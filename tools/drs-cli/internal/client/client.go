@@ -8,8 +8,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	modulev1 "github.com/tier4/drs-api/tools/drs-cli/drs/module/v1"
-	ros2bridgev1 "github.com/tier4/drs-api/tools/drs-cli/drs/ros2bridge/v1"
+	modulev1 "github.com/tier4/drs-api/tools/drs-cli/gen/drs/module/v1"
+	ros2bridgev1 "github.com/tier4/drs-api/tools/drs-cli/gen/drs/ros2bridge/v1"
 )
 
 type Client struct {

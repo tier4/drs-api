@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/tier4/drs-api/tools/drs-cli/internal/client"
-	modulev1 "github.com/tier4/drs-api/tools/drs-cli/drs/module/v1"
+	modulev1 "github.com/tier4/drs-api/tools/drs-cli/gen/drs/module/v1"
 )
 
 var monitoringCmd = &cobra.Command{
