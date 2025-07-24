@@ -37,8 +37,8 @@ func (c *Checker) GetLocalTimeStatus() (*TimeStatus, error) {
 }
 
 func (c *Checker) GetRemoteTimeStatus(targetIP string) (*TimeStatus, error) {
-	// Ping to ensure ARP entry exists
-	pingCmd := exec.Command("ping", "-c", "1", targetIP)
+	// Ping to ensure ARP entry exists (with 1 second timeout)
+	pingCmd := exec.Command("ping", "-c", "1", "-W", "1", targetIP)
 	pingCmd.Run() // Ignore error as ping might fail but ARP entry could still exist
 	
 	// Get MAC address and interface from ARP table
