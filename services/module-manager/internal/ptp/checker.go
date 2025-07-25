@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -37,11 +38,7 @@ func (c *Checker) GetLocalTimeStatus() (*TimeStatus, error) {
 }
 
 func (c *Checker) GetRemoteTimeStatus(targetIP string) (*TimeStatus, error) {
-	// Ping to ensure ARP entry exists (with 1 second timeout)
-	pingCmd := exec.Command("ping", "-c", "1", "-W", "1", targetIP)
-	pingCmd.Run() // Ignore error as ping might fail but ARP entry could still exist
-	
-	// Get MAC address and interface from ARP table
+	// Get MAC address and interface from /proc/net/arp
 	macAddr, iface, err := getMACAndInterfaceFromARP(targetIP)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get MAC address: %v", err)
@@ -132,21 +129,40 @@ func (c *Checker) parseTimeStatus(output string) (*TimeStatus, error) {
 }
 
 func getMACAndInterfaceFromARP(ip string) (string, string, error) {
-	cmd := exec.Command("arp", "-n")
-	output, err := cmd.CombinedOutput()
+	// Read /proc/net/arp directly
+	file, err := os.Open("/proc/net/arp")
 	if err != nil {
-		return "", "", fmt.Errorf("failed to execute arp: %v", err)
+		return "", "", fmt.Errorf("failed to open /proc/net/arp: %v", err)
 	}
+	defer file.Close()
 	
-	scanner := bufio.NewScanner(bytes.NewReader(output))
-	// Match IP address at start, then skip HWtype column, then capture MAC address and interface
-	re := regexp.MustCompile(`^` + regexp.QuoteMeta(ip) + `\s+\S+\s+([0-9a-fA-F:]{17})\s+\S+\s+(\S+)`)
+	scanner := bufio.NewScanner(file)
+	// Skip header line
+	if scanner.Scan() {
+		// Header: IP address       HW type     Flags       HW address            Mask     Device
+	}
 	
 	for scanner.Scan() {
 		line := scanner.Text()
-		if match := re.FindStringSubmatch(line); len(match) > 2 {
-			return match[1], match[2], nil
+		fields := strings.Fields(line)
+		
+		// Expected format: IP address, HW type, Flags, HW address, Mask, Device
+		if len(fields) >= 6 {
+			if fields[0] == ip {
+				mac := fields[3]
+				device := fields[5]
+				
+				// Check if MAC is valid (not 00:00:00:00:00:00)
+				if mac != "00:00:00:00:00:00" {
+					return mac, device, nil
+				}
+				return "", "", fmt.Errorf("incomplete ARP entry for IP %s (MAC is 00:00:00:00:00:00)", ip)
+			}
 		}
+	}
+	
+	if err := scanner.Err(); err != nil {
+		return "", "", fmt.Errorf("error reading /proc/net/arp: %v", err)
 	}
 	
 	return "", "", fmt.Errorf("MAC address for IP %s not found in ARP table", ip)
