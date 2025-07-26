@@ -416,9 +416,8 @@ function App() {
           <div className="flex items-center space-x-4">
             <h1 className="text-3xl font-bold">DRS Dashboard</h1>
             {isLoading && (
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground">
                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                <span>Updating...</span>
               </div>
             )}
           </div>
