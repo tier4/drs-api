@@ -16,12 +16,8 @@
   <depend>std_srvs</depend>
   <depend>proto_recorder_msgs</depend>
 
-  <build_depend>grpc</build_depend>
-  <build_depend>protobuf</build_depend>
+  <depend>protobuf</depend>
   
-  <exec_depend>grpc</exec_depend>
-  <exec_depend>protobuf</exec_depend>
-
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
