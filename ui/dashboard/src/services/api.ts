@@ -226,6 +226,102 @@ export class ApiService {
     }
   }
 
+  async startModuleSensor(hostname: string): Promise<boolean> {
+    try {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/sensor/start`, 10000, {
+        method: 'POST'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data.success || false
+    } catch (error) {
+      console.error(`Failed to start sensor for ${hostname}:`, error)
+      throw error
+    }
+  }
+
+  async stopModuleSensor(hostname: string): Promise<boolean> {
+    try {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/sensor/stop`, 10000, {
+        method: 'POST'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data.success || false
+    } catch (error) {
+      console.error(`Failed to stop sensor for ${hostname}:`, error)
+      throw error
+    }
+  }
+
+  async restartModuleSensor(hostname: string): Promise<boolean> {
+    try {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/sensor/restart`, 10000, {
+        method: 'POST'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data.success || false
+    } catch (error) {
+      console.error(`Failed to restart sensor for ${hostname}:`, error)
+      throw error
+    }
+  }
+
+  async startModuleRecorder(hostname: string): Promise<boolean> {
+    try {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/recorder/start`, 10000, {
+        method: 'POST'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data.success || false
+    } catch (error) {
+      console.error(`Failed to start recorder for ${hostname}:`, error)
+      throw error
+    }
+  }
+
+  async stopModuleRecorder(hostname: string): Promise<boolean> {
+    try {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/recorder/stop`, 10000, {
+        method: 'POST'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data.success || false
+    } catch (error) {
+      console.error(`Failed to stop recorder for ${hostname}:`, error)
+      throw error
+    }
+  }
+
+  async restartModuleRecorder(hostname: string): Promise<boolean> {
+    try {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/recorder/restart`, 10000, {
+        method: 'POST'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data.success || false
+    } catch (error) {
+      console.error(`Failed to restart recorder for ${hostname}:`, error)
+      throw error
+    }
+  }
+
   async restartModuleSensors(hostname: string): Promise<boolean> {
     try {
       const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/restart`, 10000, {

@@ -7,6 +7,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import {
   AlertDialog,
@@ -28,7 +30,10 @@ import {
   AlertCircle,
   AlertTriangle,
   XCircle,
-  Circle
+  Circle,
+  Play,
+  Square,
+  RotateCw
 } from "lucide-react"
 
 export interface Module {
@@ -51,7 +56,12 @@ export interface Module {
 
 interface ModuleStatusProps {
   modules: Module[]
-  onRestartSensors?: (hostname: string) => void
+  onStartSensor?: (hostname: string) => void
+  onStopSensor?: (hostname: string) => void
+  onRestartSensor?: (hostname: string) => void
+  onStartRecorder?: (hostname: string) => void
+  onStopRecorder?: (hostname: string) => void
+  onRestartRecorder?: (hostname: string) => void
   onRestartMachine?: (hostname: string) => void
   onShutdownMachine?: (hostname: string) => void
 }
@@ -124,13 +134,18 @@ const getDiskUsageColor = (percentage: number): string => {
 
 export function ModuleStatus({ 
   modules, 
-  onRestartSensors, 
+  onStartSensor,
+  onStopSensor,
+  onRestartSensor,
+  onStartRecorder,
+  onStopRecorder,
+  onRestartRecorder,
   onRestartMachine, 
   onShutdownMachine 
 }: ModuleStatusProps) {
   const [dialogState, setDialogState] = useState<{
     isOpen: boolean
-    action: 'restart-sensors' | 'restart-machine' | 'shutdown-machine' | null
+    action: 'restart-machine' | 'shutdown-machine' | null
     hostname: string | null
   }>({
     isOpen: false,
@@ -142,9 +157,6 @@ export function ModuleStatus({
     if (!dialogState.hostname || !dialogState.action) return
 
     switch (dialogState.action) {
-      case 'restart-sensors':
-        onRestartSensors?.(dialogState.hostname)
-        break
       case 'restart-machine':
         onRestartMachine?.(dialogState.hostname)
         break
@@ -156,17 +168,35 @@ export function ModuleStatus({
     setDialogState({ isOpen: false, action: null, hostname: null })
   }
 
-  const openDialog = (action: 'restart-sensors' | 'restart-machine' | 'shutdown-machine', hostname: string) => {
+  const handleServiceAction = (action: 'start-sensor' | 'stop-sensor' | 'restart-sensor' | 'start-recorder' | 'stop-recorder' | 'restart-recorder', hostname: string) => {
+    switch (action) {
+      case 'start-sensor':
+        onStartSensor?.(hostname)
+        break
+      case 'stop-sensor':
+        onStopSensor?.(hostname)
+        break
+      case 'restart-sensor':
+        onRestartSensor?.(hostname)
+        break
+      case 'start-recorder':
+        onStartRecorder?.(hostname)
+        break
+      case 'stop-recorder':
+        onStopRecorder?.(hostname)
+        break
+      case 'restart-recorder':
+        onRestartRecorder?.(hostname)
+        break
+    }
+  }
+
+  const openDialog = (action: 'restart-machine' | 'shutdown-machine', hostname: string) => {
     setDialogState({ isOpen: true, action, hostname })
   }
 
   const getDialogContent = () => {
     switch (dialogState.action) {
-      case 'restart-sensors':
-        return {
-          title: 'Restart Sensors',
-          description: `Are you sure you want to restart sensors on ${dialogState.hostname}? This will temporarily stop sensor data collection.`
-        }
       case 'restart-machine':
         return {
           title: 'Restart Machine',
@@ -211,18 +241,100 @@ export function ModuleStatus({
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => openDialog('restart-sensors', module.hostname)}>
-                          Restart sensors
-                        </DropdownMenuItem>
+                      <DropdownMenuContent align="end" className="w-48">
+                        {module.services?.drs_sensor && (
+                          <>
+                            <DropdownMenuLabel>Sensor Service</DropdownMenuLabel>
+                            <DropdownMenuItem 
+                              onClick={() => handleServiceAction('start-sensor', module.hostname)}
+                              disabled={module.services.drs_sensor.toLowerCase() === 'active'}
+                            >
+                              <Play className="mr-2 h-4 w-4" />
+                              Start
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleServiceAction('stop-sensor', module.hostname)}
+                              disabled={module.services.drs_sensor.toLowerCase() !== 'active'}
+                            >
+                              <Square className="mr-2 h-4 w-4" />
+                              Stop
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleServiceAction('restart-sensor', module.hostname)}>
+                              <RotateCw className="mr-2 h-4 w-4" />
+                              Restart
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                        
+                        {module.services?.drs_sensor && module.services?.drs_recorder && (
+                          <DropdownMenuSeparator />
+                        )}
+                        
+                        {module.services?.drs_recorder && (
+                          <>
+                            <DropdownMenuLabel>Recorder Service</DropdownMenuLabel>
+                            <DropdownMenuItem 
+                              onClick={() => handleServiceAction('start-recorder', module.hostname)}
+                              disabled={module.services.drs_recorder.toLowerCase() === 'active'}
+                            >
+                              <Play className="mr-2 h-4 w-4" />
+                              Start
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleServiceAction('stop-recorder', module.hostname)}
+                              disabled={module.services.drs_recorder.toLowerCase() !== 'active'}
+                            >
+                              <Square className="mr-2 h-4 w-4" />
+                              Stop
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleServiceAction('restart-recorder', module.hostname)}>
+                              <RotateCw className="mr-2 h-4 w-4" />
+                              Restart
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                        
+                        {(module.services?.drs_sensor || module.services?.drs_recorder) && (
+                          <DropdownMenuSeparator />
+                        )}
+                        
+                        <DropdownMenuLabel>Machine</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => openDialog('restart-machine', module.hostname)}>
-                          Restart machine
+                          <svg 
+                            width="16" 
+                            height="16" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            strokeWidth="2" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round"
+                            className="mr-2"
+                          >
+                            <path d="M23 4v6h-6" />
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                          </svg>
+                          Restart Machine
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => openDialog('shutdown-machine', module.hostname)}
                           className="text-destructive"
                         >
-                          Shutdown machine
+                          <svg 
+                            width="16" 
+                            height="16" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            stroke="currentColor" 
+                            strokeWidth="2" 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round"
+                            className="mr-2"
+                          >
+                            <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+                            <line x1="12" y1="2" x2="12" y2="12" />
+                          </svg>
+                          Shutdown Machine
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

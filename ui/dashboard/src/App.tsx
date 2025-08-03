@@ -326,12 +326,57 @@ function App() {
   // Set up auto-refresh
   useAutoRefresh(fetchAllData, { enabled: true, interval: 5000 })
 
-  const handleRestartSensors = async (hostname: string) => {
+  const handleStartSensor = async (hostname: string) => {
     try {
-      await apiService.restartModuleSensors(hostname)
-      console.log(`Restarted sensors for ${hostname}`)
+      await apiService.startModuleSensor(hostname)
+      console.log(`Started sensor for ${hostname}`)
     } catch (error) {
-      console.error(`Failed to restart sensors for ${hostname}:`, error)
+      console.error(`Failed to start sensor for ${hostname}:`, error)
+    }
+  }
+
+  const handleStopSensor = async (hostname: string) => {
+    try {
+      await apiService.stopModuleSensor(hostname)
+      console.log(`Stopped sensor for ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to stop sensor for ${hostname}:`, error)
+    }
+  }
+
+  const handleRestartSensor = async (hostname: string) => {
+    try {
+      await apiService.restartModuleSensor(hostname)
+      console.log(`Restarted sensor for ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to restart sensor for ${hostname}:`, error)
+    }
+  }
+
+  const handleStartRecorder = async (hostname: string) => {
+    try {
+      await apiService.startModuleRecorder(hostname)
+      console.log(`Started recorder for ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to start recorder for ${hostname}:`, error)
+    }
+  }
+
+  const handleStopRecorder = async (hostname: string) => {
+    try {
+      await apiService.stopModuleRecorder(hostname)
+      console.log(`Stopped recorder for ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to stop recorder for ${hostname}:`, error)
+    }
+  }
+
+  const handleRestartRecorder = async (hostname: string) => {
+    try {
+      await apiService.restartModuleRecorder(hostname)
+      console.log(`Restarted recorder for ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to restart recorder for ${hostname}:`, error)
     }
   }
 
@@ -454,7 +499,12 @@ function App() {
             element={
               <ModulesPage 
                 modules={modules}
-                onRestartSensors={handleRestartSensors}
+                onStartSensor={handleStartSensor}
+                onStopSensor={handleStopSensor}
+                onRestartSensor={handleRestartSensor}
+                onStartRecorder={handleStartRecorder}
+                onStopRecorder={handleStopRecorder}
+                onRestartRecorder={handleRestartRecorder}
                 onRestartMachine={handleRestartMachine}
                 onShutdownMachine={handleShutdownMachine}
               />
