@@ -228,7 +228,7 @@ export class ApiService {
 
   async startModuleSensor(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/sensor/start`, 10000, {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_sensor/start`, 10000, {
         method: 'POST'
       })
       if (!response.ok) {
@@ -244,7 +244,7 @@ export class ApiService {
 
   async stopModuleSensor(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/sensor/stop`, 10000, {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_sensor/stop`, 10000, {
         method: 'POST'
       })
       if (!response.ok) {
@@ -260,7 +260,7 @@ export class ApiService {
 
   async restartModuleSensor(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/sensor/restart`, 10000, {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_sensor/restart`, 10000, {
         method: 'POST'
       })
       if (!response.ok) {
@@ -276,7 +276,7 @@ export class ApiService {
 
   async startModuleRecorder(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/recorder/start`, 10000, {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_recorder/start`, 10000, {
         method: 'POST'
       })
       if (!response.ok) {
@@ -292,7 +292,7 @@ export class ApiService {
 
   async stopModuleRecorder(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/recorder/stop`, 10000, {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_recorder/stop`, 10000, {
         method: 'POST'
       })
       if (!response.ok) {
@@ -308,7 +308,7 @@ export class ApiService {
 
   async restartModuleRecorder(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/recorder/restart`, 10000, {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_recorder/restart`, 10000, {
         method: 'POST'
       })
       if (!response.ok) {
