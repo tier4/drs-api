@@ -56,14 +56,14 @@ export interface Module {
 
 interface ModuleStatusProps {
   modules: Module[]
-  onStartSensor?: (hostname: string) => void
-  onStopSensor?: (hostname: string) => void
-  onRestartSensor?: (hostname: string) => void
-  onStartRecorder?: (hostname: string) => void
-  onStopRecorder?: (hostname: string) => void
-  onRestartRecorder?: (hostname: string) => void
-  onRestartMachine?: (hostname: string) => void
-  onShutdownMachine?: (hostname: string) => void
+  onStartSensor?: (hostname: string) => Promise<void>
+  onStopSensor?: (hostname: string) => Promise<void>
+  onRestartSensor?: (hostname: string) => Promise<void>
+  onStartRecorder?: (hostname: string) => Promise<void>
+  onStopRecorder?: (hostname: string) => Promise<void>
+  onRestartRecorder?: (hostname: string) => Promise<void>
+  onRestartMachine?: (hostname: string) => Promise<void>
+  onShutdownMachine?: (hostname: string) => Promise<void>
 }
 
 const getServiceIcon = (status?: string) => {
@@ -168,26 +168,62 @@ export function ModuleStatus({
     setDialogState({ isOpen: false, action: null, hostname: null })
   }
 
-  const handleServiceAction = (action: 'start-sensor' | 'stop-sensor' | 'restart-sensor' | 'start-recorder' | 'stop-recorder' | 'restart-recorder', hostname: string) => {
-    switch (action) {
-      case 'start-sensor':
-        onStartSensor?.(hostname)
-        break
-      case 'stop-sensor':
-        onStopSensor?.(hostname)
-        break
-      case 'restart-sensor':
-        onRestartSensor?.(hostname)
-        break
-      case 'start-recorder':
-        onStartRecorder?.(hostname)
-        break
-      case 'stop-recorder':
-        onStopRecorder?.(hostname)
-        break
-      case 'restart-recorder':
-        onRestartRecorder?.(hostname)
-        break
+  const handleServiceAction = async (action: 'start-sensor' | 'stop-sensor' | 'restart-sensor' | 'start-recorder' | 'stop-recorder' | 'restart-recorder', hostname: string) => {
+    console.log(`handleServiceAction called: action=${action}, hostname=${hostname}`)
+    
+    try {
+      switch (action) {
+        case 'start-sensor':
+          if (onStartSensor) {
+            console.log(`Calling onStartSensor for ${hostname}`)
+            await onStartSensor(hostname)
+          } else {
+            console.warn('onStartSensor handler not provided')
+          }
+          break
+        case 'stop-sensor':
+          if (onStopSensor) {
+            console.log(`Calling onStopSensor for ${hostname}`)
+            await onStopSensor(hostname)
+          } else {
+            console.warn('onStopSensor handler not provided')
+          }
+          break
+        case 'restart-sensor':
+          if (onRestartSensor) {
+            console.log(`Calling onRestartSensor for ${hostname}`)
+            await onRestartSensor(hostname)
+          } else {
+            console.warn('onRestartSensor handler not provided')
+          }
+          break
+        case 'start-recorder':
+          if (onStartRecorder) {
+            console.log(`Calling onStartRecorder for ${hostname}`)
+            await onStartRecorder(hostname)
+          } else {
+            console.warn('onStartRecorder handler not provided')
+          }
+          break
+        case 'stop-recorder':
+          if (onStopRecorder) {
+            console.log(`Calling onStopRecorder for ${hostname}`)
+            await onStopRecorder(hostname)
+          } else {
+            console.warn('onStopRecorder handler not provided')
+          }
+          break
+        case 'restart-recorder':
+          if (onRestartRecorder) {
+            console.log(`Calling onRestartRecorder for ${hostname}`)
+            await onRestartRecorder(hostname)
+          } else {
+            console.warn('onRestartRecorder handler not provided')
+          }
+          break
+      }
+    } catch (error) {
+      console.error(`Failed to perform ${action} on ${hostname}:`, error)
     }
   }
 
@@ -218,6 +254,7 @@ export function ModuleStatus({
         {/* Module Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {modules.map((module) => {
+            console.log('Rendering module:', module.hostname, 'with services:', module.services)
             const sensorIcon = getServiceIcon(module.services?.drs_sensor)
             const recorderIcon = getServiceIcon(module.services?.drs_recorder)
             const SensorIcon = sensorIcon.icon

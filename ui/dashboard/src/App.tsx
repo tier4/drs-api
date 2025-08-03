@@ -327,6 +327,7 @@ function App() {
   useAutoRefresh(fetchAllData, { enabled: true, interval: 5000 })
 
   const handleStartSensor = async (hostname: string) => {
+    console.log(`App.tsx: handleStartSensor called with hostname: ${hostname}`)
     try {
       await apiService.startModuleSensor(hostname)
       console.log(`Started sensor for ${hostname}`)
