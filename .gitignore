@@ -9,7 +9,6 @@
 *.test
 *.out
 vendor/
-go.sum
 *.mod.backup
 
 # Build artifacts and binaries

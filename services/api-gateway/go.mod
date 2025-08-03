@@ -6,7 +6,6 @@ toolchain go1.24.4
 
 require (
 	github.com/gin-gonic/gin v1.10.0
-	github.com/golang/protobuf v1.5.4
 	google.golang.org/grpc v1.69.0
 	google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 v3.0.1
