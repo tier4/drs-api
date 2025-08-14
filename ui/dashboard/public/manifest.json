@@ -1,0 +1,17 @@
+{
+  "name": "DRS Dashboard",
+  "short_name": "DRS",
+  "description": "Data Recording System Dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#6eb6cc",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/comlops.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
