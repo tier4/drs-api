@@ -16,7 +16,14 @@ var monitoringCmd = &cobra.Command{
 
 var diskCmd = &cobra.Command{
 	Use:   "disk",
-	Short: "Get disk usage information",
+	Short: "Disk operations",
+	Long:  "Commands for disk usage monitoring",
+}
+
+var diskGetCmd = &cobra.Command{
+	Use:   "get [disk-name]",
+	Short: "Get disk usage for a specific disk",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
@@ -24,17 +31,63 @@ var diskCmd = &cobra.Command{
 		}
 		defer c.Close()
 
-		resp, err := c.GetDiskUsage()
+		disk, err := c.GetDisk(args[0])
 		if err != nil {
-			return fmt.Errorf("failed to get disk usage: %v", err)
+			return fmt.Errorf("failed to get disk: %v", err)
 		}
 
-		usage := resp.DiskUsage
-		fmt.Printf("Disk Usage:\n")
-		fmt.Printf("  Total: %s\n", formatBytes(usage.TotalBytes))
-		fmt.Printf("  Used:  %s\n", formatBytes(usage.UsedBytes))
-		fmt.Printf("  Free:  %s\n", formatBytes(usage.FreeBytes))
-		fmt.Printf("  Usage: %.1f%%\n", usage.UsagePercentage)
+		fmt.Printf("Disk: %s\n", disk.Name)
+		if disk.MountPath != "" {
+			fmt.Printf("  Mount Path: %s\n", disk.MountPath)
+		}
+		if disk.Description != "" {
+			fmt.Printf("  Description: %s\n", disk.Description)
+		}
+		fmt.Printf("  Usage:\n")
+		fmt.Printf("    Total: %s\n", formatBytes(disk.Usage.TotalBytes))
+		fmt.Printf("    Used:  %s\n", formatBytes(disk.Usage.UsedBytes))
+		fmt.Printf("    Free:  %s\n", formatBytes(disk.Usage.FreeBytes))
+		fmt.Printf("    Usage: %.1f%%\n", disk.Usage.UsagePercentage)
+
+		return nil
+	},
+}
+
+var diskListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all configured disks with usage",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
+		if err != nil {
+			return err
+		}
+		defer c.Close()
+
+		resp, err := c.ListDisks()
+		if err != nil {
+			return fmt.Errorf("failed to list disks: %v", err)
+		}
+
+		if len(resp.Disks) == 0 {
+			fmt.Println("No disks configured")
+			return nil
+		}
+
+		for _, disk := range resp.Disks {
+			fmt.Printf("Disk: %s\n", disk.Name)
+			if disk.MountPath != "" {
+				fmt.Printf("  Mount Path: %s\n", disk.MountPath)
+			}
+			if disk.Description != "" {
+				fmt.Printf("  Description: %s\n", disk.Description)
+			}
+			fmt.Printf("  Usage:\n")
+			fmt.Printf("    Total: %s\n", formatBytes(disk.Usage.TotalBytes))
+			fmt.Printf("    Used:  %s\n", formatBytes(disk.Usage.UsedBytes))
+			fmt.Printf("    Free:  %s\n", formatBytes(disk.Usage.FreeBytes))
+			fmt.Printf("    Usage: %.1f%%\n", disk.Usage.UsagePercentage)
+			fmt.Println()
+		}
 
 		return nil
 	},
@@ -130,6 +183,8 @@ func formatBytes(bytes uint64) string {
 
 func init() {
 	// Commands will be added to moduleCmd in module.go
+	diskCmd.AddCommand(diskGetCmd)
+	diskCmd.AddCommand(diskListCmd)
 	monitoringCmd.AddCommand(diskCmd)
 	monitoringCmd.AddCommand(ptpCmd)
 	monitoringCmd.AddCommand(envCmd)

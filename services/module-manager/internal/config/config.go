@@ -22,8 +22,14 @@ type ServerConfig struct {
 }
 
 type DiskConfig struct {
-	Enabled     bool   `yaml:"enabled"`
-	MonitorPath string `yaml:"monitor_path"`
+	Enabled bool        `yaml:"enabled"`
+	Disks   []DiskEntry `yaml:"disks"`
+}
+
+type DiskEntry struct {
+	Name        string `yaml:"name"`        // disk_id used in resource name
+	MountPath   string `yaml:"mount_path"`  // mount path to monitor
+	Description string `yaml:"description"` // optional description
 }
 
 type ServicesConfig struct {
@@ -59,8 +65,14 @@ func LoadConfig(configPath string) (*Config, error) {
 			Port: 50051,
 		},
 		Disk: DiskConfig{
-			Enabled:     true,
-			MonitorPath: "/",
+			Enabled: true,
+			Disks: []DiskEntry{
+				{
+					Name:        "root",
+					MountPath:   "/",
+					Description: "Root filesystem",
+				},
+			},
 		},
 		Services: ServicesConfig{
 			Enabled:  true,
@@ -149,19 +161,23 @@ func validateConfig(config *Config) error {
 		return fmt.Errorf("invalid server port: %d", config.Server.Port)
 	}
 
-	// Validate disk path
-	if config.Disk.MonitorPath == "" {
-		return fmt.Errorf("monitor_path cannot be empty")
+	// Validate disk entries
+	if config.Disk.Enabled && len(config.Disk.Disks) == 0 {
+		return fmt.Errorf("no disks configured when disk monitoring is enabled")
+	}
+	for _, disk := range config.Disk.Disks {
+		if disk.Name == "" {
+			return fmt.Errorf("disk name cannot be empty")
+		}
+		if disk.MountPath == "" {
+			return fmt.Errorf("disk mount_path cannot be empty for disk %s", disk.Name)
+		}
 	}
 
 
 	return nil
 }
 
-// GetDiskPath returns the configured disk monitor path
-func (c *Config) GetDiskPath() string {
-	return c.Disk.MonitorPath
-}
 
 // IsServiceAllowed checks if a service is allowed to be managed
 func (c *Config) IsServiceAllowed(serviceName string) bool {

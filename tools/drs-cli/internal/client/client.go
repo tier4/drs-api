@@ -122,12 +122,20 @@ func (c *Client) Shutdown(delaySeconds int32) (*modulev1.ShutdownResponse, error
 }
 
 // MonitoringService methods
-func (c *Client) GetDiskUsage() (*modulev1.GetDiskUsageResponse, error) {
+func (c *Client) GetDisk(name string) (*modulev1.Disk, error) {
 	ctx, cancel := c.GetContext()
 	defer cancel()
 
-	req := &modulev1.GetDiskUsageRequest{}
-	return c.monitoring.GetDiskUsage(ctx, req)
+	req := &modulev1.GetDiskRequest{Name: name}
+	return c.monitoring.GetDisk(ctx, req)
+}
+
+func (c *Client) ListDisks() (*modulev1.ListDisksResponse, error) {
+	ctx, cancel := c.GetContext()
+	defer cancel()
+
+	req := &modulev1.ListDisksRequest{}
+	return c.monitoring.ListDisks(ctx, req)
 }
 
 func (c *Client) GetPTPStatus(includeRemote bool) (*modulev1.GetPTPStatusResponse, error) {

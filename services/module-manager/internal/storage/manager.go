@@ -4,12 +4,18 @@ import (
 	"fmt"
 	"os"
 	"syscall"
+
+	"github.com/tier4/drs-api/services/module-manager/internal/config"
 )
 
-type Manager struct{}
+type Manager struct {
+	disks []config.DiskEntry
+}
 
-func NewManager() *Manager {
-	return &Manager{}
+func NewManager(diskConfig config.DiskConfig) *Manager {
+	return &Manager{
+		disks: diskConfig.Disks,
+	}
 }
 
 type DiskUsage struct {
@@ -17,10 +23,48 @@ type DiskUsage struct {
 	UsedBytes       uint64
 	FreeBytes       uint64
 	UsagePercentage float64
-	Filesystem      string
 }
 
-func (m *Manager) GetDiskUsage(path string) (*DiskUsage, error) {
+// GetDiskUsage returns usage for a specific disk by name
+func (m *Manager) GetDiskUsage(diskName string) (*DiskUsage, error) {
+	var targetDisk *config.DiskEntry
+	for _, disk := range m.disks {
+		if disk.Name == diskName {
+			targetDisk = &disk
+			break
+		}
+	}
+	
+	if targetDisk == nil {
+		return nil, fmt.Errorf("disk not found: %s", diskName)
+	}
+	
+	return m.getDiskUsageForPath(targetDisk.MountPath)
+}
+
+// GetAllDiskUsages returns usage for all configured disks
+func (m *Manager) GetAllDiskUsages() (map[string]*DiskUsage, error) {
+	results := make(map[string]*DiskUsage)
+	
+	for _, disk := range m.disks {
+		usage, err := m.getDiskUsageForPath(disk.MountPath)
+		if err != nil {
+			// Log error but continue with other disks
+			fmt.Printf("Failed to get usage for disk %s: %v\n", disk.Name, err)
+			continue
+		}
+		results[disk.Name] = usage
+	}
+	
+	return results, nil
+}
+
+// GetDisks returns configured disk entries
+func (m *Manager) GetDisks() []config.DiskEntry {
+	return m.disks
+}
+
+func (m *Manager) getDiskUsageForPath(path string) (*DiskUsage, error) {
 	if path == "" {
 		path = "/"
 	}
@@ -48,7 +92,6 @@ func (m *Manager) GetDiskUsage(path string) (*DiskUsage, error) {
 		UsedBytes:       used,
 		FreeBytes:       free,
 		UsagePercentage: float64(used) / float64(total) * 100,
-		Filesystem:      path,
 	}
 
 	return usage, nil

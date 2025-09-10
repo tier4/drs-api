@@ -23,14 +23,14 @@ type MonitoringService struct {
 
 func NewMonitoringService(cfg *config.Config) *MonitoringService {
 	return &MonitoringService{
-		storageManager: storage.NewManager(),
+		storageManager: storage.NewManager(cfg.Disk),
 		ptpChecker:     ptp.NewChecker(),
 		config:         cfg,
 	}
 }
 
-func (s *MonitoringService) GetDiskUsage(ctx context.Context, req *modulev1.GetDiskUsageRequest) (*modulev1.GetDiskUsageResponse, error) {
-	log.Printf("Disk usage request received")
+func (s *MonitoringService) GetDisk(ctx context.Context, req *modulev1.GetDiskRequest) (*modulev1.Disk, error) {
+	log.Printf("Get disk request received for: %s", req.Name)
 	
 	// Check if disk usage API is enabled
 	if !s.config.Disk.Enabled {
@@ -38,22 +38,79 @@ func (s *MonitoringService) GetDiskUsage(ctx context.Context, req *modulev1.GetD
 		return nil, status.Error(codes.Unimplemented, "disk usage monitoring is disabled")
 	}
 	
-	// Always use the configured monitor path - one disk per ECU
-	targetPath := s.config.GetDiskPath()
-	log.Printf("Getting disk usage for primary disk: %s", targetPath)
+	// Extract disk name from resource name (support both "disks/name" and "name" formats)
+	diskName := req.Name
+	if len(diskName) > 6 && diskName[:6] == "disks/" {
+		diskName = diskName[6:]
+	}
 	
-	usage, err := s.storageManager.GetDiskUsage(targetPath)
+	log.Printf("Getting disk usage for disk: %s", diskName)
+	
+	usage, err := s.storageManager.GetDiskUsage(diskName)
 	if err != nil {
-		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get disk usage: %v", err))
+		return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to get disk usage: %v", err))
+	}
+	
+	// Find disk entry for description
+	var description string
+	for _, disk := range s.storageManager.GetDisks() {
+		if disk.Name == diskName {
+			description = disk.Description
+			break
+		}
 	}
 
-	return &modulev1.GetDiskUsageResponse{
-		DiskUsage: &modulev1.DiskUsage{
+	return &modulev1.Disk{
+		Name:        fmt.Sprintf("disks/%s", diskName),
+		MountPath:   "", // Will be added if needed
+		Usage: &modulev1.DiskUsage{
 			TotalBytes:      usage.TotalBytes,
 			UsedBytes:       usage.UsedBytes,
 			FreeBytes:       usage.FreeBytes,
 			UsagePercentage: usage.UsagePercentage,
 		},
+		Description: description,
+	}, nil
+}
+
+func (s *MonitoringService) ListDisks(ctx context.Context, req *modulev1.ListDisksRequest) (*modulev1.ListDisksResponse, error) {
+	log.Printf("List disks request received")
+	
+	// Check if disk usage API is enabled
+	if !s.config.Disk.Enabled {
+		log.Printf("Disk usage API is disabled")
+		return nil, status.Error(codes.Unimplemented, "disk usage monitoring is disabled")
+	}
+	
+	allUsages, err := s.storageManager.GetAllDiskUsages()
+	if err != nil {
+		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get disk usages: %v", err))
+	}
+	
+	var disks []*modulev1.Disk
+	for _, diskEntry := range s.storageManager.GetDisks() {
+		usage, ok := allUsages[diskEntry.Name]
+		if !ok {
+			// Skip if we couldn't get usage for this disk
+			continue
+		}
+		
+		disk := &modulev1.Disk{
+			Name:        fmt.Sprintf("disks/%s", diskEntry.Name),
+			MountPath:   diskEntry.MountPath,
+			Usage: &modulev1.DiskUsage{
+				TotalBytes:      usage.TotalBytes,
+				UsedBytes:       usage.UsedBytes,
+				FreeBytes:       usage.FreeBytes,
+				UsagePercentage: usage.UsagePercentage,
+			},
+			Description: diskEntry.Description,
+		}
+		disks = append(disks, disk)
+	}
+	
+	return &modulev1.ListDisksResponse{
+		Disks: disks,
 	}, nil
 }
 
