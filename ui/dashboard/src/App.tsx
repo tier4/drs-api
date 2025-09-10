@@ -23,9 +23,24 @@ const mockModules: Module[] = [
     },
     recordingStatus: 'recording',
     dataStatus: 'OK',
-    diskUsagePercentage: 75.0,
-    diskFreeBytes: 268435456000, // 250GB
-    diskTotalBytes: 1073741824000, // 1TB
+    disks: [
+      {
+        name: 'internal',
+        mount_path: '/mnt/ssd/data',
+        description: 'Internal SSD',
+        usage_percentage: 75.0,
+        free_bytes: 268435456000, // 250GB
+        total_bytes: 1073741824000, // 1TB
+      },
+      {
+        name: 'external',
+        mount_path: '/mnt/external/data',
+        description: 'External SSD',
+        usage_percentage: 45.0,
+        free_bytes: 590558003200, // 550GB
+        total_bytes: 1073741824000, // 1TB
+      },
+    ],
   },
   {
     hostname: 'ecu1',
@@ -36,16 +51,30 @@ const mockModules: Module[] = [
     },
     recordingStatus: 'stopped',
     dataStatus: 'WARN',
-    diskUsagePercentage: 90.0,
-    diskFreeBytes: 107374182400, // 100GB
-    diskTotalBytes: 1073741824000, // 1TB
+    disks: [
+      {
+        name: 'internal',
+        mount_path: '/mnt/ssd/data',
+        description: 'Internal SSD',
+        usage_percentage: 90.0,
+        free_bytes: 107374182400, // 100GB
+        total_bytes: 1073741824000, // 1TB
+      },
+    ],
   },
   {
     hostname: 'nas',
     dataStatus: 'OK',
-    diskUsagePercentage: 25.0,
-    diskFreeBytes: 805306368000, // 750GB
-    diskTotalBytes: 1073741824000, // 1TB
+    disks: [
+      {
+        name: 'storage',
+        mount_path: '/mnt/storage',
+        description: 'NAS Storage',
+        usage_percentage: 25.0,
+        free_bytes: 805306368000, // 750GB
+        total_bytes: 1073741824000, // 1TB
+      },
+    ],
   },
 ]
 
@@ -160,9 +189,7 @@ function App() {
       hostname: apiModule.hostname,
       moduleId: apiModule.environment?.module_id,
       dataStatus: 'OK', // Default value
-      diskUsagePercentage: apiModule.disk?.usage_percentage || 0,
-      diskFreeBytes: apiModule.disk?.free_bytes || 0,
-      diskTotalBytes: apiModule.disk?.total_bytes || 0,
+      disks: apiModule.disks || [],
     }
     
     // Only add services and recording for ecu modules, not for nas

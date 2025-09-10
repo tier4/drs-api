@@ -8,7 +8,7 @@ type ModuleStatus struct {
 	Address        string            `json:"address"`
 	Status         string            `json:"status"` // OK, WARN, ERROR
 	StatusDetail   ModuleStatusDetail   `json:"status_detail"`
-	Disk           DiskInfo          `json:"disk"`
+	Disks          []DiskDetail      `json:"disks"`
 	Environment    EnvironmentInfo   `json:"environment"`
 	EnabledServices []string         `json:"enabled_services"`
 	LastUpdated    time.Time         `json:"last_updated"`
@@ -38,8 +38,11 @@ type PTPInfo struct {
 	OffsetNs int64 `json:"offset_ns"`
 }
 
-// DiskInfo represents disk usage information
-type DiskInfo struct {
+// DiskDetail represents detailed disk information
+type DiskDetail struct {
+	Name            string  `json:"name"`             // Disk name (e.g., "internal", "external")
+	MountPath       string  `json:"mount_path"`       // Mount path
+	Description     string  `json:"description"`      // Description from config
 	UsagePercentage float64 `json:"usage_percentage"`
 	FreeBytes       uint64  `json:"free_bytes"`
 	TotalBytes      uint64  `json:"total_bytes"`
