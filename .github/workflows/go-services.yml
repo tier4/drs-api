@@ -1,0 +1,149 @@
+name: Go Services CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'services/api-gateway/**'
+      - 'services/module-manager/**'
+      - 'tools/drs-cli/**'
+      - 'proto/**'
+      - '.github/workflows/go-services.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'services/api-gateway/**'
+      - 'services/module-manager/**'
+      - 'tools/drs-cli/**'
+      - 'proto/**'
+      - '.github/workflows/go-services.yml'
+
+jobs:
+  lint:
+    name: Lint Go Code
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - module-manager
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: services/${{ matrix.service }}/go.sum
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: latest
+          working-directory: services/${{ matrix.service }}
+          args: --timeout=5m
+
+  test:
+    name: Test Go Services
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - module-manager
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: services/${{ matrix.service }}/go.sum
+
+      - name: Download dependencies
+        working-directory: services/${{ matrix.service }}
+        run: go mod download
+
+      - name: Run tests
+        working-directory: services/${{ matrix.service }}
+        run: go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: services/${{ matrix.service }}/coverage.out
+          flags: ${{ matrix.service }}
+          name: ${{ matrix.service }}-coverage
+        continue-on-error: true
+
+  build:
+    name: Build Go Services
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - module-manager
+        include:
+          - service: api-gateway
+            binary: api-gateway
+          - service: module-manager
+            binary: module-manager
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: services/${{ matrix.service }}/go.sum
+
+      - name: Build for Linux AMD64
+        working-directory: services/${{ matrix.service }}
+        run: make build
+
+      - name: Build for Linux ARM64
+        working-directory: services/${{ matrix.service }}
+        run: make build-arm64
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.service }}-binaries
+          path: services/${{ matrix.service }}/bin/
+          retention-days: 7
+
+  build-cli:
+    name: Build DRS CLI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache-dependency-path: tools/drs-cli/go.sum
+
+      - name: Download dependencies
+        working-directory: tools/drs-cli
+        run: go mod download
+
+      - name: Run tests
+        working-directory: tools/drs-cli
+        run: go test -v ./...
+
+      - name: Build CLI
+        working-directory: tools/drs-cli
+        run: make build
+
+      - name: Upload CLI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: drs-cli-binary
+          path: tools/drs-cli/bin/
+          retention-days: 7
