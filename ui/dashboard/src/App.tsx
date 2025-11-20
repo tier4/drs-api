@@ -6,6 +6,7 @@ import type { ModuleTopicStatus } from '@/components/TopicRateStatus'
 import { PowerControl } from '@/components/PowerControl'
 import { RecordingSwitch } from '@/components/RecordingSwitch'
 import { Navigation } from '@/components/Navigation'
+import { Footer } from '@/components/Footer'
 import { ModulesPage } from '@/pages/ModulesPage'
 import { TimeSyncPage } from '@/pages/TimeSyncPage'
 import { TopicRatesPage } from '@/pages/TopicRatesPage'
@@ -515,6 +516,7 @@ function App() {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Footer />
       </div>
     </div>
   )
