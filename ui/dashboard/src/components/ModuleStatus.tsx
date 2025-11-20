@@ -44,7 +44,8 @@ export interface Module {
     drs_recorder?: string
   }
   recordingStatus?: string
-  dataStatus: 'OK' | 'WARN' | 'ERROR'
+  // Empty string indicates modules without recording capability (e.g., NAS)
+  dataStatus: 'OK' | 'WARN' | 'ERROR' | ''
   diskUsagePercentage: number
   diskFreeBytes: number
   diskTotalBytes: number
@@ -95,7 +96,7 @@ const getRecordingStatusColor = (status?: string) => {
 }
 
 const getDataStatusIcon = (status: Module['dataStatus']) => {
-  if (!status || (status as any) === '') return null
+  if (!status) return null
   switch (status) {
     case 'OK':
       return { icon: CheckCircle2, color: 'text-green-500' }
