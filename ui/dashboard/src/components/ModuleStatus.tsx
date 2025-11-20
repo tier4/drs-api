@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,12 +19,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { 
-  HardDrive, 
-  Activity, 
-  Cpu, 
-  Clock, 
+} from '@/components/ui/alert-dialog'
+import {
+  HardDrive,
+  Activity,
+  Cpu,
+  Clock,
   MoreVertical,
   CheckCircle2,
   AlertCircle,
@@ -33,8 +33,8 @@ import {
   Circle,
   Play,
   Square,
-  RotateCw
-} from "lucide-react"
+  RotateCw,
+} from 'lucide-react'
 
 export interface Module {
   hostname: string
@@ -111,7 +111,7 @@ const getDataStatusIcon = (status: Module['dataStatus']) => {
 
 const getPtpStatusColor = (offsetNs: number, gmPresent: boolean): string => {
   if (!gmPresent) return 'text-red-500'
-  
+
   const absOffset = Math.abs(offsetNs)
   if (absOffset < 1000) return 'text-green-500' // < 1µs
   if (absOffset < 10000) return 'text-yellow-500' // < 10µs
@@ -133,16 +133,16 @@ const getDiskUsageColor = (percentage: number): string => {
   return ''
 }
 
-export function ModuleStatus({ 
-  modules, 
+export function ModuleStatus({
+  modules,
   onStartSensor,
   onStopSensor,
   onRestartSensor,
   onStartRecorder,
   onStopRecorder,
   onRestartRecorder,
-  onRestartMachine, 
-  onShutdownMachine 
+  onRestartMachine,
+  onShutdownMachine,
 }: ModuleStatusProps) {
   const [dialogState, setDialogState] = useState<{
     isOpen: boolean
@@ -151,7 +151,7 @@ export function ModuleStatus({
   }>({
     isOpen: false,
     action: null,
-    hostname: null
+    hostname: null,
   })
 
   const handleAction = () => {
@@ -165,11 +165,20 @@ export function ModuleStatus({
         onShutdownMachine?.(dialogState.hostname)
         break
     }
-    
+
     setDialogState({ isOpen: false, action: null, hostname: null })
   }
 
-  const handleServiceAction = (action: 'start-sensor' | 'stop-sensor' | 'restart-sensor' | 'start-recorder' | 'stop-recorder' | 'restart-recorder', hostname: string) => {
+  const handleServiceAction = (
+    action:
+      | 'start-sensor'
+      | 'stop-sensor'
+      | 'restart-sensor'
+      | 'start-recorder'
+      | 'stop-recorder'
+      | 'restart-recorder',
+    hostname: string,
+  ) => {
     switch (action) {
       case 'start-sensor':
         onStartSensor?.(hostname)
@@ -201,12 +210,12 @@ export function ModuleStatus({
       case 'restart-machine':
         return {
           title: 'Restart Machine',
-          description: `Are you sure you want to restart ${dialogState.hostname}? This will stop all services and reboot the machine.`
+          description: `Are you sure you want to restart ${dialogState.hostname}? This will stop all services and reboot the machine.`,
         }
       case 'shutdown-machine':
         return {
           title: 'Shutdown Machine',
-          description: `Are you sure you want to shutdown ${dialogState.hostname}? This will stop all services and power off the machine.`
+          description: `Are you sure you want to shutdown ${dialogState.hostname}? This will stop all services and power off the machine.`,
         }
       default:
         return { title: '', description: '' }
@@ -246,69 +255,77 @@ export function ModuleStatus({
                         {module.services?.drs_sensor && (
                           <>
                             <DropdownMenuLabel>Sensor Service</DropdownMenuLabel>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleServiceAction('start-sensor', module.hostname)}
                               disabled={module.services.drs_sensor.toLowerCase() === 'active'}
                             >
                               <Play className="mr-2 h-4 w-4" />
                               Start
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleServiceAction('stop-sensor', module.hostname)}
                               disabled={module.services.drs_sensor.toLowerCase() !== 'active'}
                             >
                               <Square className="mr-2 h-4 w-4" />
                               Stop
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleServiceAction('restart-sensor', module.hostname)}>
+                            <DropdownMenuItem
+                              onClick={() => handleServiceAction('restart-sensor', module.hostname)}
+                            >
                               <RotateCw className="mr-2 h-4 w-4" />
                               Restart
                             </DropdownMenuItem>
                           </>
                         )}
-                        
+
                         {module.services?.drs_sensor && module.services?.drs_recorder && (
                           <DropdownMenuSeparator />
                         )}
-                        
+
                         {module.services?.drs_recorder && (
                           <>
                             <DropdownMenuLabel>Recorder Service</DropdownMenuLabel>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleServiceAction('start-recorder', module.hostname)}
                               disabled={module.services.drs_recorder.toLowerCase() === 'active'}
                             >
                               <Play className="mr-2 h-4 w-4" />
                               Start
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onClick={() => handleServiceAction('stop-recorder', module.hostname)}
                               disabled={module.services.drs_recorder.toLowerCase() !== 'active'}
                             >
                               <Square className="mr-2 h-4 w-4" />
                               Stop
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleServiceAction('restart-recorder', module.hostname)}>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleServiceAction('restart-recorder', module.hostname)
+                              }
+                            >
                               <RotateCw className="mr-2 h-4 w-4" />
                               Restart
                             </DropdownMenuItem>
                           </>
                         )}
-                        
+
                         {(module.services?.drs_sensor || module.services?.drs_recorder) && (
                           <DropdownMenuSeparator />
                         )}
-                        
+
                         <DropdownMenuLabel>Machine</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => openDialog('restart-machine', module.hostname)}>
-                          <svg 
-                            width="16" 
-                            height="16" 
-                            viewBox="0 0 24 24" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            strokeWidth="2" 
-                            strokeLinecap="round" 
+                        <DropdownMenuItem
+                          onClick={() => openDialog('restart-machine', module.hostname)}
+                        >
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
                             strokeLinejoin="round"
                             className="mr-2"
                           >
@@ -317,18 +334,18 @@ export function ModuleStatus({
                           </svg>
                           Restart Machine
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => openDialog('shutdown-machine', module.hostname)}
                           className="text-destructive"
                         >
-                          <svg 
-                            width="16" 
-                            height="16" 
-                            viewBox="0 0 24 24" 
-                            fill="none" 
-                            stroke="currentColor" 
-                            strokeWidth="2" 
-                            strokeLinecap="round" 
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
                             strokeLinejoin="round"
                             className="mr-2"
                           >
@@ -370,8 +387,11 @@ export function ModuleStatus({
                         <span className="text-sm font-medium">Recording</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium ${getRecordingStatusColor(module.recordingStatus)}`}>
-                          {module.recordingStatus.charAt(0).toUpperCase() + module.recordingStatus.slice(1)}
+                        <span
+                          className={`text-sm font-medium ${getRecordingStatusColor(module.recordingStatus)}`}
+                        >
+                          {module.recordingStatus.charAt(0).toUpperCase() +
+                            module.recordingStatus.slice(1)}
                         </span>
                         {DataStatusIcon && (
                           <DataStatusIcon className={`h-4 w-4 ${dataStatusInfo.color}`} />
@@ -388,7 +408,9 @@ export function ModuleStatus({
                         <span className="text-sm font-medium">Time Sync</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium ${getPtpStatusColor(module.ptpStatus.offsetNs, module.ptpStatus.gmPresent)}`}>
+                        <span
+                          className={`text-sm font-medium ${getPtpStatusColor(module.ptpStatus.offsetNs, module.ptpStatus.gmPresent)}`}
+                        >
                           {module.ptpStatus.gmPresent ? 'Synced' : 'No GM'}
                         </span>
                       </div>
@@ -402,10 +424,12 @@ export function ModuleStatus({
                         <HardDrive className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-medium">Disk Usage</span>
                       </div>
-                      <span className="text-sm font-medium">{module.diskUsagePercentage.toFixed(0)}%</span>
+                      <span className="text-sm font-medium">
+                        {module.diskUsagePercentage.toFixed(0)}%
+                      </span>
                     </div>
-                    <Progress 
-                      value={module.diskUsagePercentage} 
+                    <Progress
+                      value={module.diskUsagePercentage}
                       className={`h-2 ${getDiskUsageColor(module.diskUsagePercentage)}`}
                     />
                     <div className="flex justify-between mt-1">
@@ -424,13 +448,16 @@ export function ModuleStatus({
         </div>
       </div>
 
-      <AlertDialog open={dialogState.isOpen} onOpenChange={(open) => !open && setDialogState({ isOpen: false, action: null, hostname: null })}>
+      <AlertDialog
+        open={dialogState.isOpen}
+        onOpenChange={(open) =>
+          !open && setDialogState({ isOpen: false, action: null, hostname: null })
+        }
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{getDialogContent().title}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {getDialogContent().description}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{getDialogContent().description}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>

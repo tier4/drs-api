@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { AlertCircle, CheckCircle2, Clock, Wifi, WifiOff, type LucideIcon } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { AlertCircle, CheckCircle2, Clock, Wifi, WifiOff, type LucideIcon } from 'lucide-react'
 export interface PtpStatus {
   hostname: string
   localStatus: {
@@ -21,7 +21,10 @@ interface PtpSyncStatusProps {
   ptpStatuses: PtpStatus[]
 }
 
-const getOffsetStatus = (offsetNs: number, gmPresent: boolean): {
+const getOffsetStatus = (
+  offsetNs: number,
+  gmPresent: boolean,
+): {
   color: 'default' | 'secondary' | 'destructive'
   text: string
   icon: LucideIcon
@@ -37,7 +40,7 @@ const getOffsetStatus = (offsetNs: number, gmPresent: boolean): {
 const formatOffset = (offsetNs: number): string => {
   const absOffset = Math.abs(offsetNs)
   const sign = offsetNs < 0 ? '-' : '+'
-  
+
   if (absOffset < 1000) {
     return `${sign}${absOffset}ns`
   } else if (absOffset < 1000000) {
@@ -49,18 +52,20 @@ const formatOffset = (offsetNs: number): string => {
 
 export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
   // Calculate overall system status
-  const systemStatus = ptpStatuses.every(ptp => 
-    ptp.localStatus.gmPresent && Math.abs(ptp.localStatus.masterOffsetNs) < 10000
+  const systemStatus = ptpStatuses.every(
+    (ptp) => ptp.localStatus.gmPresent && Math.abs(ptp.localStatus.masterOffsetNs) < 10000,
   )
 
-  const totalDevices = ptpStatuses.reduce((acc, ptp) => 
-    acc + ptp.remoteStatuses.length, ptpStatuses.length
+  const totalDevices = ptpStatuses.reduce(
+    (acc, ptp) => acc + ptp.remoteStatuses.length,
+    ptpStatuses.length,
   )
-  
+
   const syncedDevices = ptpStatuses.reduce((acc, ptp) => {
-    const localSynced = ptp.localStatus.gmPresent && Math.abs(ptp.localStatus.masterOffsetNs) < 10000 ? 1 : 0
-    const remoteSynced = ptp.remoteStatuses.filter(r => 
-      r.isReachable && r.offsetNs !== undefined && Math.abs(r.offsetNs) < 10000
+    const localSynced =
+      ptp.localStatus.gmPresent && Math.abs(ptp.localStatus.masterOffsetNs) < 10000 ? 1 : 0
+    const remoteSynced = ptp.remoteStatuses.filter(
+      (r) => r.isReachable && r.offsetNs !== undefined && Math.abs(r.offsetNs) < 10000,
     ).length
     return acc + localSynced + remoteSynced
   }, 0)
@@ -72,10 +77,7 @@ export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">System Time Synchronization</CardTitle>
-            <Badge 
-              variant={systemStatus ? 'default' : 'destructive'}
-              className="text-xs"
-            >
+            <Badge variant={systemStatus ? 'default' : 'destructive'} className="text-xs">
               {systemStatus ? 'All Synced' : 'Issues Detected'}
             </Badge>
           </div>
@@ -83,7 +85,9 @@ export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
         <CardContent>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Synchronized Devices</span>
-            <span className="font-medium">{syncedDevices} / {totalDevices}</span>
+            <span className="font-medium">
+              {syncedDevices} / {totalDevices}
+            </span>
           </div>
           <Progress value={(syncedDevices / totalDevices) * 100} className="mt-2 h-2" />
         </CardContent>
@@ -92,9 +96,12 @@ export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
       {/* ECU Cards */}
       <div className="grid gap-4 md:grid-cols-2">
         {ptpStatuses.map((ptp) => {
-          const localStatus = getOffsetStatus(ptp.localStatus.masterOffsetNs, ptp.localStatus.gmPresent)
+          const localStatus = getOffsetStatus(
+            ptp.localStatus.masterOffsetNs,
+            ptp.localStatus.gmPresent,
+          )
           const LocalIcon = localStatus.icon
-          
+
           return (
             <Card key={ptp.hostname}>
               <CardHeader className="pb-3">
@@ -107,11 +114,15 @@ export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
                   </div>
                   <div className="text-right">
                     <div className="flex items-center gap-2">
-                      <LocalIcon className={`h-4 w-4 ${
-                        localStatus.color === 'default' ? 'text-green-500' :
-                        localStatus.color === 'secondary' ? 'text-yellow-500' :
-                        'text-red-500'
-                      }`} />
+                      <LocalIcon
+                        className={`h-4 w-4 ${
+                          localStatus.color === 'default'
+                            ? 'text-green-500'
+                            : localStatus.color === 'secondary'
+                              ? 'text-yellow-500'
+                              : 'text-red-500'
+                        }`}
+                      />
                       <Badge variant={localStatus.color} className="text-xs">
                         {localStatus.text}
                       </Badge>
@@ -122,7 +133,7 @@ export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent>
                 {/* Remote Devices */}
                 {ptp.remoteStatuses.length > 0 && (
@@ -130,12 +141,13 @@ export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
                     <h4 className="text-sm font-medium mb-2">Connected Devices</h4>
                     <div className="space-y-2">
                       {ptp.remoteStatuses.map((remote) => {
-                        const remoteStatus = remote.isReachable && remote.offsetNs !== undefined
-                          ? getOffsetStatus(remote.offsetNs, true)
-                          : { color: 'destructive' as const, text: 'Offline', icon: WifiOff }
+                        const remoteStatus =
+                          remote.isReachable && remote.offsetNs !== undefined
+                            ? getOffsetStatus(remote.offsetNs, true)
+                            : { color: 'destructive' as const, text: 'Offline', icon: WifiOff }
 
                         return (
-                          <div 
+                          <div
                             key={remote.deviceName}
                             className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
                           >
@@ -153,10 +165,7 @@ export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
                             <div className="text-right">
                               {remote.isReachable && remote.offsetNs !== undefined ? (
                                 <>
-                                  <Badge
-                                    variant={remoteStatus.color}
-                                    className="text-xs"
-                                  >
+                                  <Badge variant={remoteStatus.color} className="text-xs">
                                     {formatOffset(remote.offsetNs)}
                                   </Badge>
                                 </>

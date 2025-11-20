@@ -205,7 +205,7 @@ function App() {
       diskFreeBytes: apiModule.disk?.free_bytes || 0,
       diskTotalBytes: apiModule.disk?.total_bytes || 0,
     }
-    
+
     // Only add services and recording for ecu modules, not for nas
     if (apiModule.hostname.startsWith('ecu')) {
       module.services = apiModule.status_detail?.services
@@ -217,8 +217,8 @@ function App() {
       } else {
         console.warn(
           `[Data Validation] Unexpected dataStatus value for module '${apiModule.hostname}': ` +
-          `received='${status}', defaulting to 'OK'. ` +
-          `Source: recording.data_status=${apiModule.status_detail?.recording?.data_status}, status=${apiModule.status}`
+            `received='${status}', defaulting to 'OK'. ` +
+            `Source: recording.data_status=${apiModule.status_detail?.recording?.data_status}, status=${apiModule.status}`,
         )
         module.dataStatus = 'OK'
       }
@@ -226,13 +226,13 @@ function App() {
       // For NAS, set empty string since it doesn't have recording capability
       module.dataStatus = ''
     }
-    
+
     return module
   }
 
   const convertToPtpStatus = (apiPtp: ApiPtpStatus): PtpStatus | null => {
     if (!apiPtp || !apiPtp.hostname) return null
-    
+
     return {
       hostname: apiPtp.hostname,
       localStatus: {
@@ -249,11 +249,10 @@ function App() {
     }
   }
 
-
   // Data fetching function
   const fetchAllData = useCallback(async () => {
     if (isLoading) return
-    
+
     setIsLoading(true)
     setApiError(null)
     try {
@@ -292,30 +291,30 @@ function App() {
 
       // Merge PTP status into modules
       if (convertedModules.length > 0) {
-        const ptpStatusMap = new Map(validPtpStatuses.map(ptp => [ptp.hostname, ptp]))
-        convertedModules = convertedModules.map(module => {
+        const ptpStatusMap = new Map(validPtpStatuses.map((ptp) => [ptp.hostname, ptp]))
+        convertedModules = convertedModules.map((module) => {
           const ptpStatus = ptpStatusMap.get(module.hostname)
           if (ptpStatus) {
             return {
               ...module,
               ptpStatus: {
                 gmPresent: ptpStatus.localStatus.gmPresent,
-                offsetNs: ptpStatus.localStatus.masterOffsetNs
-              }
+                offsetNs: ptpStatus.localStatus.masterOffsetNs,
+              },
             }
           }
           return module
         })
-        
+
         // Sort modules alphabetically by hostname
         convertedModules.sort((a, b) => a.hostname.localeCompare(b.hostname))
         setModules(convertedModules)
-        
+
         // Check if any module is recording
-        const anyModuleRecording = convertedModules.some(module => 
-          module.recordingStatus === 'recording'
+        const anyModuleRecording = convertedModules.some(
+          (module) => module.recordingStatus === 'recording',
         )
-        
+
         // Don't override recording state if recently toggled (within 10 seconds)
         const timeSinceToggle = Date.now() - recordingToggleTimestamp.current
         if (timeSinceToggle > 10000) {
@@ -338,13 +337,13 @@ function App() {
       // Fetch topic statuses for each module
       if (modulesData.status === 'fulfilled') {
         const topicPromises = modulesData.value
-          .filter(module => module.hostname.startsWith('ecu'))
+          .filter((module) => module.hostname.startsWith('ecu'))
           .map(async (module) => {
             try {
               const topics = await apiService.getTopicStatus(module.hostname)
               return {
                 hostname: module.hostname,
-                topics: topics.map(topic => ({
+                topics: topics.map((topic) => ({
                   topicName: topic.topic_name,
                   rateHz: topic.rate_hz,
                   status: topic.status,
@@ -449,7 +448,6 @@ function App() {
     }
   }
 
-
   const handleSystemRestart = async () => {
     try {
       await apiService.restartSystem()
@@ -470,12 +468,12 @@ function App() {
 
   const handleRecordingToggle = async (enabled: boolean) => {
     if (isRecordingLoading) return
-    
+
     // Optimistic update - immediately update UI
     setIsRecording(enabled)
     setIsRecordingLoading(true)
     recordingToggleTimestamp.current = Date.now()
-    
+
     try {
       if (enabled) {
         const success = await apiService.startRecording()
@@ -516,12 +514,12 @@ function App() {
             <span className="text-sm text-muted-foreground">
               Last updated: {lastUpdated.toLocaleTimeString()}
             </span>
-            <RecordingSwitch 
+            <RecordingSwitch
               isRecording={isRecording}
               isLoading={isRecordingLoading}
               onToggle={handleRecordingToggle}
             />
-            <PowerControl 
+            <PowerControl
               onSystemRestart={handleSystemRestart}
               onSystemShutdown={handleSystemShutdown}
             />
@@ -531,7 +529,11 @@ function App() {
           <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
             <div className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span className="font-medium">API Connection Error:</span>
               <span className="ml-2">{apiError}</span>
@@ -540,10 +542,10 @@ function App() {
         )}
         <Navigation />
         <Routes>
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
-              <ModulesPage 
+              <ModulesPage
                 modules={modules}
                 onStartSensor={handleStartSensor}
                 onStopSensor={handleStopSensor}
@@ -554,15 +556,12 @@ function App() {
                 onRestartMachine={handleRestartMachine}
                 onShutdownMachine={handleShutdownMachine}
               />
-            } 
+            }
           />
-          <Route 
-            path="/time-sync" 
-            element={<TimeSyncPage ptpStatuses={ptpStatuses} />} 
-          />
-          <Route 
-            path="/topic-rates" 
-            element={<TopicRatesPage moduleTopicStatuses={topicStatuses} />} 
+          <Route path="/time-sync" element={<TimeSyncPage ptpStatuses={ptpStatuses} />} />
+          <Route
+            path="/topic-rates"
+            element={<TopicRatesPage moduleTopicStatuses={topicStatuses} />}
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
