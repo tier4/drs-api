@@ -1,0 +1,74 @@
+changelog:
+  exclude:
+    labels:
+      - dependencies
+      - skip-changelog
+    authors:
+      - dependabot
+  categories:
+    - title: 🎉 New Features
+      labels:
+        - feature
+        - enhancement
+      # PRタイトルが "feat:" または "feat(" で始まるものを含める
+      rules:
+        - pattern: '^feat(\(.*\))?:'
+          on-property: title
+
+    - title: 🐛 Bug Fixes
+      labels:
+        - bug
+        - fix
+      rules:
+        - pattern: '^fix(\(.*\))?:'
+          on-property: title
+
+    - title: 📚 Documentation
+      labels:
+        - documentation
+      rules:
+        - pattern: '^docs(\(.*\))?:'
+          on-property: title
+
+    - title: ⚡ Performance Improvements
+      labels:
+        - performance
+      rules:
+        - pattern: '^perf(\(.*\))?:'
+          on-property: title
+
+    - title: 🔧 Refactoring
+      labels:
+        - refactor
+      rules:
+        - pattern: '^refactor(\(.*\))?:'
+          on-property: title
+
+    - title: 🧪 Tests
+      labels:
+        - test
+      rules:
+        - pattern: '^test(\(.*\))?:'
+          on-property: title
+
+    - title: 🎨 Styling
+      rules:
+        - pattern: '^style(\(.*\))?:'
+          on-property: title
+
+    - title: 🔨 Maintenance
+      labels:
+        - chore
+        - maintenance
+      rules:
+        - pattern: '^chore(\(.*\))?:'
+          on-property: title
+
+    - title: 📦 Dependencies
+      labels:
+        - dependencies
+      collapse-after: 10
+
+    - title: 🔀 Other Changes
+      labels:
+        - "*"
