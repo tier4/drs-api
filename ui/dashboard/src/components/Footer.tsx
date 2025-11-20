@@ -13,7 +13,8 @@ export function Footer() {
         hour: '2-digit',
         minute: '2-digit',
       })
-    } catch {
+    } catch (error) {
+      console.error('Failed to parse build time:', error);
       return 'N/A'
     }
   }
