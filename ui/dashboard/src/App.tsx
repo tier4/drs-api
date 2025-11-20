@@ -211,7 +211,16 @@ function App() {
       module.recordingStatus = apiModule.status_detail?.recording?.status
       // For ECU modules, use recording data_status if available, otherwise use module status
       const status = apiModule.status_detail?.recording?.data_status || apiModule.status || 'OK'
-      module.dataStatus = (status === 'OK' || status === 'WARN' || status === 'ERROR') ? status : 'OK'
+      if (status === 'OK' || status === 'WARN' || status === 'ERROR') {
+        module.dataStatus = status
+      } else {
+        console.warn(
+          `[Data Validation] Unexpected dataStatus value for module '${apiModule.hostname}': ` +
+          `received='${status}', defaulting to 'OK'. ` +
+          `Source: recording.data_status=${apiModule.status_detail?.recording?.data_status}, status=${apiModule.status}`
+        )
+        module.dataStatus = 'OK'
+      }
     } else {
       // For NAS, set empty string since it doesn't have recording capability
       module.dataStatus = ''

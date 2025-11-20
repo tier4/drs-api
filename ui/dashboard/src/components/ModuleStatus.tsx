@@ -44,6 +44,7 @@ export interface Module {
     drs_recorder?: string
   }
   recordingStatus?: string
+  // Empty string indicates modules without recording capability (e.g., NAS)
   dataStatus: 'OK' | 'WARN' | 'ERROR' | ''
   diskUsagePercentage: number
   diskFreeBytes: number
