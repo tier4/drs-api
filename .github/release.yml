@@ -3,8 +3,6 @@ changelog:
     labels:
       - dependencies
       - skip-changelog
-    authors:
-      - dependabot
   categories:
     - title: 🎉 New Features
       labels:
