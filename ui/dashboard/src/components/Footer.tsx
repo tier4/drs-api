@@ -14,7 +14,7 @@ export function Footer() {
         minute: '2-digit',
       })
     } catch (error) {
-      console.error('Failed to parse build time:', error);
+      console.error('Failed to parse build time:', error)
       return 'N/A'
     }
   }

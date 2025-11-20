@@ -1,10 +1,10 @@
-import { useState } from "react"
+import { useState } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,7 +14,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from '@/components/ui/alert-dialog'
 
 interface PowerControlProps {
   onSystemRestart?: () => void
@@ -48,14 +48,14 @@ export function PowerControl({ onSystemRestart, onSystemShutdown }: PowerControl
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="p-2 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground">
-            <svg 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
             >
               <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
@@ -65,14 +65,14 @@ export function PowerControl({ onSystemRestart, onSystemShutdown }: PowerControl
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={handleRestartClick}>
-            <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
               className="mr-2"
             >
@@ -81,18 +81,15 @@ export function PowerControl({ onSystemRestart, onSystemShutdown }: PowerControl
             </svg>
             Restart System
           </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={handleShutdownClick}
-            className="text-destructive"
-          >
-            <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+          <DropdownMenuItem onClick={handleShutdownClick} className="text-destructive">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
               className="mr-2"
             >
@@ -109,15 +106,13 @@ export function PowerControl({ onSystemRestart, onSystemShutdown }: PowerControl
           <AlertDialogHeader>
             <AlertDialogTitle>Restart All Modules?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will restart all modules in the system. The API Gateway (ecu0) will be restarted last to maintain connectivity.
-              Are you sure you want to continue?
+              This will restart all modules in the system. The API Gateway (ecu0) will be restarted
+              last to maintain connectivity. Are you sure you want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmRestart}>
-              Restart System
-            </AlertDialogAction>
+            <AlertDialogAction onClick={confirmRestart}>Restart System</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -133,7 +128,7 @@ export function PowerControl({ onSystemRestart, onSystemShutdown }: PowerControl
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={confirmShutdown}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

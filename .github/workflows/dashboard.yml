@@ -37,6 +37,9 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Check code formatting
+        run: npm run format:check
+
   type-check:
     name: TypeScript Type Check
     runs-on: ubuntu-latest

@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { AlertCircle, AlertTriangle, CheckCircle2, Activity } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { AlertCircle, AlertTriangle, CheckCircle2, Activity } from 'lucide-react'
 export interface TopicStatus {
   topicName: string
   rateHz: number
@@ -15,7 +15,6 @@ export interface ModuleTopicStatus {
 interface TopicRateStatusProps {
   moduleTopicStatuses: ModuleTopicStatus[]
 }
-
 
 const getStatusIcon = (status: string) => {
   switch (status) {
@@ -49,15 +48,16 @@ const formatRate = (rate: number): string => {
   return rate.toFixed(1)
 }
 
-
 export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
   // Calculate summary statistics
   const totalTopics = moduleTopicStatuses.reduce((acc, m) => acc + m.topics.length, 0)
-  const errorTopics = moduleTopicStatuses.reduce((acc, m) => 
-    acc + m.topics.filter(t => t.status === 'ERROR').length, 0
+  const errorTopics = moduleTopicStatuses.reduce(
+    (acc, m) => acc + m.topics.filter((t) => t.status === 'ERROR').length,
+    0,
   )
-  const warnTopics = moduleTopicStatuses.reduce((acc, m) => 
-    acc + m.topics.filter(t => t.status === 'WARN').length, 0
+  const warnTopics = moduleTopicStatuses.reduce(
+    (acc, m) => acc + m.topics.filter((t) => t.status === 'WARN').length,
+    0,
   )
 
   return (
@@ -99,8 +99,8 @@ export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
       {/* Module Cards */}
       <div className="space-y-4">
         {moduleTopicStatuses.map((module) => {
-          const moduleErrors = module.topics.filter(t => t.status === 'ERROR').length
-          const moduleWarnings = module.topics.filter(t => t.status === 'WARN').length
+          const moduleErrors = module.topics.filter((t) => t.status === 'ERROR').length
+          const moduleWarnings = module.topics.filter((t) => t.status === 'WARN').length
 
           return (
             <Card key={module.hostname}>
@@ -139,10 +139,8 @@ export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
                           </span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="text-sm font-medium">
-                            {formatRate(topic.rateHz)} Hz
-                          </div>
-                          <Badge 
+                          <div className="text-sm font-medium">{formatRate(topic.rateHz)} Hz</div>
+                          <Badge
                             variant={getStatusColor(topic.status)}
                             className="text-xs min-w-[50px] justify-center"
                           >

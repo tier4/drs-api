@@ -25,7 +25,7 @@ export function ModulesPage({
   onShutdownMachine,
 }: ModulesPageProps) {
   return (
-    <ModuleStatus 
+    <ModuleStatus
       modules={modules}
       onStartSensor={onStartSensor}
       onStopSensor={onStopSensor}
