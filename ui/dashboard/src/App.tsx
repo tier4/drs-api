@@ -92,6 +92,46 @@ const mockPtpStatuses: PtpStatus[] = [
   // NAS does not have PTP functionality - only system and disk monitoring
 ]
 
+// API response types
+interface ApiModule {
+  hostname: string
+  environment?: {
+    module_id: string
+  }
+  status?: string
+  disk?: {
+    usage_percentage: number
+    free_bytes: number
+    total_bytes: number
+  }
+  status_detail?: {
+    services?: Record<string, string>
+    recording?: {
+      status: string
+      data_status: string
+    }
+  }
+}
+
+interface ApiPtpRemoteStatus {
+  device_name: string
+  ip_address: string
+  is_reachable: boolean
+  status?: {
+    master_offset_ns?: number
+  }
+}
+
+interface ApiPtpStatus {
+  hostname: string
+  local_status?: {
+    clock_id: string
+    master_offset_ns: number
+    gm_present: boolean
+  }
+  remote_statuses?: ApiPtpRemoteStatus[]
+}
+
 // Mock Topic Rate data based on API design
 const mockModuleTopicStatuses: ModuleTopicStatus[] = [
   {
@@ -156,7 +196,7 @@ function App() {
   const apiService = ApiService.getInstance()
 
   // Convert API data to component format
-  const convertToModule = (apiModule: any): Module => {
+  const convertToModule = (apiModule: ApiModule): Module => {
     const module: Module = {
       hostname: apiModule.hostname,
       moduleId: apiModule.environment?.module_id,
@@ -171,16 +211,26 @@ function App() {
       module.services = apiModule.status_detail?.services
       module.recordingStatus = apiModule.status_detail?.recording?.status
       // For ECU modules, use recording data_status if available, otherwise use module status
-      module.dataStatus = apiModule.status_detail?.recording?.data_status || apiModule.status || 'OK'
+      const status = apiModule.status_detail?.recording?.data_status || apiModule.status || 'OK'
+      if (status === 'OK' || status === 'WARN' || status === 'ERROR') {
+        module.dataStatus = status
+      } else {
+        console.warn(
+          `[Data Validation] Unexpected dataStatus value for module '${apiModule.hostname}': ` +
+          `received='${status}', defaulting to 'OK'. ` +
+          `Source: recording.data_status=${apiModule.status_detail?.recording?.data_status}, status=${apiModule.status}`
+        )
+        module.dataStatus = 'OK'
+      }
     } else {
       // For NAS, set empty string since it doesn't have recording capability
-      module.dataStatus = '' as any
+      module.dataStatus = ''
     }
     
     return module
   }
 
-  const convertToPtpStatus = (apiPtp: any): PtpStatus | null => {
+  const convertToPtpStatus = (apiPtp: ApiPtpStatus): PtpStatus | null => {
     if (!apiPtp || !apiPtp.hostname) return null
     
     return {
@@ -190,7 +240,7 @@ function App() {
         masterOffsetNs: apiPtp.local_status?.master_offset_ns || 0,
         gmPresent: apiPtp.local_status?.gm_present || false,
       },
-      remoteStatuses: (apiPtp.remote_statuses || []).map((remote: any) => ({
+      remoteStatuses: (apiPtp.remote_statuses || []).map((remote: ApiPtpRemoteStatus) => ({
         deviceName: remote.device_name,
         ipAddress: remote.ip_address,
         isReachable: remote.is_reachable,
@@ -216,7 +266,7 @@ function App() {
 
       // Check if all API calls failed
       let allFailed = true
-      let errorMessages: string[] = []
+      const errorMessages: string[] = []
 
       // Update modules
       let convertedModules: Module[] = []
@@ -231,7 +281,7 @@ function App() {
       let validPtpStatuses: PtpStatus[] = []
       if (ptpData.status === 'fulfilled') {
         validPtpStatuses = ptpData.value
-          .filter((apiPtp: any) => apiPtp.local_status && apiPtp.local_status.clock_id) // Only include modules with PTP enabled
+          .filter((apiPtp: ApiPtpStatus) => apiPtp.local_status && apiPtp.local_status.clock_id) // Only include modules with PTP enabled
           .map(convertToPtpStatus)
           .filter((status): status is PtpStatus => status !== null)
         setPtpStatuses(validPtpStatuses)

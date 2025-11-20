@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { AlertCircle, CheckCircle2, Clock, Wifi, WifiOff } from "lucide-react"
+import { AlertCircle, CheckCircle2, Clock, Wifi, WifiOff, type LucideIcon } from "lucide-react"
 export interface PtpStatus {
   hostname: string
   localStatus: {
@@ -21,9 +21,13 @@ interface PtpSyncStatusProps {
   ptpStatuses: PtpStatus[]
 }
 
-const getOffsetStatus = (offsetNs: number, gmPresent: boolean) => {
+const getOffsetStatus = (offsetNs: number, gmPresent: boolean): {
+  color: 'default' | 'secondary' | 'destructive'
+  text: string
+  icon: LucideIcon
+} => {
   if (!gmPresent) return { color: 'destructive', text: 'No GM', icon: AlertCircle }
-  
+
   const absOffset = Math.abs(offsetNs)
   if (absOffset < 1000) return { color: 'default', text: 'Excellent', icon: CheckCircle2 }
   if (absOffset < 10000) return { color: 'secondary', text: 'Good', icon: Clock }
@@ -108,7 +112,7 @@ export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
                         localStatus.color === 'secondary' ? 'text-yellow-500' :
                         'text-red-500'
                       }`} />
-                      <Badge variant={localStatus.color as any} className="text-xs">
+                      <Badge variant={localStatus.color} className="text-xs">
                         {localStatus.text}
                       </Badge>
                     </div>
@@ -128,8 +132,8 @@ export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
                       {ptp.remoteStatuses.map((remote) => {
                         const remoteStatus = remote.isReachable && remote.offsetNs !== undefined
                           ? getOffsetStatus(remote.offsetNs, true)
-                          : { color: 'destructive', text: 'Offline', icon: WifiOff }
-                        
+                          : { color: 'destructive' as const, text: 'Offline', icon: WifiOff }
+
                         return (
                           <div 
                             key={remote.deviceName}
@@ -149,8 +153,8 @@ export function PtpSyncStatus({ ptpStatuses }: PtpSyncStatusProps) {
                             <div className="text-right">
                               {remote.isReachable && remote.offsetNs !== undefined ? (
                                 <>
-                                  <Badge 
-                                    variant={remoteStatus.color as any} 
+                                  <Badge
+                                    variant={remoteStatus.color}
                                     className="text-xs"
                                   >
                                     {formatOffset(remote.offsetNs)}
