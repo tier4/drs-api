@@ -13,6 +13,7 @@ This directory contains GitHub-related configuration files for the DRS API repos
 │   └── pr-title-check.yml    # PR title validation
 ├── pull_request_template.md  # PR template
 ├── dependabot.yml            # Dependabot configuration
+├── release.yml               # Release notes configuration
 ├── CI.md                     # CI/CD documentation
 └── CONFIGURATION.md          # This file
 ```
@@ -75,6 +76,34 @@ See [CI.md](CI.md) for more details.
 - Commit message prefix: `chore` (complies with PR title checker)
 - Open PR limit: 5 per ecosystem
 
+<<<<<<< HEAD
+=======
+## 📋 Release Notes Configuration
+
+[release.yml](release.yml) configures automatic release notes generation.
+
+**Features:**
+- Automatically categorizes PRs based on title prefix (feat, fix, docs, etc.)
+- Excludes Dependabot PRs from main changelog (shown separately)
+- Categories:
+  - 🎉 New Features (`feat:`)
+  - 🐛 Bug Fixes (`fix:`)
+  - 📚 Documentation (`docs:`)
+  - ⚡ Performance Improvements (`perf:`)
+  - 🔧 Refactoring (`refactor:`)
+  - 🧪 Tests (`test:`)
+  - 🎨 Styling (`style:`)
+  - 🔨 Maintenance (`chore:`)
+  - 📦 Dependencies (auto-collapsed after 10 items)
+
+**Usage:**
+1. Navigate to Releases page on GitHub
+2. Click "Draft a new release"
+3. Choose a tag or create a new one
+4. Click "Generate release notes"
+5. Release notes will be automatically generated based on merged PRs
+
+>>>>>>> 618a0ba3e69f9e1e98ab247c468adebf6ce01a49
 ## 🔗 References
 
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
