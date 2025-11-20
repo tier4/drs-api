@@ -95,7 +95,7 @@ const getRecordingStatusColor = (status?: string) => {
 }
 
 const getDataStatusIcon = (status: Module['dataStatus']) => {
-  if (!status || (status as any) === '') return null
+  if (!status) return null
   switch (status) {
     case 'OK':
       return { icon: CheckCircle2, color: 'text-green-500' }
