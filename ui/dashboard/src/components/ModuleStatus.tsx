@@ -44,7 +44,7 @@ export interface Module {
     drs_recorder?: string
   }
   recordingStatus?: string
-  dataStatus: 'OK' | 'WARN' | 'ERROR'
+  dataStatus: 'OK' | 'WARN' | 'ERROR' | ''
   diskUsagePercentage: number
   diskFreeBytes: number
   diskTotalBytes: number
