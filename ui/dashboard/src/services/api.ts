@@ -1,6 +1,15 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 console.log('API Base URL:', API_BASE_URL)
 
+export interface DiskDetail {
+  name: string
+  mount_path: string
+  description: string
+  usage_percentage: number
+  free_bytes: number
+  total_bytes: number
+}
+
 export interface ModuleStatus {
   hostname: string
   address: string
@@ -18,7 +27,9 @@ export interface ModuleStatus {
       offset_ns: number
     }
   }
-  disk: {
+  disks: DiskDetail[]
+  // Legacy support
+  disk?: {
     usage_percentage: number
     free_bytes: number
     total_bytes: number
@@ -72,11 +83,7 @@ export class ApiService {
     return ApiService.instance
   }
 
-  private async fetchWithTimeout(
-    url: string,
-    timeout = 5000,
-    options: RequestInit = {},
-  ): Promise<Response> {
+  private async fetchWithTimeout(url: string, timeout = 5000, options: RequestInit = {}): Promise<Response> {
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeout)
 
@@ -152,9 +159,7 @@ export class ApiService {
 
   async getTopicStatus(hostname: string): Promise<TopicStatus[]> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/modules/${hostname}/topics/status`,
-      )
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/topics/status`)
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -169,7 +174,7 @@ export class ApiService {
   async startRecording(): Promise<boolean> {
     try {
       const response = await this.fetchWithTimeout(`${API_BASE_URL}/recording/start`, 10000, {
-        method: 'POST',
+        method: 'POST'
       })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -185,7 +190,7 @@ export class ApiService {
   async stopRecording(): Promise<boolean> {
     try {
       const response = await this.fetchWithTimeout(`${API_BASE_URL}/recording/stop`, 10000, {
-        method: 'POST',
+        method: 'POST'
       })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -202,7 +207,7 @@ export class ApiService {
     try {
       const response = await this.fetchWithTimeout(`${API_BASE_URL}/system/restart`, 10000, {
         method: 'POST',
-        body: JSON.stringify({}),
+        body: JSON.stringify({})
       })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -219,7 +224,7 @@ export class ApiService {
     try {
       const response = await this.fetchWithTimeout(`${API_BASE_URL}/system/shutdown`, 10000, {
         method: 'POST',
-        body: JSON.stringify({}),
+        body: JSON.stringify({})
       })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -234,13 +239,9 @@ export class ApiService {
 
   async startModuleSensor(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/modules/${hostname}/services/drs_sensor/start`,
-        10000,
-        {
-          method: 'POST',
-        },
-      )
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_sensor/start`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -254,13 +255,9 @@ export class ApiService {
 
   async stopModuleSensor(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/modules/${hostname}/services/drs_sensor/stop`,
-        10000,
-        {
-          method: 'POST',
-        },
-      )
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_sensor/stop`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -274,13 +271,9 @@ export class ApiService {
 
   async restartModuleSensor(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/modules/${hostname}/services/drs_sensor/restart`,
-        10000,
-        {
-          method: 'POST',
-        },
-      )
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_sensor/restart`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -294,13 +287,9 @@ export class ApiService {
 
   async startModuleRecorder(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/modules/${hostname}/services/drs_recorder/start`,
-        10000,
-        {
-          method: 'POST',
-        },
-      )
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_recorder/start`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -314,13 +303,9 @@ export class ApiService {
 
   async stopModuleRecorder(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/modules/${hostname}/services/drs_recorder/stop`,
-        10000,
-        {
-          method: 'POST',
-        },
-      )
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_recorder/stop`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -334,13 +319,9 @@ export class ApiService {
 
   async restartModuleRecorder(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/modules/${hostname}/services/drs_recorder/restart`,
-        10000,
-        {
-          method: 'POST',
-        },
-      )
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/drs_recorder/restart`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -354,13 +335,9 @@ export class ApiService {
 
   async restartModuleSensors(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/modules/${hostname}/services/restart`,
-        10000,
-        {
-          method: 'POST',
-        },
-      )
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/services/restart`, 10000, {
+        method: 'POST'
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -374,14 +351,10 @@ export class ApiService {
 
   async restartModule(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/modules/${hostname}/restart`,
-        10000,
-        {
-          method: 'POST',
-          body: JSON.stringify({}),
-        },
-      )
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/restart`, 10000, {
+        method: 'POST',
+        body: JSON.stringify({})
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -395,14 +368,10 @@ export class ApiService {
 
   async shutdownModule(hostname: string): Promise<boolean> {
     try {
-      const response = await this.fetchWithTimeout(
-        `${API_BASE_URL}/modules/${hostname}/shutdown`,
-        10000,
-        {
-          method: 'POST',
-          body: JSON.stringify({}),
-        },
-      )
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/shutdown`, 10000, {
+        method: 'POST',
+        body: JSON.stringify({})
+      })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }

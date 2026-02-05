@@ -13,13 +13,13 @@ import (
 )
 
 type Client struct {
-	conn               *grpc.ClientConn
-	serviceManager     modulev1.ServiceManagerServiceClient
-	systemControl      modulev1.SystemControlServiceClient
-	monitoring         modulev1.MonitoringServiceClient
-	recordingService   ros2bridgev1.RecordingServiceClient
-	sensingService     ros2bridgev1.SensingServiceClient
-	timeout            time.Duration
+	conn             *grpc.ClientConn
+	serviceManager   modulev1.ServiceManagerServiceClient
+	systemControl    modulev1.SystemControlServiceClient
+	monitoring       modulev1.MonitoringServiceClient
+	recordingService ros2bridgev1.RecordingServiceClient
+	sensingService   ros2bridgev1.SensingServiceClient
+	timeout          time.Duration
 }
 
 func NewClient(address string, timeout time.Duration) (*Client, error) {
@@ -29,13 +29,13 @@ func NewClient(address string, timeout time.Duration) (*Client, error) {
 	}
 
 	return &Client{
-		conn:               conn,
-		serviceManager:     modulev1.NewServiceManagerServiceClient(conn),
-		systemControl:      modulev1.NewSystemControlServiceClient(conn),
-		monitoring:         modulev1.NewMonitoringServiceClient(conn),
-		recordingService:   ros2bridgev1.NewRecordingServiceClient(conn),
-		sensingService:     ros2bridgev1.NewSensingServiceClient(conn),
-		timeout:            timeout,
+		conn:             conn,
+		serviceManager:   modulev1.NewServiceManagerServiceClient(conn),
+		systemControl:    modulev1.NewSystemControlServiceClient(conn),
+		monitoring:       modulev1.NewMonitoringServiceClient(conn),
+		recordingService: ros2bridgev1.NewRecordingServiceClient(conn),
+		sensingService:   ros2bridgev1.NewSensingServiceClient(conn),
+		timeout:          timeout,
 	}, nil
 }
 
@@ -128,6 +128,22 @@ func (c *Client) GetDiskUsage() (*modulev1.GetDiskUsageResponse, error) {
 
 	req := &modulev1.GetDiskUsageRequest{}
 	return c.monitoring.GetDiskUsage(ctx, req)
+}
+
+func (c *Client) GetDisk(name string) (*modulev1.Disk, error) {
+	ctx, cancel := c.GetContext()
+	defer cancel()
+
+	req := &modulev1.GetDiskRequest{Name: name}
+	return c.monitoring.GetDisk(ctx, req)
+}
+
+func (c *Client) ListDisks() (*modulev1.ListDisksResponse, error) {
+	ctx, cancel := c.GetContext()
+	defer cancel()
+
+	req := &modulev1.ListDisksRequest{}
+	return c.monitoring.ListDisks(ctx, req)
 }
 
 func (c *Client) GetPTPStatus(includeRemote bool) (*modulev1.GetPTPStatusResponse, error) {

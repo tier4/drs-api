@@ -113,11 +113,42 @@ func (h *ModuleHandler) getModuleStatus(hostname string) models.ModuleStatus {
 
 	// Get disk usage
 	if h.clientManager.IsServiceEnabled(hostname, "disk") {
-		if diskResp, err := clients.Monitoring.GetDiskUsage(ctx, &modulev1.GetDiskUsageRequest{}); err == nil {
-			status.Disk = models.DiskInfo{
-				UsagePercentage: diskResp.DiskUsage.UsagePercentage,
-				FreeBytes:       diskResp.DiskUsage.FreeBytes,
-				TotalBytes:      diskResp.DiskUsage.TotalBytes,
+		// Try to list disks (new API)
+		if disksResp, err := clients.Monitoring.ListDisks(ctx, &modulev1.ListDisksRequest{}); err == nil {
+			status.Disks = make([]models.DiskDetail, 0, len(disksResp.Disks))
+			for _, disk := range disksResp.Disks {
+				// Extract disk name from resource name (e.g., "disks/internal" -> "internal")
+				diskName := disk.Name
+				if len(diskName) > 6 && diskName[:6] == "disks/" {
+					diskName = diskName[6:]
+				}
+				
+				status.Disks = append(status.Disks, models.DiskDetail{
+					Name:            diskName,
+					MountPath:       disk.MountPath,
+					Description:     disk.Description,
+					UsagePercentage: disk.Usage.UsagePercentage,
+					FreeBytes:       disk.Usage.FreeBytes,
+					TotalBytes:      disk.Usage.TotalBytes,
+				})
+			}
+			
+			// Populate legacy field with first disk or primary if available
+			if len(status.Disks) > 0 {
+				status.Disk = models.DiskInfo{
+					UsagePercentage: status.Disks[0].UsagePercentage,
+					FreeBytes:       status.Disks[0].FreeBytes,
+					TotalBytes:      status.Disks[0].TotalBytes,
+				}
+			}
+		} else {
+			// Fallback to legacy API
+			if diskResp, err := clients.Monitoring.GetDiskUsage(ctx, &modulev1.GetDiskUsageRequest{}); err == nil {
+				status.Disk = models.DiskInfo{
+					UsagePercentage: diskResp.DiskUsage.UsagePercentage,
+					FreeBytes:       diskResp.DiskUsage.FreeBytes,
+					TotalBytes:      diskResp.DiskUsage.TotalBytes,
+				}
 			}
 		}
 	}

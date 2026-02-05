@@ -4,21 +4,23 @@ import "time"
 
 // ModuleStatus represents the status of a single module for the dashboard
 type ModuleStatus struct {
-	Hostname       string            `json:"hostname"`
-	Address        string            `json:"address"`
-	Status         string            `json:"status"` // OK, WARN, ERROR
-	StatusDetail   ModuleStatusDetail   `json:"status_detail"`
-	Disk           DiskInfo          `json:"disk"`
-	Environment    EnvironmentInfo   `json:"environment"`
-	EnabledServices []string         `json:"enabled_services"`
-	LastUpdated    time.Time         `json:"last_updated"`
+	Hostname     string             `json:"hostname"`
+	Address      string             `json:"address"`
+	Status       string             `json:"status"` // OK, WARN, ERROR
+	StatusDetail ModuleStatusDetail `json:"status_detail"`
+	// Disk is deprecated but kept for backward compatibility. Use Disks instead.
+	Disk            DiskInfo        `json:"disk"`
+	Disks           []DiskDetail    `json:"disks"`
+	Environment     EnvironmentInfo `json:"environment"`
+	EnabledServices []string        `json:"enabled_services"`
+	LastUpdated     time.Time       `json:"last_updated"`
 }
 
 // ModuleStatusDetail provides detailed status information
 type ModuleStatusDetail struct {
-	Services  ServiceStatus  `json:"services"`
-	Recording RecordingInfo  `json:"recording"`
-	PTP       PTPInfo        `json:"ptp"`
+	Services  ServiceStatus `json:"services"`
+	Recording RecordingInfo `json:"recording"`
+	PTP       PTPInfo       `json:"ptp"`
 }
 
 // ServiceStatus represents the status of system services
@@ -76,25 +78,25 @@ type PTPStatusResponse struct {
 
 // PTPStatus represents PTP status for a single module
 type PTPStatus struct {
-	Hostname      string        `json:"hostname"`
-	LocalStatus   PTPLocalInfo  `json:"local_status"`
-	RemoteStatus  []PTPRemoteInfo `json:"remote_statuses"`
+	Hostname     string          `json:"hostname"`
+	LocalStatus  PTPLocalInfo    `json:"local_status"`
+	RemoteStatus []PTPRemoteInfo `json:"remote_statuses"`
 }
 
 // PTPLocalInfo represents local PTP status
 type PTPLocalInfo struct {
-	ClockID       string `json:"clock_id"`
+	ClockID        string `json:"clock_id"`
 	MasterOffsetNs int64  `json:"master_offset_ns"`
-	GMPresent     bool   `json:"gm_present"`
+	GMPresent      bool   `json:"gm_present"`
 }
 
 // PTPRemoteInfo represents remote device PTP status
 type PTPRemoteInfo struct {
-	DeviceName   string       `json:"device_name"`
-	IPAddress    string       `json:"ip_address"`
-	IsReachable  bool         `json:"is_reachable"`
+	DeviceName   string        `json:"device_name"`
+	IPAddress    string        `json:"ip_address"`
+	IsReachable  bool          `json:"is_reachable"`
 	Status       *PTPLocalInfo `json:"status,omitempty"`
-	ErrorMessage string       `json:"error_message,omitempty"`
+	ErrorMessage string        `json:"error_message,omitempty"`
 }
 
 // TopicStatusResponse represents the response for GET /ecus/{hostname}/topics/status
@@ -104,9 +106,9 @@ type TopicStatusResponse struct {
 
 // TopicStatus represents the status of a single topic
 type TopicStatus struct {
-	TopicName        string  `json:"topic_name"`
-	RateHz           float64 `json:"rate_hz"`
-	Status           string  `json:"status"` // OK, WARN, ERROR
+	TopicName string  `json:"topic_name"`
+	RateHz    float64 `json:"rate_hz"`
+	Status    string  `json:"status"` // OK, WARN, ERROR
 }
 
 // SystemOperationRequest represents a system operation request
@@ -116,8 +118,8 @@ type SystemOperationRequest struct {
 
 // SystemOperationResponse represents a system operation response
 type SystemOperationResponse struct {
-	Success     bool   `json:"success"`
-	Message     string `json:"message"`
+	Success      bool   `json:"success"`
+	Message      string `json:"message"`
 	DelaySeconds int32  `json:"delay_seconds"`
 }
 

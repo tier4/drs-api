@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/tier4/drs-api/tools/drs-cli/internal/client"
 	modulev1 "github.com/tier4/drs-api/tools/drs-cli/gen/drs/module/v1"
+	"github.com/tier4/drs-api/tools/drs-cli/internal/client"
 )
 
 var monitoringCmd = &cobra.Command{
@@ -16,7 +16,14 @@ var monitoringCmd = &cobra.Command{
 
 var diskCmd = &cobra.Command{
 	Use:   "disk",
-	Short: "Get disk usage information",
+	Short: "Disk operations",
+	Long:  "Commands for disk usage monitoring",
+}
+
+var diskGetCmd = &cobra.Command{
+	Use:   "get [disk-name]",
+	Short: "Get disk usage for a specific disk",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
@@ -24,17 +31,63 @@ var diskCmd = &cobra.Command{
 		}
 		defer c.Close()
 
-		resp, err := c.GetDiskUsage()
+		disk, err := c.GetDisk(args[0])
 		if err != nil {
-			return fmt.Errorf("failed to get disk usage: %v", err)
+			return fmt.Errorf("failed to get disk: %v", err)
 		}
 
-		usage := resp.DiskUsage
-		fmt.Printf("Disk Usage:\n")
-		fmt.Printf("  Total: %s\n", formatBytes(usage.TotalBytes))
-		fmt.Printf("  Used:  %s\n", formatBytes(usage.UsedBytes))
-		fmt.Printf("  Free:  %s\n", formatBytes(usage.FreeBytes))
-		fmt.Printf("  Usage: %.1f%%\n", usage.UsagePercentage)
+		fmt.Printf("Disk: %s\n", disk.Name)
+		if disk.MountPath != "" {
+			fmt.Printf("  Mount Path: %s\n", disk.MountPath)
+		}
+		if disk.Description != "" {
+			fmt.Printf("  Description: %s\n", disk.Description)
+		}
+		fmt.Printf("  Usage:\n")
+		fmt.Printf("    Total: %s\n", formatBytes(disk.Usage.TotalBytes))
+		fmt.Printf("    Used:  %s\n", formatBytes(disk.Usage.UsedBytes))
+		fmt.Printf("    Free:  %s\n", formatBytes(disk.Usage.FreeBytes))
+		fmt.Printf("    Usage: %.1f%%\n", disk.Usage.UsagePercentage)
+
+		return nil
+	},
+}
+
+var diskListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List all configured disks with usage",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
+		if err != nil {
+			return err
+		}
+		defer c.Close()
+
+		resp, err := c.ListDisks()
+		if err != nil {
+			return fmt.Errorf("failed to list disks: %v", err)
+		}
+
+		if len(resp.Disks) == 0 {
+			fmt.Println("No disks configured")
+			return nil
+		}
+
+		for _, disk := range resp.Disks {
+			fmt.Printf("Disk: %s\n", disk.Name)
+			if disk.MountPath != "" {
+				fmt.Printf("  Mount Path: %s\n", disk.MountPath)
+			}
+			if disk.Description != "" {
+				fmt.Printf("  Description: %s\n", disk.Description)
+			}
+			fmt.Printf("  Usage:\n")
+			fmt.Printf("    Total: %s\n", formatBytes(disk.Usage.TotalBytes))
+			fmt.Printf("    Used:  %s\n", formatBytes(disk.Usage.UsedBytes))
+			fmt.Printf("    Free:  %s\n", formatBytes(disk.Usage.FreeBytes))
+			fmt.Printf("    Usage: %.1f%%\n", disk.Usage.UsagePercentage)
+			fmt.Println()
+		}
 
 		return nil
 	},
@@ -45,7 +98,7 @@ var ptpCmd = &cobra.Command{
 	Short: "Get PTP status information",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		includeRemote, _ := cmd.Flags().GetBool("include-remote")
-		
+
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
 			return err
@@ -107,7 +160,7 @@ func printPTPStatus(status *modulev1.PTPStatus, indent string) {
 		fmt.Printf("%sStatus: No data available\n", indent)
 		return
 	}
-	
+
 	fmt.Printf("%sClock ID: %s\n", indent, status.ClockId)
 	fmt.Printf("%sMaster Offset: %d ns\n", indent, status.MasterOffsetNs)
 	fmt.Printf("%sIngress Time: %d\n", indent, status.IngressTime)
@@ -130,10 +183,12 @@ func formatBytes(bytes uint64) string {
 
 func init() {
 	// Commands will be added to moduleCmd in module.go
+	diskCmd.AddCommand(diskGetCmd)
+	diskCmd.AddCommand(diskListCmd)
 	monitoringCmd.AddCommand(diskCmd)
 	monitoringCmd.AddCommand(ptpCmd)
 	monitoringCmd.AddCommand(envCmd)
-	
+
 	// Add include-remote flag to ptp command
 	ptpCmd.Flags().BoolP("include-remote", "r", false, "include remote device PTP status")
 }
