@@ -58,7 +58,7 @@ func (m *Manager) GetAllDiskUsages(ctx context.Context) (map[string]*DiskUsage, 
 			
 			// Create a child context with timeout for each disk check
 			// We use a short timeout to avoid blocking the whole request if a disk is hung
-			diskCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+			diskCtx, cancel := context.WithTimeout(ctx, 10*time.Millisecond)
 			defer cancel()
 
 			usage, err := m.getDiskUsageForPath(diskCtx, d.MountPath)
