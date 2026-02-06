@@ -43,7 +43,7 @@ func (s *MonitoringService) GetDiskUsage(ctx context.Context, req *modulev1.GetD
 	primaryDisk := s.config.Disk.Disks[0]
 	log.Printf("Getting disk usage for primary disk: %s (legacy API)", primaryDisk.Name)
 
-	usage, err := s.storageManager.GetDiskUsage(primaryDisk.Name)
+	usage, err := s.storageManager.GetDiskUsage(ctx, primaryDisk.Name)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get disk usage: %v", err))
 	}
@@ -74,7 +74,7 @@ func (s *MonitoringService) GetDisk(ctx context.Context, req *modulev1.GetDiskRe
 
 	log.Printf("Getting disk usage for disk: %s", diskName)
 
-	usage, err := s.storageManager.GetDiskUsage(diskName)
+	usage, err := s.storageManager.GetDiskUsage(ctx, diskName)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to get disk usage: %v", err))
 	}
@@ -110,7 +110,7 @@ func (s *MonitoringService) ListDisks(ctx context.Context, req *modulev1.ListDis
 		return nil, status.Error(codes.Unimplemented, "disk usage monitoring is disabled")
 	}
 
-	allUsages, err := s.storageManager.GetAllDiskUsages()
+	allUsages, err := s.storageManager.GetAllDiskUsages(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get disk usages: %v", err))
 	}
