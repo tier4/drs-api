@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 	"syscall"
-)
-
 	"github.com/tier4/drs-api/services/module-manager/internal/config"
 )
 

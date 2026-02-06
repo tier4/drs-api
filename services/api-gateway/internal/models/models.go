@@ -47,6 +47,16 @@ type DiskInfo struct {
 	TotalBytes      uint64  `json:"total_bytes"`
 }
 
+// DiskDetail represents detailed information about a disk
+type DiskDetail struct {
+	Name            string  `json:"name"`
+	MountPath       string  `json:"mount_path"`
+	Description     string  `json:"description"`
+	UsagePercentage float64 `json:"usage_percentage"`
+	FreeBytes       uint64  `json:"free_bytes"`
+	TotalBytes      uint64  `json:"total_bytes"`
+}
+
 // EnvironmentInfo represents environment variables
 type EnvironmentInfo struct {
 	SensingSystemID string `json:"sensing_system_id"`
