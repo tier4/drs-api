@@ -229,8 +229,8 @@ function App() {
       } else {
         console.warn(
           `[Data Validation] Unexpected dataStatus value for module '${apiModule.hostname}': ` +
-          `received='${status}', defaulting to 'OK'. ` +
-          `Source: recording.data_status=${apiModule.status_detail?.recording?.data_status}, status=${apiModule.status}`,
+            `received='${status}', defaulting to 'OK'. ` +
+            `Source: recording.data_status=${apiModule.status_detail?.recording?.data_status}, status=${apiModule.status}`,
         )
         module.dataStatus = 'OK'
       }
