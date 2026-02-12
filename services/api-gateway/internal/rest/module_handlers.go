@@ -94,7 +94,7 @@ func (h *ModuleHandler) getModuleStatus(hostname string) models.ModuleStatus {
 	defer cancel()
 
 	// Get enabled services for this module
-	moduleConfig, _ := h.clientManager.GetConfig().Modules[hostname]
+	moduleConfig := h.clientManager.GetConfig().Modules[hostname]
 	
 	status := models.ModuleStatus{
 		Hostname:        hostname,
@@ -244,7 +244,7 @@ func (h *ModuleHandler) getRecordingStatus(hostname string) *models.RecordingInf
 			}
 			
 			// Map error level to data status
-			dataStatus := "OK"
+			var dataStatus string
 			switch recording.ErrorLevel {
 			case ros2bridgev1.Recording_ERROR_LEVEL_OK:
 				dataStatus = "OK"
