@@ -13,16 +13,12 @@ vendor/
 
 # Build artifacts and binaries
 bin/
-gen/
 **/bin/
-**/gen/
 
 # Generated protobuf/gRPC files
-*.pb.go
 *.pb.cc
 *.pb.h
 *_pb2.py
-*_grpc.pb.go
 *_grpc.pb.cc
 *_grpc.pb.h
 
