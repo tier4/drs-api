@@ -33,7 +33,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RecordingServiceClient interface {
 	// Standard methods
-	GetRecording(ctx context.Context, in *GetRecordingRequest, opts ...grpc.CallOption) (*Recording, error)
+	GetRecording(ctx context.Context, in *GetRecordingRequest, opts ...grpc.CallOption) (*GetRecordingResponse, error)
 	ListRecordings(ctx context.Context, in *ListRecordingsRequest, opts ...grpc.CallOption) (*ListRecordingsResponse, error)
 	ListTopicStatuses(ctx context.Context, in *ListTopicStatusesRequest, opts ...grpc.CallOption) (*ListTopicStatusesResponse, error)
 	// Custom methods for recording control
@@ -51,9 +51,9 @@ func NewRecordingServiceClient(cc grpc.ClientConnInterface) RecordingServiceClie
 	return &recordingServiceClient{cc}
 }
 
-func (c *recordingServiceClient) GetRecording(ctx context.Context, in *GetRecordingRequest, opts ...grpc.CallOption) (*Recording, error) {
+func (c *recordingServiceClient) GetRecording(ctx context.Context, in *GetRecordingRequest, opts ...grpc.CallOption) (*GetRecordingResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Recording)
+	out := new(GetRecordingResponse)
 	err := c.cc.Invoke(ctx, RecordingService_GetRecording_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (c *recordingServiceClient) ResumeRecording(ctx context.Context, in *Resume
 // for forward compatibility.
 type RecordingServiceServer interface {
 	// Standard methods
-	GetRecording(context.Context, *GetRecordingRequest) (*Recording, error)
+	GetRecording(context.Context, *GetRecordingRequest) (*GetRecordingResponse, error)
 	ListRecordings(context.Context, *ListRecordingsRequest) (*ListRecordingsResponse, error)
 	ListTopicStatuses(context.Context, *ListTopicStatusesRequest) (*ListTopicStatusesResponse, error)
 	// Custom methods for recording control
@@ -144,7 +144,7 @@ type RecordingServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedRecordingServiceServer struct{}
 
-func (UnimplementedRecordingServiceServer) GetRecording(context.Context, *GetRecordingRequest) (*Recording, error) {
+func (UnimplementedRecordingServiceServer) GetRecording(context.Context, *GetRecordingRequest) (*GetRecordingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetRecording not implemented")
 }
 func (UnimplementedRecordingServiceServer) ListRecordings(context.Context, *ListRecordingsRequest) (*ListRecordingsResponse, error) {

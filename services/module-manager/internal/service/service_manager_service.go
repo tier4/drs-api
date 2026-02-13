@@ -25,7 +25,7 @@ func NewServiceManagerService(cfg *config.Config) *ServiceManagerService {
 	}
 }
 
-func (s *ServiceManagerService) GetService(ctx context.Context, req *modulev1.GetServiceRequest) (*modulev1.Service, error) {
+func (s *ServiceManagerService) GetService(ctx context.Context, req *modulev1.GetServiceRequest) (*modulev1.GetServiceResponse, error) {
 	log.Printf("Get service request: %s", req.Name)
 
 	// Check if service management API is enabled
@@ -73,12 +73,14 @@ func (s *ServiceManagerService) GetService(ctx context.Context, req *modulev1.Ge
 		state = modulev1.Service_SERVICE_STATE_UNSPECIFIED
 	}
 
-	return &modulev1.Service{
-		Name:           req.Name,
-		State:          state,
-		Enabled:        serviceInfo.Enabled,
-		Description:    serviceMapping.Description,
-		UptimeSeconds:  serviceInfo.UptimeSeconds,
+	return &modulev1.GetServiceResponse{
+		Service: &modulev1.Service{
+			Name:           req.Name,
+			State:          state,
+			Enabled:        serviceInfo.Enabled,
+			Description:    serviceMapping.Description,
+			UptimeSeconds:  serviceInfo.UptimeSeconds,
+		},
 	}, nil
 }
 
@@ -161,13 +163,13 @@ func (s *ServiceManagerService) StartService(ctx context.Context, req *modulev1.
 	}
 
 	// Get updated service info
-	service, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
+	resp, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get service info after start: %v", err))
 	}
 
 	return &modulev1.StartServiceResponse{
-		Service: service,
+		Service: resp.Service,
 	}, nil
 }
 
@@ -193,13 +195,13 @@ func (s *ServiceManagerService) StopService(ctx context.Context, req *modulev1.S
 	}
 
 	// Get updated service info
-	service, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
+	resp, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get service info after stop: %v", err))
 	}
 
 	return &modulev1.StopServiceResponse{
-		Service: service,
+		Service: resp.Service,
 	}, nil
 }
 
@@ -225,13 +227,13 @@ func (s *ServiceManagerService) RestartService(ctx context.Context, req *modulev
 	}
 
 	// Get updated service info
-	service, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
+	resp, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get service info after restart: %v", err))
 	}
 
 	return &modulev1.RestartServiceResponse{
-		Service: service,
+		Service: resp.Service,
 	}, nil
 }
 
@@ -257,13 +259,13 @@ func (s *ServiceManagerService) EnableService(ctx context.Context, req *modulev1
 	}
 
 	// Get updated service info
-	service, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
+	resp, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get service info after enable: %v", err))
 	}
 
 	return &modulev1.EnableServiceResponse{
-		Service: service,
+		Service: resp.Service,
 	}, nil
 }
 
@@ -289,12 +291,12 @@ func (s *ServiceManagerService) DisableService(ctx context.Context, req *modulev
 	}
 
 	// Get updated service info
-	service, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
+	resp, err := s.GetService(ctx, &modulev1.GetServiceRequest{Name: req.Name})
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to get service info after disable: %v", err))
 	}
 
 	return &modulev1.DisableServiceResponse{
-		Service: service,
+		Service: resp.Service,
 	}, nil
 }

@@ -25,22 +25,25 @@ const (
 type Recording_ErrorLevel int32
 
 const (
-	Recording_ERROR_LEVEL_OK    Recording_ErrorLevel = 0 // No errors
-	Recording_ERROR_LEVEL_WARN  Recording_ErrorLevel = 1 // Warning level
-	Recording_ERROR_LEVEL_ERROR Recording_ErrorLevel = 2 // Error level
+	Recording_ERROR_LEVEL_UNSPECIFIED Recording_ErrorLevel = 0 // Unspecified or unknown
+	Recording_ERROR_LEVEL_OK          Recording_ErrorLevel = 1 // No errors
+	Recording_ERROR_LEVEL_WARN        Recording_ErrorLevel = 2 // Warning level
+	Recording_ERROR_LEVEL_ERROR       Recording_ErrorLevel = 3 // Error level
 )
 
 // Enum value maps for Recording_ErrorLevel.
 var (
 	Recording_ErrorLevel_name = map[int32]string{
-		0: "ERROR_LEVEL_OK",
-		1: "ERROR_LEVEL_WARN",
-		2: "ERROR_LEVEL_ERROR",
+		0: "ERROR_LEVEL_UNSPECIFIED",
+		1: "ERROR_LEVEL_OK",
+		2: "ERROR_LEVEL_WARN",
+		3: "ERROR_LEVEL_ERROR",
 	}
 	Recording_ErrorLevel_value = map[string]int32{
-		"ERROR_LEVEL_OK":    0,
-		"ERROR_LEVEL_WARN":  1,
-		"ERROR_LEVEL_ERROR": 2,
+		"ERROR_LEVEL_UNSPECIFIED": 0,
+		"ERROR_LEVEL_OK":          1,
+		"ERROR_LEVEL_WARN":        2,
+		"ERROR_LEVEL_ERROR":       3,
 	}
 )
 
@@ -395,7 +398,7 @@ func (x *Recording) GetErrorLevel() Recording_ErrorLevel {
 	if x != nil {
 		return x.ErrorLevel
 	}
-	return Recording_ERROR_LEVEL_OK
+	return Recording_ERROR_LEVEL_UNSPECIFIED
 }
 
 func (x *Recording) GetTopicStatuses() []*TopicStatus {
@@ -553,7 +556,7 @@ const file_drs_ros2bridge_v1_common_proto_rawDesc = "" +
 	"\bframe_id\x18\x02 \x01(\tR\aframeId\"@\n" +
 	"\fNavSatStatus\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\x05R\x06status\x12\x18\n" +
-	"\aservice\x18\x02 \x01(\x05R\aservice\"\xe2\x02\n" +
+	"\aservice\x18\x02 \x01(\x05R\aservice\"\xff\x02\n" +
 	"\tRecording\x121\n" +
 	"\x06header\x18\x01 \x01(\v2\x19.drs.ros2bridge.v1.HeaderR\x06header\x12\x1f\n" +
 	"\vhardware_id\x18\x02 \x01(\tR\n" +
@@ -561,12 +564,13 @@ const file_drs_ros2bridge_v1_common_proto_rawDesc = "" +
 	"\fis_recording\x18\x03 \x01(\bR\visRecording\x12H\n" +
 	"\verror_level\x18\x04 \x01(\x0e2'.drs.ros2bridge.v1.Recording.ErrorLevelR\n" +
 	"errorLevel\x12E\n" +
-	"\x0etopic_statuses\x18\x05 \x03(\v2\x1e.drs.ros2bridge.v1.TopicStatusR\rtopicStatuses\"M\n" +
+	"\x0etopic_statuses\x18\x05 \x03(\v2\x1e.drs.ros2bridge.v1.TopicStatusR\rtopicStatuses\"j\n" +
 	"\n" +
-	"ErrorLevel\x12\x12\n" +
-	"\x0eERROR_LEVEL_OK\x10\x00\x12\x14\n" +
-	"\x10ERROR_LEVEL_WARN\x10\x01\x12\x15\n" +
-	"\x11ERROR_LEVEL_ERROR\x10\x02\"\xf5\x02\n" +
+	"ErrorLevel\x12\x1b\n" +
+	"\x17ERROR_LEVEL_UNSPECIFIED\x10\x00\x12\x12\n" +
+	"\x0eERROR_LEVEL_OK\x10\x01\x12\x14\n" +
+	"\x10ERROR_LEVEL_WARN\x10\x02\x12\x15\n" +
+	"\x11ERROR_LEVEL_ERROR\x10\x03\"\xf5\x02\n" +
 	"\vTopicStatus\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n" +
 	"\n" +

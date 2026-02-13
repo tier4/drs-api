@@ -66,6 +66,50 @@ func (x *GetServiceRequest) GetName() string {
 	return ""
 }
 
+type GetServiceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Service       *Service               `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetServiceResponse) Reset() {
+	*x = GetServiceResponse{}
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetServiceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetServiceResponse) ProtoMessage() {}
+
+func (x *GetServiceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetServiceResponse.ProtoReflect.Descriptor instead.
+func (*GetServiceResponse) Descriptor() ([]byte, []int) {
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetServiceResponse) GetService() *Service {
+	if x != nil {
+		return x.Service
+	}
+	return nil
+}
+
 // Standard List operation
 type ListServicesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -78,7 +122,7 @@ type ListServicesRequest struct {
 
 func (x *ListServicesRequest) Reset() {
 	*x = ListServicesRequest{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[1]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -90,7 +134,7 @@ func (x *ListServicesRequest) String() string {
 func (*ListServicesRequest) ProtoMessage() {}
 
 func (x *ListServicesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[1]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -103,7 +147,7 @@ func (x *ListServicesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListServicesRequest.ProtoReflect.Descriptor instead.
 func (*ListServicesRequest) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{1}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ListServicesRequest) GetPageSize() int32 {
@@ -137,7 +181,7 @@ type ListServicesResponse struct {
 
 func (x *ListServicesResponse) Reset() {
 	*x = ListServicesResponse{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[2]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -149,7 +193,7 @@ func (x *ListServicesResponse) String() string {
 func (*ListServicesResponse) ProtoMessage() {}
 
 func (x *ListServicesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[2]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -162,7 +206,7 @@ func (x *ListServicesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListServicesResponse.ProtoReflect.Descriptor instead.
 func (*ListServicesResponse) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{2}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ListServicesResponse) GetServices() []*Service {
@@ -189,7 +233,7 @@ type StartServiceRequest struct {
 
 func (x *StartServiceRequest) Reset() {
 	*x = StartServiceRequest{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[3]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -201,7 +245,7 @@ func (x *StartServiceRequest) String() string {
 func (*StartServiceRequest) ProtoMessage() {}
 
 func (x *StartServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[3]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -214,7 +258,7 @@ func (x *StartServiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartServiceRequest.ProtoReflect.Descriptor instead.
 func (*StartServiceRequest) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{3}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *StartServiceRequest) GetName() string {
@@ -233,7 +277,7 @@ type StartServiceResponse struct {
 
 func (x *StartServiceResponse) Reset() {
 	*x = StartServiceResponse{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[4]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -245,7 +289,7 @@ func (x *StartServiceResponse) String() string {
 func (*StartServiceResponse) ProtoMessage() {}
 
 func (x *StartServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[4]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -258,7 +302,7 @@ func (x *StartServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartServiceResponse.ProtoReflect.Descriptor instead.
 func (*StartServiceResponse) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{4}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *StartServiceResponse) GetService() *Service {
@@ -277,7 +321,7 @@ type StopServiceRequest struct {
 
 func (x *StopServiceRequest) Reset() {
 	*x = StopServiceRequest{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[5]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -289,7 +333,7 @@ func (x *StopServiceRequest) String() string {
 func (*StopServiceRequest) ProtoMessage() {}
 
 func (x *StopServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[5]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +346,7 @@ func (x *StopServiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StopServiceRequest.ProtoReflect.Descriptor instead.
 func (*StopServiceRequest) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{5}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *StopServiceRequest) GetName() string {
@@ -321,7 +365,7 @@ type StopServiceResponse struct {
 
 func (x *StopServiceResponse) Reset() {
 	*x = StopServiceResponse{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[6]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -333,7 +377,7 @@ func (x *StopServiceResponse) String() string {
 func (*StopServiceResponse) ProtoMessage() {}
 
 func (x *StopServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[6]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -346,7 +390,7 @@ func (x *StopServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StopServiceResponse.ProtoReflect.Descriptor instead.
 func (*StopServiceResponse) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{6}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *StopServiceResponse) GetService() *Service {
@@ -365,7 +409,7 @@ type RestartServiceRequest struct {
 
 func (x *RestartServiceRequest) Reset() {
 	*x = RestartServiceRequest{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[7]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -377,7 +421,7 @@ func (x *RestartServiceRequest) String() string {
 func (*RestartServiceRequest) ProtoMessage() {}
 
 func (x *RestartServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[7]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -390,7 +434,7 @@ func (x *RestartServiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RestartServiceRequest.ProtoReflect.Descriptor instead.
 func (*RestartServiceRequest) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{7}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RestartServiceRequest) GetName() string {
@@ -409,7 +453,7 @@ type RestartServiceResponse struct {
 
 func (x *RestartServiceResponse) Reset() {
 	*x = RestartServiceResponse{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[8]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -421,7 +465,7 @@ func (x *RestartServiceResponse) String() string {
 func (*RestartServiceResponse) ProtoMessage() {}
 
 func (x *RestartServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[8]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -434,7 +478,7 @@ func (x *RestartServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RestartServiceResponse.ProtoReflect.Descriptor instead.
 func (*RestartServiceResponse) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{8}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *RestartServiceResponse) GetService() *Service {
@@ -453,7 +497,7 @@ type EnableServiceRequest struct {
 
 func (x *EnableServiceRequest) Reset() {
 	*x = EnableServiceRequest{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[9]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -465,7 +509,7 @@ func (x *EnableServiceRequest) String() string {
 func (*EnableServiceRequest) ProtoMessage() {}
 
 func (x *EnableServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[9]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -478,7 +522,7 @@ func (x *EnableServiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnableServiceRequest.ProtoReflect.Descriptor instead.
 func (*EnableServiceRequest) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{9}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *EnableServiceRequest) GetName() string {
@@ -497,7 +541,7 @@ type EnableServiceResponse struct {
 
 func (x *EnableServiceResponse) Reset() {
 	*x = EnableServiceResponse{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[10]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -509,7 +553,7 @@ func (x *EnableServiceResponse) String() string {
 func (*EnableServiceResponse) ProtoMessage() {}
 
 func (x *EnableServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[10]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -522,7 +566,7 @@ func (x *EnableServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnableServiceResponse.ProtoReflect.Descriptor instead.
 func (*EnableServiceResponse) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{10}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *EnableServiceResponse) GetService() *Service {
@@ -541,7 +585,7 @@ type DisableServiceRequest struct {
 
 func (x *DisableServiceRequest) Reset() {
 	*x = DisableServiceRequest{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[11]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -553,7 +597,7 @@ func (x *DisableServiceRequest) String() string {
 func (*DisableServiceRequest) ProtoMessage() {}
 
 func (x *DisableServiceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[11]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -566,7 +610,7 @@ func (x *DisableServiceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisableServiceRequest.ProtoReflect.Descriptor instead.
 func (*DisableServiceRequest) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{11}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DisableServiceRequest) GetName() string {
@@ -585,7 +629,7 @@ type DisableServiceResponse struct {
 
 func (x *DisableServiceResponse) Reset() {
 	*x = DisableServiceResponse{}
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[12]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -597,7 +641,7 @@ func (x *DisableServiceResponse) String() string {
 func (*DisableServiceResponse) ProtoMessage() {}
 
 func (x *DisableServiceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_service_manager_proto_msgTypes[12]
+	mi := &file_drs_module_v1_service_manager_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -610,7 +654,7 @@ func (x *DisableServiceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisableServiceResponse.ProtoReflect.Descriptor instead.
 func (*DisableServiceResponse) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{12}
+	return file_drs_module_v1_service_manager_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DisableServiceResponse) GetService() *Service {
@@ -626,7 +670,9 @@ const file_drs_module_v1_service_manager_proto_rawDesc = "" +
 	"\n" +
 	"#drs/module/v1/service_manager.proto\x12\rdrs.module.v1\x1a\x1adrs/module/v1/common.proto\"'\n" +
 	"\x11GetServiceRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\"i\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\"F\n" +
+	"\x12GetServiceResponse\x120\n" +
+	"\aservice\x18\x01 \x01(\v2\x16.drs.module.v1.ServiceR\aservice\"i\n" +
 	"\x13ListServicesRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
@@ -654,10 +700,10 @@ const file_drs_module_v1_service_manager_proto_rawDesc = "" +
 	"\x15DisableServiceRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"J\n" +
 	"\x16DisableServiceResponse\x120\n" +
-	"\aservice\x18\x01 \x01(\v2\x16.drs.module.v1.ServiceR\aservice2\x81\x05\n" +
-	"\x15ServiceManagerService\x12F\n" +
+	"\aservice\x18\x01 \x01(\v2\x16.drs.module.v1.ServiceR\aservice2\x8c\x05\n" +
+	"\x15ServiceManagerService\x12Q\n" +
 	"\n" +
-	"GetService\x12 .drs.module.v1.GetServiceRequest\x1a\x16.drs.module.v1.Service\x12W\n" +
+	"GetService\x12 .drs.module.v1.GetServiceRequest\x1a!.drs.module.v1.GetServiceResponse\x12W\n" +
 	"\fListServices\x12\".drs.module.v1.ListServicesRequest\x1a#.drs.module.v1.ListServicesResponse\x12W\n" +
 	"\fStartService\x12\".drs.module.v1.StartServiceRequest\x1a#.drs.module.v1.StartServiceResponse\x12T\n" +
 	"\vStopService\x12!.drs.module.v1.StopServiceRequest\x1a\".drs.module.v1.StopServiceResponse\x12]\n" +
@@ -677,49 +723,51 @@ func file_drs_module_v1_service_manager_proto_rawDescGZIP() []byte {
 	return file_drs_module_v1_service_manager_proto_rawDescData
 }
 
-var file_drs_module_v1_service_manager_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_drs_module_v1_service_manager_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_drs_module_v1_service_manager_proto_goTypes = []any{
 	(*GetServiceRequest)(nil),      // 0: drs.module.v1.GetServiceRequest
-	(*ListServicesRequest)(nil),    // 1: drs.module.v1.ListServicesRequest
-	(*ListServicesResponse)(nil),   // 2: drs.module.v1.ListServicesResponse
-	(*StartServiceRequest)(nil),    // 3: drs.module.v1.StartServiceRequest
-	(*StartServiceResponse)(nil),   // 4: drs.module.v1.StartServiceResponse
-	(*StopServiceRequest)(nil),     // 5: drs.module.v1.StopServiceRequest
-	(*StopServiceResponse)(nil),    // 6: drs.module.v1.StopServiceResponse
-	(*RestartServiceRequest)(nil),  // 7: drs.module.v1.RestartServiceRequest
-	(*RestartServiceResponse)(nil), // 8: drs.module.v1.RestartServiceResponse
-	(*EnableServiceRequest)(nil),   // 9: drs.module.v1.EnableServiceRequest
-	(*EnableServiceResponse)(nil),  // 10: drs.module.v1.EnableServiceResponse
-	(*DisableServiceRequest)(nil),  // 11: drs.module.v1.DisableServiceRequest
-	(*DisableServiceResponse)(nil), // 12: drs.module.v1.DisableServiceResponse
-	(*Service)(nil),                // 13: drs.module.v1.Service
+	(*GetServiceResponse)(nil),     // 1: drs.module.v1.GetServiceResponse
+	(*ListServicesRequest)(nil),    // 2: drs.module.v1.ListServicesRequest
+	(*ListServicesResponse)(nil),   // 3: drs.module.v1.ListServicesResponse
+	(*StartServiceRequest)(nil),    // 4: drs.module.v1.StartServiceRequest
+	(*StartServiceResponse)(nil),   // 5: drs.module.v1.StartServiceResponse
+	(*StopServiceRequest)(nil),     // 6: drs.module.v1.StopServiceRequest
+	(*StopServiceResponse)(nil),    // 7: drs.module.v1.StopServiceResponse
+	(*RestartServiceRequest)(nil),  // 8: drs.module.v1.RestartServiceRequest
+	(*RestartServiceResponse)(nil), // 9: drs.module.v1.RestartServiceResponse
+	(*EnableServiceRequest)(nil),   // 10: drs.module.v1.EnableServiceRequest
+	(*EnableServiceResponse)(nil),  // 11: drs.module.v1.EnableServiceResponse
+	(*DisableServiceRequest)(nil),  // 12: drs.module.v1.DisableServiceRequest
+	(*DisableServiceResponse)(nil), // 13: drs.module.v1.DisableServiceResponse
+	(*Service)(nil),                // 14: drs.module.v1.Service
 }
 var file_drs_module_v1_service_manager_proto_depIdxs = []int32{
-	13, // 0: drs.module.v1.ListServicesResponse.services:type_name -> drs.module.v1.Service
-	13, // 1: drs.module.v1.StartServiceResponse.service:type_name -> drs.module.v1.Service
-	13, // 2: drs.module.v1.StopServiceResponse.service:type_name -> drs.module.v1.Service
-	13, // 3: drs.module.v1.RestartServiceResponse.service:type_name -> drs.module.v1.Service
-	13, // 4: drs.module.v1.EnableServiceResponse.service:type_name -> drs.module.v1.Service
-	13, // 5: drs.module.v1.DisableServiceResponse.service:type_name -> drs.module.v1.Service
-	0,  // 6: drs.module.v1.ServiceManagerService.GetService:input_type -> drs.module.v1.GetServiceRequest
-	1,  // 7: drs.module.v1.ServiceManagerService.ListServices:input_type -> drs.module.v1.ListServicesRequest
-	3,  // 8: drs.module.v1.ServiceManagerService.StartService:input_type -> drs.module.v1.StartServiceRequest
-	5,  // 9: drs.module.v1.ServiceManagerService.StopService:input_type -> drs.module.v1.StopServiceRequest
-	7,  // 10: drs.module.v1.ServiceManagerService.RestartService:input_type -> drs.module.v1.RestartServiceRequest
-	9,  // 11: drs.module.v1.ServiceManagerService.EnableService:input_type -> drs.module.v1.EnableServiceRequest
-	11, // 12: drs.module.v1.ServiceManagerService.DisableService:input_type -> drs.module.v1.DisableServiceRequest
-	13, // 13: drs.module.v1.ServiceManagerService.GetService:output_type -> drs.module.v1.Service
-	2,  // 14: drs.module.v1.ServiceManagerService.ListServices:output_type -> drs.module.v1.ListServicesResponse
-	4,  // 15: drs.module.v1.ServiceManagerService.StartService:output_type -> drs.module.v1.StartServiceResponse
-	6,  // 16: drs.module.v1.ServiceManagerService.StopService:output_type -> drs.module.v1.StopServiceResponse
-	8,  // 17: drs.module.v1.ServiceManagerService.RestartService:output_type -> drs.module.v1.RestartServiceResponse
-	10, // 18: drs.module.v1.ServiceManagerService.EnableService:output_type -> drs.module.v1.EnableServiceResponse
-	12, // 19: drs.module.v1.ServiceManagerService.DisableService:output_type -> drs.module.v1.DisableServiceResponse
-	13, // [13:20] is the sub-list for method output_type
-	6,  // [6:13] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	14, // 0: drs.module.v1.GetServiceResponse.service:type_name -> drs.module.v1.Service
+	14, // 1: drs.module.v1.ListServicesResponse.services:type_name -> drs.module.v1.Service
+	14, // 2: drs.module.v1.StartServiceResponse.service:type_name -> drs.module.v1.Service
+	14, // 3: drs.module.v1.StopServiceResponse.service:type_name -> drs.module.v1.Service
+	14, // 4: drs.module.v1.RestartServiceResponse.service:type_name -> drs.module.v1.Service
+	14, // 5: drs.module.v1.EnableServiceResponse.service:type_name -> drs.module.v1.Service
+	14, // 6: drs.module.v1.DisableServiceResponse.service:type_name -> drs.module.v1.Service
+	0,  // 7: drs.module.v1.ServiceManagerService.GetService:input_type -> drs.module.v1.GetServiceRequest
+	2,  // 8: drs.module.v1.ServiceManagerService.ListServices:input_type -> drs.module.v1.ListServicesRequest
+	4,  // 9: drs.module.v1.ServiceManagerService.StartService:input_type -> drs.module.v1.StartServiceRequest
+	6,  // 10: drs.module.v1.ServiceManagerService.StopService:input_type -> drs.module.v1.StopServiceRequest
+	8,  // 11: drs.module.v1.ServiceManagerService.RestartService:input_type -> drs.module.v1.RestartServiceRequest
+	10, // 12: drs.module.v1.ServiceManagerService.EnableService:input_type -> drs.module.v1.EnableServiceRequest
+	12, // 13: drs.module.v1.ServiceManagerService.DisableService:input_type -> drs.module.v1.DisableServiceRequest
+	1,  // 14: drs.module.v1.ServiceManagerService.GetService:output_type -> drs.module.v1.GetServiceResponse
+	3,  // 15: drs.module.v1.ServiceManagerService.ListServices:output_type -> drs.module.v1.ListServicesResponse
+	5,  // 16: drs.module.v1.ServiceManagerService.StartService:output_type -> drs.module.v1.StartServiceResponse
+	7,  // 17: drs.module.v1.ServiceManagerService.StopService:output_type -> drs.module.v1.StopServiceResponse
+	9,  // 18: drs.module.v1.ServiceManagerService.RestartService:output_type -> drs.module.v1.RestartServiceResponse
+	11, // 19: drs.module.v1.ServiceManagerService.EnableService:output_type -> drs.module.v1.EnableServiceResponse
+	13, // 20: drs.module.v1.ServiceManagerService.DisableService:output_type -> drs.module.v1.DisableServiceResponse
+	14, // [14:21] is the sub-list for method output_type
+	7,  // [7:14] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_drs_module_v1_service_manager_proto_init() }
@@ -734,7 +782,7 @@ func file_drs_module_v1_service_manager_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_drs_module_v1_service_manager_proto_rawDesc), len(file_drs_module_v1_service_manager_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -66,6 +66,50 @@ func (x *GetRecordingRequest) GetHardwareId() string {
 	return ""
 }
 
+type GetRecordingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Recording     *Recording             `protobuf:"bytes,1,opt,name=recording,proto3" json:"recording,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRecordingResponse) Reset() {
+	*x = GetRecordingResponse{}
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRecordingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRecordingResponse) ProtoMessage() {}
+
+func (x *GetRecordingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRecordingResponse.ProtoReflect.Descriptor instead.
+func (*GetRecordingResponse) Descriptor() ([]byte, []int) {
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetRecordingResponse) GetRecording() *Recording {
+	if x != nil {
+		return x.Recording
+	}
+	return nil
+}
+
 // Standard List operation for recordings
 type ListRecordingsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -76,7 +120,7 @@ type ListRecordingsRequest struct {
 
 func (x *ListRecordingsRequest) Reset() {
 	*x = ListRecordingsRequest{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[1]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -88,7 +132,7 @@ func (x *ListRecordingsRequest) String() string {
 func (*ListRecordingsRequest) ProtoMessage() {}
 
 func (x *ListRecordingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[1]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -101,7 +145,7 @@ func (x *ListRecordingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRecordingsRequest.ProtoReflect.Descriptor instead.
 func (*ListRecordingsRequest) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{1}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ListRecordingsRequest) GetFilter() string {
@@ -120,7 +164,7 @@ type ListRecordingsResponse struct {
 
 func (x *ListRecordingsResponse) Reset() {
 	*x = ListRecordingsResponse{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[2]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -132,7 +176,7 @@ func (x *ListRecordingsResponse) String() string {
 func (*ListRecordingsResponse) ProtoMessage() {}
 
 func (x *ListRecordingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[2]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -145,7 +189,7 @@ func (x *ListRecordingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRecordingsResponse.ProtoReflect.Descriptor instead.
 func (*ListRecordingsResponse) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{2}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ListRecordingsResponse) GetRecordings() []*Recording {
@@ -166,7 +210,7 @@ type ListTopicStatusesRequest struct {
 
 func (x *ListTopicStatusesRequest) Reset() {
 	*x = ListTopicStatusesRequest{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[3]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -178,7 +222,7 @@ func (x *ListTopicStatusesRequest) String() string {
 func (*ListTopicStatusesRequest) ProtoMessage() {}
 
 func (x *ListTopicStatusesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[3]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -191,7 +235,7 @@ func (x *ListTopicStatusesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTopicStatusesRequest.ProtoReflect.Descriptor instead.
 func (*ListTopicStatusesRequest) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{3}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ListTopicStatusesRequest) GetHardwareId() string {
@@ -217,7 +261,7 @@ type ListTopicStatusesResponse struct {
 
 func (x *ListTopicStatusesResponse) Reset() {
 	*x = ListTopicStatusesResponse{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[4]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -229,7 +273,7 @@ func (x *ListTopicStatusesResponse) String() string {
 func (*ListTopicStatusesResponse) ProtoMessage() {}
 
 func (x *ListTopicStatusesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[4]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -242,7 +286,7 @@ func (x *ListTopicStatusesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTopicStatusesResponse.ProtoReflect.Descriptor instead.
 func (*ListTopicStatusesResponse) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{4}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ListTopicStatusesResponse) GetTopicStatuses() []*TopicStatus {
@@ -261,7 +305,7 @@ type StartRecordingRequest struct {
 
 func (x *StartRecordingRequest) Reset() {
 	*x = StartRecordingRequest{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[5]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -273,7 +317,7 @@ func (x *StartRecordingRequest) String() string {
 func (*StartRecordingRequest) ProtoMessage() {}
 
 func (x *StartRecordingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[5]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -286,7 +330,7 @@ func (x *StartRecordingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartRecordingRequest.ProtoReflect.Descriptor instead.
 func (*StartRecordingRequest) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{5}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{6}
 }
 
 type StartRecordingResponse struct {
@@ -299,7 +343,7 @@ type StartRecordingResponse struct {
 
 func (x *StartRecordingResponse) Reset() {
 	*x = StartRecordingResponse{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[6]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -311,7 +355,7 @@ func (x *StartRecordingResponse) String() string {
 func (*StartRecordingResponse) ProtoMessage() {}
 
 func (x *StartRecordingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[6]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -324,7 +368,7 @@ func (x *StartRecordingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartRecordingResponse.ProtoReflect.Descriptor instead.
 func (*StartRecordingResponse) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{6}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *StartRecordingResponse) GetSuccess() bool {
@@ -349,7 +393,7 @@ type StopRecordingRequest struct {
 
 func (x *StopRecordingRequest) Reset() {
 	*x = StopRecordingRequest{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[7]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -361,7 +405,7 @@ func (x *StopRecordingRequest) String() string {
 func (*StopRecordingRequest) ProtoMessage() {}
 
 func (x *StopRecordingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[7]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -374,7 +418,7 @@ func (x *StopRecordingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StopRecordingRequest.ProtoReflect.Descriptor instead.
 func (*StopRecordingRequest) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{7}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{8}
 }
 
 type StopRecordingResponse struct {
@@ -387,7 +431,7 @@ type StopRecordingResponse struct {
 
 func (x *StopRecordingResponse) Reset() {
 	*x = StopRecordingResponse{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[8]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -399,7 +443,7 @@ func (x *StopRecordingResponse) String() string {
 func (*StopRecordingResponse) ProtoMessage() {}
 
 func (x *StopRecordingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[8]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -412,7 +456,7 @@ func (x *StopRecordingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StopRecordingResponse.ProtoReflect.Descriptor instead.
 func (*StopRecordingResponse) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{8}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *StopRecordingResponse) GetSuccess() bool {
@@ -437,7 +481,7 @@ type PauseRecordingRequest struct {
 
 func (x *PauseRecordingRequest) Reset() {
 	*x = PauseRecordingRequest{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[9]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -449,7 +493,7 @@ func (x *PauseRecordingRequest) String() string {
 func (*PauseRecordingRequest) ProtoMessage() {}
 
 func (x *PauseRecordingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[9]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -462,7 +506,7 @@ func (x *PauseRecordingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PauseRecordingRequest.ProtoReflect.Descriptor instead.
 func (*PauseRecordingRequest) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{9}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{10}
 }
 
 type PauseRecordingResponse struct {
@@ -475,7 +519,7 @@ type PauseRecordingResponse struct {
 
 func (x *PauseRecordingResponse) Reset() {
 	*x = PauseRecordingResponse{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[10]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -487,7 +531,7 @@ func (x *PauseRecordingResponse) String() string {
 func (*PauseRecordingResponse) ProtoMessage() {}
 
 func (x *PauseRecordingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[10]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -500,7 +544,7 @@ func (x *PauseRecordingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PauseRecordingResponse.ProtoReflect.Descriptor instead.
 func (*PauseRecordingResponse) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{10}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *PauseRecordingResponse) GetSuccess() bool {
@@ -525,7 +569,7 @@ type ResumeRecordingRequest struct {
 
 func (x *ResumeRecordingRequest) Reset() {
 	*x = ResumeRecordingRequest{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[11]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -537,7 +581,7 @@ func (x *ResumeRecordingRequest) String() string {
 func (*ResumeRecordingRequest) ProtoMessage() {}
 
 func (x *ResumeRecordingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[11]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -550,7 +594,7 @@ func (x *ResumeRecordingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResumeRecordingRequest.ProtoReflect.Descriptor instead.
 func (*ResumeRecordingRequest) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{11}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{12}
 }
 
 type ResumeRecordingResponse struct {
@@ -563,7 +607,7 @@ type ResumeRecordingResponse struct {
 
 func (x *ResumeRecordingResponse) Reset() {
 	*x = ResumeRecordingResponse{}
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[12]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -575,7 +619,7 @@ func (x *ResumeRecordingResponse) String() string {
 func (*ResumeRecordingResponse) ProtoMessage() {}
 
 func (x *ResumeRecordingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[12]
+	mi := &file_drs_ros2bridge_v1_recording_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -588,7 +632,7 @@ func (x *ResumeRecordingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResumeRecordingResponse.ProtoReflect.Descriptor instead.
 func (*ResumeRecordingResponse) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{12}
+	return file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ResumeRecordingResponse) GetSuccess() bool {
@@ -612,7 +656,9 @@ const file_drs_ros2bridge_v1_recording_service_proto_rawDesc = "" +
 	")drs/ros2bridge/v1/recording_service.proto\x12\x11drs.ros2bridge.v1\x1a\x1edrs/ros2bridge/v1/common.proto\"6\n" +
 	"\x13GetRecordingRequest\x12\x1f\n" +
 	"\vhardware_id\x18\x01 \x01(\tR\n" +
-	"hardwareId\"/\n" +
+	"hardwareId\"R\n" +
+	"\x14GetRecordingResponse\x12:\n" +
+	"\trecording\x18\x01 \x01(\v2\x1c.drs.ros2bridge.v1.RecordingR\trecording\"/\n" +
 	"\x15ListRecordingsRequest\x12\x16\n" +
 	"\x06filter\x18\x01 \x01(\tR\x06filter\"V\n" +
 	"\x16ListRecordingsResponse\x12<\n" +
@@ -640,9 +686,9 @@ const file_drs_ros2bridge_v1_recording_service_proto_rawDesc = "" +
 	"\x16ResumeRecordingRequest\"M\n" +
 	"\x17ResumeRecordingResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage2\xdb\x05\n" +
-	"\x10RecordingService\x12T\n" +
-	"\fGetRecording\x12&.drs.ros2bridge.v1.GetRecordingRequest\x1a\x1c.drs.ros2bridge.v1.Recording\x12e\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage2\xe6\x05\n" +
+	"\x10RecordingService\x12_\n" +
+	"\fGetRecording\x12&.drs.ros2bridge.v1.GetRecordingRequest\x1a'.drs.ros2bridge.v1.GetRecordingResponse\x12e\n" +
 	"\x0eListRecordings\x12(.drs.ros2bridge.v1.ListRecordingsRequest\x1a).drs.ros2bridge.v1.ListRecordingsResponse\x12n\n" +
 	"\x11ListTopicStatuses\x12+.drs.ros2bridge.v1.ListTopicStatusesRequest\x1a,.drs.ros2bridge.v1.ListTopicStatusesResponse\x12e\n" +
 	"\x0eStartRecording\x12(.drs.ros2bridge.v1.StartRecordingRequest\x1a).drs.ros2bridge.v1.StartRecordingResponse\x12b\n" +
@@ -662,46 +708,48 @@ func file_drs_ros2bridge_v1_recording_service_proto_rawDescGZIP() []byte {
 	return file_drs_ros2bridge_v1_recording_service_proto_rawDescData
 }
 
-var file_drs_ros2bridge_v1_recording_service_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_drs_ros2bridge_v1_recording_service_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_drs_ros2bridge_v1_recording_service_proto_goTypes = []any{
 	(*GetRecordingRequest)(nil),       // 0: drs.ros2bridge.v1.GetRecordingRequest
-	(*ListRecordingsRequest)(nil),     // 1: drs.ros2bridge.v1.ListRecordingsRequest
-	(*ListRecordingsResponse)(nil),    // 2: drs.ros2bridge.v1.ListRecordingsResponse
-	(*ListTopicStatusesRequest)(nil),  // 3: drs.ros2bridge.v1.ListTopicStatusesRequest
-	(*ListTopicStatusesResponse)(nil), // 4: drs.ros2bridge.v1.ListTopicStatusesResponse
-	(*StartRecordingRequest)(nil),     // 5: drs.ros2bridge.v1.StartRecordingRequest
-	(*StartRecordingResponse)(nil),    // 6: drs.ros2bridge.v1.StartRecordingResponse
-	(*StopRecordingRequest)(nil),      // 7: drs.ros2bridge.v1.StopRecordingRequest
-	(*StopRecordingResponse)(nil),     // 8: drs.ros2bridge.v1.StopRecordingResponse
-	(*PauseRecordingRequest)(nil),     // 9: drs.ros2bridge.v1.PauseRecordingRequest
-	(*PauseRecordingResponse)(nil),    // 10: drs.ros2bridge.v1.PauseRecordingResponse
-	(*ResumeRecordingRequest)(nil),    // 11: drs.ros2bridge.v1.ResumeRecordingRequest
-	(*ResumeRecordingResponse)(nil),   // 12: drs.ros2bridge.v1.ResumeRecordingResponse
-	(*Recording)(nil),                 // 13: drs.ros2bridge.v1.Recording
-	(*TopicStatus)(nil),               // 14: drs.ros2bridge.v1.TopicStatus
+	(*GetRecordingResponse)(nil),      // 1: drs.ros2bridge.v1.GetRecordingResponse
+	(*ListRecordingsRequest)(nil),     // 2: drs.ros2bridge.v1.ListRecordingsRequest
+	(*ListRecordingsResponse)(nil),    // 3: drs.ros2bridge.v1.ListRecordingsResponse
+	(*ListTopicStatusesRequest)(nil),  // 4: drs.ros2bridge.v1.ListTopicStatusesRequest
+	(*ListTopicStatusesResponse)(nil), // 5: drs.ros2bridge.v1.ListTopicStatusesResponse
+	(*StartRecordingRequest)(nil),     // 6: drs.ros2bridge.v1.StartRecordingRequest
+	(*StartRecordingResponse)(nil),    // 7: drs.ros2bridge.v1.StartRecordingResponse
+	(*StopRecordingRequest)(nil),      // 8: drs.ros2bridge.v1.StopRecordingRequest
+	(*StopRecordingResponse)(nil),     // 9: drs.ros2bridge.v1.StopRecordingResponse
+	(*PauseRecordingRequest)(nil),     // 10: drs.ros2bridge.v1.PauseRecordingRequest
+	(*PauseRecordingResponse)(nil),    // 11: drs.ros2bridge.v1.PauseRecordingResponse
+	(*ResumeRecordingRequest)(nil),    // 12: drs.ros2bridge.v1.ResumeRecordingRequest
+	(*ResumeRecordingResponse)(nil),   // 13: drs.ros2bridge.v1.ResumeRecordingResponse
+	(*Recording)(nil),                 // 14: drs.ros2bridge.v1.Recording
+	(*TopicStatus)(nil),               // 15: drs.ros2bridge.v1.TopicStatus
 }
 var file_drs_ros2bridge_v1_recording_service_proto_depIdxs = []int32{
-	13, // 0: drs.ros2bridge.v1.ListRecordingsResponse.recordings:type_name -> drs.ros2bridge.v1.Recording
-	14, // 1: drs.ros2bridge.v1.ListTopicStatusesResponse.topic_statuses:type_name -> drs.ros2bridge.v1.TopicStatus
-	0,  // 2: drs.ros2bridge.v1.RecordingService.GetRecording:input_type -> drs.ros2bridge.v1.GetRecordingRequest
-	1,  // 3: drs.ros2bridge.v1.RecordingService.ListRecordings:input_type -> drs.ros2bridge.v1.ListRecordingsRequest
-	3,  // 4: drs.ros2bridge.v1.RecordingService.ListTopicStatuses:input_type -> drs.ros2bridge.v1.ListTopicStatusesRequest
-	5,  // 5: drs.ros2bridge.v1.RecordingService.StartRecording:input_type -> drs.ros2bridge.v1.StartRecordingRequest
-	7,  // 6: drs.ros2bridge.v1.RecordingService.StopRecording:input_type -> drs.ros2bridge.v1.StopRecordingRequest
-	9,  // 7: drs.ros2bridge.v1.RecordingService.PauseRecording:input_type -> drs.ros2bridge.v1.PauseRecordingRequest
-	11, // 8: drs.ros2bridge.v1.RecordingService.ResumeRecording:input_type -> drs.ros2bridge.v1.ResumeRecordingRequest
-	13, // 9: drs.ros2bridge.v1.RecordingService.GetRecording:output_type -> drs.ros2bridge.v1.Recording
-	2,  // 10: drs.ros2bridge.v1.RecordingService.ListRecordings:output_type -> drs.ros2bridge.v1.ListRecordingsResponse
-	4,  // 11: drs.ros2bridge.v1.RecordingService.ListTopicStatuses:output_type -> drs.ros2bridge.v1.ListTopicStatusesResponse
-	6,  // 12: drs.ros2bridge.v1.RecordingService.StartRecording:output_type -> drs.ros2bridge.v1.StartRecordingResponse
-	8,  // 13: drs.ros2bridge.v1.RecordingService.StopRecording:output_type -> drs.ros2bridge.v1.StopRecordingResponse
-	10, // 14: drs.ros2bridge.v1.RecordingService.PauseRecording:output_type -> drs.ros2bridge.v1.PauseRecordingResponse
-	12, // 15: drs.ros2bridge.v1.RecordingService.ResumeRecording:output_type -> drs.ros2bridge.v1.ResumeRecordingResponse
-	9,  // [9:16] is the sub-list for method output_type
-	2,  // [2:9] is the sub-list for method input_type
-	2,  // [2:2] is the sub-list for extension type_name
-	2,  // [2:2] is the sub-list for extension extendee
-	0,  // [0:2] is the sub-list for field type_name
+	14, // 0: drs.ros2bridge.v1.GetRecordingResponse.recording:type_name -> drs.ros2bridge.v1.Recording
+	14, // 1: drs.ros2bridge.v1.ListRecordingsResponse.recordings:type_name -> drs.ros2bridge.v1.Recording
+	15, // 2: drs.ros2bridge.v1.ListTopicStatusesResponse.topic_statuses:type_name -> drs.ros2bridge.v1.TopicStatus
+	0,  // 3: drs.ros2bridge.v1.RecordingService.GetRecording:input_type -> drs.ros2bridge.v1.GetRecordingRequest
+	2,  // 4: drs.ros2bridge.v1.RecordingService.ListRecordings:input_type -> drs.ros2bridge.v1.ListRecordingsRequest
+	4,  // 5: drs.ros2bridge.v1.RecordingService.ListTopicStatuses:input_type -> drs.ros2bridge.v1.ListTopicStatusesRequest
+	6,  // 6: drs.ros2bridge.v1.RecordingService.StartRecording:input_type -> drs.ros2bridge.v1.StartRecordingRequest
+	8,  // 7: drs.ros2bridge.v1.RecordingService.StopRecording:input_type -> drs.ros2bridge.v1.StopRecordingRequest
+	10, // 8: drs.ros2bridge.v1.RecordingService.PauseRecording:input_type -> drs.ros2bridge.v1.PauseRecordingRequest
+	12, // 9: drs.ros2bridge.v1.RecordingService.ResumeRecording:input_type -> drs.ros2bridge.v1.ResumeRecordingRequest
+	1,  // 10: drs.ros2bridge.v1.RecordingService.GetRecording:output_type -> drs.ros2bridge.v1.GetRecordingResponse
+	3,  // 11: drs.ros2bridge.v1.RecordingService.ListRecordings:output_type -> drs.ros2bridge.v1.ListRecordingsResponse
+	5,  // 12: drs.ros2bridge.v1.RecordingService.ListTopicStatuses:output_type -> drs.ros2bridge.v1.ListTopicStatusesResponse
+	7,  // 13: drs.ros2bridge.v1.RecordingService.StartRecording:output_type -> drs.ros2bridge.v1.StartRecordingResponse
+	9,  // 14: drs.ros2bridge.v1.RecordingService.StopRecording:output_type -> drs.ros2bridge.v1.StopRecordingResponse
+	11, // 15: drs.ros2bridge.v1.RecordingService.PauseRecording:output_type -> drs.ros2bridge.v1.PauseRecordingResponse
+	13, // 16: drs.ros2bridge.v1.RecordingService.ResumeRecording:output_type -> drs.ros2bridge.v1.ResumeRecordingResponse
+	10, // [10:17] is the sub-list for method output_type
+	3,  // [3:10] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_drs_ros2bridge_v1_recording_service_proto_init() }
@@ -716,7 +764,7 @@ func file_drs_ros2bridge_v1_recording_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_drs_ros2bridge_v1_recording_service_proto_rawDesc), len(file_drs_ros2bridge_v1_recording_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

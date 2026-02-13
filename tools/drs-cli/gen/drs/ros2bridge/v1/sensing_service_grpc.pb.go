@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SensingServiceClient interface {
 	// Standard methods
-	GetPosition(ctx context.Context, in *GetPositionRequest, opts ...grpc.CallOption) (*Position, error)
+	GetPosition(ctx context.Context, in *GetPositionRequest, opts ...grpc.CallOption) (*GetPositionResponse, error)
 	ListNodes(ctx context.Context, in *ListNodesRequest, opts ...grpc.CallOption) (*ListNodesResponse, error)
 }
 
@@ -40,9 +40,9 @@ func NewSensingServiceClient(cc grpc.ClientConnInterface) SensingServiceClient {
 	return &sensingServiceClient{cc}
 }
 
-func (c *sensingServiceClient) GetPosition(ctx context.Context, in *GetPositionRequest, opts ...grpc.CallOption) (*Position, error) {
+func (c *sensingServiceClient) GetPosition(ctx context.Context, in *GetPositionRequest, opts ...grpc.CallOption) (*GetPositionResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Position)
+	out := new(GetPositionResponse)
 	err := c.cc.Invoke(ctx, SensingService_GetPosition_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func (c *sensingServiceClient) ListNodes(ctx context.Context, in *ListNodesReque
 // for forward compatibility.
 type SensingServiceServer interface {
 	// Standard methods
-	GetPosition(context.Context, *GetPositionRequest) (*Position, error)
+	GetPosition(context.Context, *GetPositionRequest) (*GetPositionResponse, error)
 	ListNodes(context.Context, *ListNodesRequest) (*ListNodesResponse, error)
 	mustEmbedUnimplementedSensingServiceServer()
 }
@@ -77,7 +77,7 @@ type SensingServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedSensingServiceServer struct{}
 
-func (UnimplementedSensingServiceServer) GetPosition(context.Context, *GetPositionRequest) (*Position, error) {
+func (UnimplementedSensingServiceServer) GetPosition(context.Context, *GetPositionRequest) (*GetPositionResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetPosition not implemented")
 }
 func (UnimplementedSensingServiceServer) ListNodes(context.Context, *ListNodesRequest) (*ListNodesResponse, error) {

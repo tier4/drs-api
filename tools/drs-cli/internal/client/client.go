@@ -61,7 +61,11 @@ func (c *Client) GetService(name string) (*modulev1.Service, error) {
 	defer cancel()
 
 	req := &modulev1.GetServiceRequest{Name: name}
-	return c.serviceManager.GetService(ctx, req)
+	resp, err := c.serviceManager.GetService(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Service, nil
 }
 
 func (c *Client) StartService(name string) (*modulev1.StartServiceResponse, error) {
@@ -135,7 +139,11 @@ func (c *Client) GetDisk(name string) (*modulev1.Disk, error) {
 	defer cancel()
 
 	req := &modulev1.GetDiskRequest{Name: name}
-	return c.monitoring.GetDisk(ctx, req)
+	resp, err := c.monitoring.GetDisk(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Disk, nil
 }
 
 func (c *Client) ListDisks() (*modulev1.ListDisksResponse, error) {
@@ -168,7 +176,11 @@ func (c *Client) GetPosition() (*ros2bridgev1.Position, error) {
 	defer cancel()
 
 	req := &ros2bridgev1.GetPositionRequest{}
-	return c.sensingService.GetPosition(ctx, req)
+	resp, err := c.sensingService.GetPosition(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Position, nil
 }
 
 func (c *Client) ListNodes(filter string) (*ros2bridgev1.ListNodesResponse, error) {
@@ -217,7 +229,11 @@ func (c *Client) GetRecording(hardwareID string) (*ros2bridgev1.Recording, error
 	defer cancel()
 
 	req := &ros2bridgev1.GetRecordingRequest{HardwareId: hardwareID}
-	return c.recordingService.GetRecording(ctx, req)
+	resp, err := c.recordingService.GetRecording(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Recording, nil
 }
 
 func (c *Client) ListRecordings(filter string) (*ros2bridgev1.ListRecordingsResponse, error) {

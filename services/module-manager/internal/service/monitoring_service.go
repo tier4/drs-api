@@ -58,7 +58,7 @@ func (s *MonitoringService) GetDiskUsage(ctx context.Context, req *modulev1.GetD
 	}, nil
 }
 
-func (s *MonitoringService) GetDisk(ctx context.Context, req *modulev1.GetDiskRequest) (*modulev1.Disk, error) {
+func (s *MonitoringService) GetDisk(ctx context.Context, req *modulev1.GetDiskRequest) (*modulev1.GetDiskResponse, error) {
 	log.Printf("Get disk request received for: %s", req.Name)
 
 	// Check if disk usage API is enabled
@@ -88,16 +88,18 @@ func (s *MonitoringService) GetDisk(ctx context.Context, req *modulev1.GetDiskRe
 		}
 	}
 
-	return &modulev1.Disk{
-		Name:      fmt.Sprintf("disks/%s", diskName),
-		MountPath: "", // Will be added if needed
-		Usage: &modulev1.DiskUsage{
-			TotalBytes:      usage.TotalBytes,
-			UsedBytes:       usage.UsedBytes,
-			FreeBytes:       usage.FreeBytes,
-			UsagePercentage: usage.UsagePercentage,
+	return &modulev1.GetDiskResponse{
+		Disk: &modulev1.Disk{
+			Name:      fmt.Sprintf("disks/%s", diskName),
+			MountPath: "", // Will be added if needed
+			Usage: &modulev1.DiskUsage{
+				TotalBytes:      usage.TotalBytes,
+				UsedBytes:       usage.UsedBytes,
+				FreeBytes:       usage.FreeBytes,
+				UsagePercentage: usage.UsagePercentage,
+			},
+			Description: description,
 		},
-		Description: description,
 	}, nil
 }
 

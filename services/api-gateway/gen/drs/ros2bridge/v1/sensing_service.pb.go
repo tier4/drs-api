@@ -58,6 +58,50 @@ func (*GetPositionRequest) Descriptor() ([]byte, []int) {
 	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{0}
 }
 
+type GetPositionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Position      *Position              `protobuf:"bytes,1,opt,name=position,proto3" json:"position,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPositionResponse) Reset() {
+	*x = GetPositionResponse{}
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPositionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPositionResponse) ProtoMessage() {}
+
+func (x *GetPositionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPositionResponse.ProtoReflect.Descriptor instead.
+func (*GetPositionResponse) Descriptor() ([]byte, []int) {
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *GetPositionResponse) GetPosition() *Position {
+	if x != nil {
+		return x.Position
+	}
+	return nil
+}
+
 // Standard List operation for nodes
 type ListNodesRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -69,7 +113,7 @@ type ListNodesRequest struct {
 
 func (x *ListNodesRequest) Reset() {
 	*x = ListNodesRequest{}
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[1]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -81,7 +125,7 @@ func (x *ListNodesRequest) String() string {
 func (*ListNodesRequest) ProtoMessage() {}
 
 func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[1]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -94,7 +138,7 @@ func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNodesRequest.ProtoReflect.Descriptor instead.
 func (*ListNodesRequest) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{1}
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ListNodesRequest) GetFilter() string {
@@ -113,7 +157,7 @@ type ListNodesResponse struct {
 
 func (x *ListNodesResponse) Reset() {
 	*x = ListNodesResponse{}
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[2]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -125,7 +169,7 @@ func (x *ListNodesResponse) String() string {
 func (*ListNodesResponse) ProtoMessage() {}
 
 func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[2]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -138,7 +182,7 @@ func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNodesResponse.ProtoReflect.Descriptor instead.
 func (*ListNodesResponse) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{2}
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ListNodesResponse) GetNodes() []*Node {
@@ -153,13 +197,15 @@ var File_drs_ros2bridge_v1_sensing_service_proto protoreflect.FileDescriptor
 const file_drs_ros2bridge_v1_sensing_service_proto_rawDesc = "" +
 	"\n" +
 	"'drs/ros2bridge/v1/sensing_service.proto\x12\x11drs.ros2bridge.v1\x1a\x1edrs/ros2bridge/v1/common.proto\"\x14\n" +
-	"\x12GetPositionRequest\"*\n" +
+	"\x12GetPositionRequest\"N\n" +
+	"\x13GetPositionResponse\x127\n" +
+	"\bposition\x18\x01 \x01(\v2\x1b.drs.ros2bridge.v1.PositionR\bposition\"*\n" +
 	"\x10ListNodesRequest\x12\x16\n" +
 	"\x06filter\x18\x01 \x01(\tR\x06filter\"B\n" +
 	"\x11ListNodesResponse\x12-\n" +
-	"\x05nodes\x18\x01 \x03(\v2\x17.drs.ros2bridge.v1.NodeR\x05nodes2\xbb\x01\n" +
-	"\x0eSensingService\x12Q\n" +
-	"\vGetPosition\x12%.drs.ros2bridge.v1.GetPositionRequest\x1a\x1b.drs.ros2bridge.v1.Position\x12V\n" +
+	"\x05nodes\x18\x01 \x03(\v2\x17.drs.ros2bridge.v1.NodeR\x05nodes2\xc6\x01\n" +
+	"\x0eSensingService\x12\\\n" +
+	"\vGetPosition\x12%.drs.ros2bridge.v1.GetPositionRequest\x1a&.drs.ros2bridge.v1.GetPositionResponse\x12V\n" +
 	"\tListNodes\x12#.drs.ros2bridge.v1.ListNodesRequest\x1a$.drs.ros2bridge.v1.ListNodesResponseB&Z$./gen/drs/ros2bridge/v1;ros2bridgev1b\x06proto3"
 
 var (
@@ -174,25 +220,27 @@ func file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP() []byte {
 	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescData
 }
 
-var file_drs_ros2bridge_v1_sensing_service_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_drs_ros2bridge_v1_sensing_service_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_drs_ros2bridge_v1_sensing_service_proto_goTypes = []any{
-	(*GetPositionRequest)(nil), // 0: drs.ros2bridge.v1.GetPositionRequest
-	(*ListNodesRequest)(nil),   // 1: drs.ros2bridge.v1.ListNodesRequest
-	(*ListNodesResponse)(nil),  // 2: drs.ros2bridge.v1.ListNodesResponse
-	(*Node)(nil),               // 3: drs.ros2bridge.v1.Node
-	(*Position)(nil),           // 4: drs.ros2bridge.v1.Position
+	(*GetPositionRequest)(nil),  // 0: drs.ros2bridge.v1.GetPositionRequest
+	(*GetPositionResponse)(nil), // 1: drs.ros2bridge.v1.GetPositionResponse
+	(*ListNodesRequest)(nil),    // 2: drs.ros2bridge.v1.ListNodesRequest
+	(*ListNodesResponse)(nil),   // 3: drs.ros2bridge.v1.ListNodesResponse
+	(*Position)(nil),            // 4: drs.ros2bridge.v1.Position
+	(*Node)(nil),                // 5: drs.ros2bridge.v1.Node
 }
 var file_drs_ros2bridge_v1_sensing_service_proto_depIdxs = []int32{
-	3, // 0: drs.ros2bridge.v1.ListNodesResponse.nodes:type_name -> drs.ros2bridge.v1.Node
-	0, // 1: drs.ros2bridge.v1.SensingService.GetPosition:input_type -> drs.ros2bridge.v1.GetPositionRequest
-	1, // 2: drs.ros2bridge.v1.SensingService.ListNodes:input_type -> drs.ros2bridge.v1.ListNodesRequest
-	4, // 3: drs.ros2bridge.v1.SensingService.GetPosition:output_type -> drs.ros2bridge.v1.Position
-	2, // 4: drs.ros2bridge.v1.SensingService.ListNodes:output_type -> drs.ros2bridge.v1.ListNodesResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	4, // 0: drs.ros2bridge.v1.GetPositionResponse.position:type_name -> drs.ros2bridge.v1.Position
+	5, // 1: drs.ros2bridge.v1.ListNodesResponse.nodes:type_name -> drs.ros2bridge.v1.Node
+	0, // 2: drs.ros2bridge.v1.SensingService.GetPosition:input_type -> drs.ros2bridge.v1.GetPositionRequest
+	2, // 3: drs.ros2bridge.v1.SensingService.ListNodes:input_type -> drs.ros2bridge.v1.ListNodesRequest
+	1, // 4: drs.ros2bridge.v1.SensingService.GetPosition:output_type -> drs.ros2bridge.v1.GetPositionResponse
+	3, // 5: drs.ros2bridge.v1.SensingService.ListNodes:output_type -> drs.ros2bridge.v1.ListNodesResponse
+	4, // [4:6] is the sub-list for method output_type
+	2, // [2:4] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_drs_ros2bridge_v1_sensing_service_proto_init() }
@@ -207,7 +255,7 @@ func file_drs_ros2bridge_v1_sensing_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_drs_ros2bridge_v1_sensing_service_proto_rawDesc), len(file_drs_ros2bridge_v1_sensing_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

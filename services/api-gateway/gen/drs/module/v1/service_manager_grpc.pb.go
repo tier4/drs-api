@@ -33,7 +33,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ServiceManagerServiceClient interface {
 	// Standard methods
-	GetService(ctx context.Context, in *GetServiceRequest, opts ...grpc.CallOption) (*Service, error)
+	GetService(ctx context.Context, in *GetServiceRequest, opts ...grpc.CallOption) (*GetServiceResponse, error)
 	ListServices(ctx context.Context, in *ListServicesRequest, opts ...grpc.CallOption) (*ListServicesResponse, error)
 	// Service management (custom methods)
 	StartService(ctx context.Context, in *StartServiceRequest, opts ...grpc.CallOption) (*StartServiceResponse, error)
@@ -51,9 +51,9 @@ func NewServiceManagerServiceClient(cc grpc.ClientConnInterface) ServiceManagerS
 	return &serviceManagerServiceClient{cc}
 }
 
-func (c *serviceManagerServiceClient) GetService(ctx context.Context, in *GetServiceRequest, opts ...grpc.CallOption) (*Service, error) {
+func (c *serviceManagerServiceClient) GetService(ctx context.Context, in *GetServiceRequest, opts ...grpc.CallOption) (*GetServiceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Service)
+	out := new(GetServiceResponse)
 	err := c.cc.Invoke(ctx, ServiceManagerService_GetService_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (c *serviceManagerServiceClient) DisableService(ctx context.Context, in *Di
 // for forward compatibility.
 type ServiceManagerServiceServer interface {
 	// Standard methods
-	GetService(context.Context, *GetServiceRequest) (*Service, error)
+	GetService(context.Context, *GetServiceRequest) (*GetServiceResponse, error)
 	ListServices(context.Context, *ListServicesRequest) (*ListServicesResponse, error)
 	// Service management (custom methods)
 	StartService(context.Context, *StartServiceRequest) (*StartServiceResponse, error)
@@ -144,7 +144,7 @@ type ServiceManagerServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedServiceManagerServiceServer struct{}
 
-func (UnimplementedServiceManagerServiceServer) GetService(context.Context, *GetServiceRequest) (*Service, error) {
+func (UnimplementedServiceManagerServiceServer) GetService(context.Context, *GetServiceRequest) (*GetServiceResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetService not implemented")
 }
 func (UnimplementedServiceManagerServiceServer) ListServices(context.Context, *ListServicesRequest) (*ListServicesResponse, error) {

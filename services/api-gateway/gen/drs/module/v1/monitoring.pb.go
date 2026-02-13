@@ -145,6 +145,50 @@ func (x *GetDiskRequest) GetName() string {
 	return ""
 }
 
+type GetDiskResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Disk          *Disk                  `protobuf:"bytes,1,opt,name=disk,proto3" json:"disk,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetDiskResponse) Reset() {
+	*x = GetDiskResponse{}
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetDiskResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDiskResponse) ProtoMessage() {}
+
+func (x *GetDiskResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDiskResponse.ProtoReflect.Descriptor instead.
+func (*GetDiskResponse) Descriptor() ([]byte, []int) {
+	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetDiskResponse) GetDisk() *Disk {
+	if x != nil {
+		return x.Disk
+	}
+	return nil
+}
+
 type ListDisksRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -153,7 +197,7 @@ type ListDisksRequest struct {
 
 func (x *ListDisksRequest) Reset() {
 	*x = ListDisksRequest{}
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[3]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -165,7 +209,7 @@ func (x *ListDisksRequest) String() string {
 func (*ListDisksRequest) ProtoMessage() {}
 
 func (x *ListDisksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[3]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -178,7 +222,7 @@ func (x *ListDisksRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDisksRequest.ProtoReflect.Descriptor instead.
 func (*ListDisksRequest) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{3}
+	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{4}
 }
 
 type ListDisksResponse struct {
@@ -190,7 +234,7 @@ type ListDisksResponse struct {
 
 func (x *ListDisksResponse) Reset() {
 	*x = ListDisksResponse{}
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[4]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -202,7 +246,7 @@ func (x *ListDisksResponse) String() string {
 func (*ListDisksResponse) ProtoMessage() {}
 
 func (x *ListDisksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[4]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -215,7 +259,7 @@ func (x *ListDisksResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDisksResponse.ProtoReflect.Descriptor instead.
 func (*ListDisksResponse) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{4}
+	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ListDisksResponse) GetDisks() []*Disk {
@@ -234,7 +278,7 @@ type GetPTPStatusRequest struct {
 
 func (x *GetPTPStatusRequest) Reset() {
 	*x = GetPTPStatusRequest{}
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[5]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -246,7 +290,7 @@ func (x *GetPTPStatusRequest) String() string {
 func (*GetPTPStatusRequest) ProtoMessage() {}
 
 func (x *GetPTPStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[5]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -259,7 +303,7 @@ func (x *GetPTPStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPTPStatusRequest.ProtoReflect.Descriptor instead.
 func (*GetPTPStatusRequest) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{5}
+	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetPTPStatusRequest) GetIncludeRemoteDevices() bool {
@@ -279,7 +323,7 @@ type GetPTPStatusResponse struct {
 
 func (x *GetPTPStatusResponse) Reset() {
 	*x = GetPTPStatusResponse{}
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[6]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -291,7 +335,7 @@ func (x *GetPTPStatusResponse) String() string {
 func (*GetPTPStatusResponse) ProtoMessage() {}
 
 func (x *GetPTPStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[6]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -304,7 +348,7 @@ func (x *GetPTPStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPTPStatusResponse.ProtoReflect.Descriptor instead.
 func (*GetPTPStatusResponse) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{6}
+	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetPTPStatusResponse) GetLocalStatus() *PTPStatus {
@@ -329,7 +373,7 @@ type GetEnvironmentRequest struct {
 
 func (x *GetEnvironmentRequest) Reset() {
 	*x = GetEnvironmentRequest{}
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[7]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -341,7 +385,7 @@ func (x *GetEnvironmentRequest) String() string {
 func (*GetEnvironmentRequest) ProtoMessage() {}
 
 func (x *GetEnvironmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[7]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -354,7 +398,7 @@ func (x *GetEnvironmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetEnvironmentRequest.ProtoReflect.Descriptor instead.
 func (*GetEnvironmentRequest) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{7}
+	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{8}
 }
 
 type GetEnvironmentResponse struct {
@@ -367,7 +411,7 @@ type GetEnvironmentResponse struct {
 
 func (x *GetEnvironmentResponse) Reset() {
 	*x = GetEnvironmentResponse{}
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[8]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -379,7 +423,7 @@ func (x *GetEnvironmentResponse) String() string {
 func (*GetEnvironmentResponse) ProtoMessage() {}
 
 func (x *GetEnvironmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_module_v1_monitoring_proto_msgTypes[8]
+	mi := &file_drs_module_v1_monitoring_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -392,7 +436,7 @@ func (x *GetEnvironmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetEnvironmentResponse.ProtoReflect.Descriptor instead.
 func (*GetEnvironmentResponse) Descriptor() ([]byte, []int) {
-	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{8}
+	return file_drs_module_v1_monitoring_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetEnvironmentResponse) GetSensingSystemId() string {
@@ -419,7 +463,9 @@ const file_drs_module_v1_monitoring_proto_rawDesc = "" +
 	"\n" +
 	"disk_usage\x18\x01 \x01(\v2\x18.drs.module.v1.DiskUsageR\tdiskUsage\"$\n" +
 	"\x0eGetDiskRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\"\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\":\n" +
+	"\x0fGetDiskResponse\x12'\n" +
+	"\x04disk\x18\x01 \x01(\v2\x13.drs.module.v1.DiskR\x04disk\"\x12\n" +
 	"\x10ListDisksRequest\">\n" +
 	"\x11ListDisksResponse\x12)\n" +
 	"\x05disks\x18\x01 \x03(\v2\x13.drs.module.v1.DiskR\x05disks\"K\n" +
@@ -431,10 +477,10 @@ const file_drs_module_v1_monitoring_proto_rawDesc = "" +
 	"\x15GetEnvironmentRequest\"a\n" +
 	"\x16GetEnvironmentResponse\x12*\n" +
 	"\x11sensing_system_id\x18\x01 \x01(\tR\x0fsensingSystemId\x12\x1b\n" +
-	"\tmodule_id\x18\x02 \x01(\tR\bmoduleId2\xb3\x03\n" +
+	"\tmodule_id\x18\x02 \x01(\tR\bmoduleId2\xbe\x03\n" +
 	"\x11MonitoringService\x12W\n" +
-	"\fGetDiskUsage\x12\".drs.module.v1.GetDiskUsageRequest\x1a#.drs.module.v1.GetDiskUsageResponse\x12=\n" +
-	"\aGetDisk\x12\x1d.drs.module.v1.GetDiskRequest\x1a\x13.drs.module.v1.Disk\x12N\n" +
+	"\fGetDiskUsage\x12\".drs.module.v1.GetDiskUsageRequest\x1a#.drs.module.v1.GetDiskUsageResponse\x12H\n" +
+	"\aGetDisk\x12\x1d.drs.module.v1.GetDiskRequest\x1a\x1e.drs.module.v1.GetDiskResponse\x12N\n" +
 	"\tListDisks\x12\x1f.drs.module.v1.ListDisksRequest\x1a .drs.module.v1.ListDisksResponse\x12W\n" +
 	"\fGetPTPStatus\x12\".drs.module.v1.GetPTPStatusRequest\x1a#.drs.module.v1.GetPTPStatusResponse\x12]\n" +
 	"\x0eGetEnvironment\x12$.drs.module.v1.GetEnvironmentRequest\x1a%.drs.module.v1.GetEnvironmentResponseB\x1eZ\x1c./gen/drs/module/v1;modulev1b\x06proto3"
@@ -451,42 +497,44 @@ func file_drs_module_v1_monitoring_proto_rawDescGZIP() []byte {
 	return file_drs_module_v1_monitoring_proto_rawDescData
 }
 
-var file_drs_module_v1_monitoring_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_drs_module_v1_monitoring_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_drs_module_v1_monitoring_proto_goTypes = []any{
 	(*GetDiskUsageRequest)(nil),    // 0: drs.module.v1.GetDiskUsageRequest
 	(*GetDiskUsageResponse)(nil),   // 1: drs.module.v1.GetDiskUsageResponse
 	(*GetDiskRequest)(nil),         // 2: drs.module.v1.GetDiskRequest
-	(*ListDisksRequest)(nil),       // 3: drs.module.v1.ListDisksRequest
-	(*ListDisksResponse)(nil),      // 4: drs.module.v1.ListDisksResponse
-	(*GetPTPStatusRequest)(nil),    // 5: drs.module.v1.GetPTPStatusRequest
-	(*GetPTPStatusResponse)(nil),   // 6: drs.module.v1.GetPTPStatusResponse
-	(*GetEnvironmentRequest)(nil),  // 7: drs.module.v1.GetEnvironmentRequest
-	(*GetEnvironmentResponse)(nil), // 8: drs.module.v1.GetEnvironmentResponse
-	(*DiskUsage)(nil),              // 9: drs.module.v1.DiskUsage
-	(*Disk)(nil),                   // 10: drs.module.v1.Disk
-	(*PTPStatus)(nil),              // 11: drs.module.v1.PTPStatus
-	(*RemotePTPStatus)(nil),        // 12: drs.module.v1.RemotePTPStatus
+	(*GetDiskResponse)(nil),        // 3: drs.module.v1.GetDiskResponse
+	(*ListDisksRequest)(nil),       // 4: drs.module.v1.ListDisksRequest
+	(*ListDisksResponse)(nil),      // 5: drs.module.v1.ListDisksResponse
+	(*GetPTPStatusRequest)(nil),    // 6: drs.module.v1.GetPTPStatusRequest
+	(*GetPTPStatusResponse)(nil),   // 7: drs.module.v1.GetPTPStatusResponse
+	(*GetEnvironmentRequest)(nil),  // 8: drs.module.v1.GetEnvironmentRequest
+	(*GetEnvironmentResponse)(nil), // 9: drs.module.v1.GetEnvironmentResponse
+	(*DiskUsage)(nil),              // 10: drs.module.v1.DiskUsage
+	(*Disk)(nil),                   // 11: drs.module.v1.Disk
+	(*PTPStatus)(nil),              // 12: drs.module.v1.PTPStatus
+	(*RemotePTPStatus)(nil),        // 13: drs.module.v1.RemotePTPStatus
 }
 var file_drs_module_v1_monitoring_proto_depIdxs = []int32{
-	9,  // 0: drs.module.v1.GetDiskUsageResponse.disk_usage:type_name -> drs.module.v1.DiskUsage
-	10, // 1: drs.module.v1.ListDisksResponse.disks:type_name -> drs.module.v1.Disk
-	11, // 2: drs.module.v1.GetPTPStatusResponse.local_status:type_name -> drs.module.v1.PTPStatus
-	12, // 3: drs.module.v1.GetPTPStatusResponse.remote_statuses:type_name -> drs.module.v1.RemotePTPStatus
-	0,  // 4: drs.module.v1.MonitoringService.GetDiskUsage:input_type -> drs.module.v1.GetDiskUsageRequest
-	2,  // 5: drs.module.v1.MonitoringService.GetDisk:input_type -> drs.module.v1.GetDiskRequest
-	3,  // 6: drs.module.v1.MonitoringService.ListDisks:input_type -> drs.module.v1.ListDisksRequest
-	5,  // 7: drs.module.v1.MonitoringService.GetPTPStatus:input_type -> drs.module.v1.GetPTPStatusRequest
-	7,  // 8: drs.module.v1.MonitoringService.GetEnvironment:input_type -> drs.module.v1.GetEnvironmentRequest
-	1,  // 9: drs.module.v1.MonitoringService.GetDiskUsage:output_type -> drs.module.v1.GetDiskUsageResponse
-	10, // 10: drs.module.v1.MonitoringService.GetDisk:output_type -> drs.module.v1.Disk
-	4,  // 11: drs.module.v1.MonitoringService.ListDisks:output_type -> drs.module.v1.ListDisksResponse
-	6,  // 12: drs.module.v1.MonitoringService.GetPTPStatus:output_type -> drs.module.v1.GetPTPStatusResponse
-	8,  // 13: drs.module.v1.MonitoringService.GetEnvironment:output_type -> drs.module.v1.GetEnvironmentResponse
-	9,  // [9:14] is the sub-list for method output_type
-	4,  // [4:9] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	10, // 0: drs.module.v1.GetDiskUsageResponse.disk_usage:type_name -> drs.module.v1.DiskUsage
+	11, // 1: drs.module.v1.GetDiskResponse.disk:type_name -> drs.module.v1.Disk
+	11, // 2: drs.module.v1.ListDisksResponse.disks:type_name -> drs.module.v1.Disk
+	12, // 3: drs.module.v1.GetPTPStatusResponse.local_status:type_name -> drs.module.v1.PTPStatus
+	13, // 4: drs.module.v1.GetPTPStatusResponse.remote_statuses:type_name -> drs.module.v1.RemotePTPStatus
+	0,  // 5: drs.module.v1.MonitoringService.GetDiskUsage:input_type -> drs.module.v1.GetDiskUsageRequest
+	2,  // 6: drs.module.v1.MonitoringService.GetDisk:input_type -> drs.module.v1.GetDiskRequest
+	4,  // 7: drs.module.v1.MonitoringService.ListDisks:input_type -> drs.module.v1.ListDisksRequest
+	6,  // 8: drs.module.v1.MonitoringService.GetPTPStatus:input_type -> drs.module.v1.GetPTPStatusRequest
+	8,  // 9: drs.module.v1.MonitoringService.GetEnvironment:input_type -> drs.module.v1.GetEnvironmentRequest
+	1,  // 10: drs.module.v1.MonitoringService.GetDiskUsage:output_type -> drs.module.v1.GetDiskUsageResponse
+	3,  // 11: drs.module.v1.MonitoringService.GetDisk:output_type -> drs.module.v1.GetDiskResponse
+	5,  // 12: drs.module.v1.MonitoringService.ListDisks:output_type -> drs.module.v1.ListDisksResponse
+	7,  // 13: drs.module.v1.MonitoringService.GetPTPStatus:output_type -> drs.module.v1.GetPTPStatusResponse
+	9,  // 14: drs.module.v1.MonitoringService.GetEnvironment:output_type -> drs.module.v1.GetEnvironmentResponse
+	10, // [10:15] is the sub-list for method output_type
+	5,  // [5:10] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_drs_module_v1_monitoring_proto_init() }
@@ -501,7 +549,7 @@ func file_drs_module_v1_monitoring_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_drs_module_v1_monitoring_proto_rawDesc), len(file_drs_module_v1_monitoring_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

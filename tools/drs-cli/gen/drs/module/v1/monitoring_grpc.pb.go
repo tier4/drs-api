@@ -33,7 +33,7 @@ type MonitoringServiceClient interface {
 	// Resource state operations
 	GetDiskUsage(ctx context.Context, in *GetDiskUsageRequest, opts ...grpc.CallOption) (*GetDiskUsageResponse, error)
 	// New disk operations (multi-disk support)
-	GetDisk(ctx context.Context, in *GetDiskRequest, opts ...grpc.CallOption) (*Disk, error)
+	GetDisk(ctx context.Context, in *GetDiskRequest, opts ...grpc.CallOption) (*GetDiskResponse, error)
 	ListDisks(ctx context.Context, in *ListDisksRequest, opts ...grpc.CallOption) (*ListDisksResponse, error)
 	GetPTPStatus(ctx context.Context, in *GetPTPStatusRequest, opts ...grpc.CallOption) (*GetPTPStatusResponse, error)
 	GetEnvironment(ctx context.Context, in *GetEnvironmentRequest, opts ...grpc.CallOption) (*GetEnvironmentResponse, error)
@@ -57,9 +57,9 @@ func (c *monitoringServiceClient) GetDiskUsage(ctx context.Context, in *GetDiskU
 	return out, nil
 }
 
-func (c *monitoringServiceClient) GetDisk(ctx context.Context, in *GetDiskRequest, opts ...grpc.CallOption) (*Disk, error) {
+func (c *monitoringServiceClient) GetDisk(ctx context.Context, in *GetDiskRequest, opts ...grpc.CallOption) (*GetDiskResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Disk)
+	out := new(GetDiskResponse)
 	err := c.cc.Invoke(ctx, MonitoringService_GetDisk_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ type MonitoringServiceServer interface {
 	// Resource state operations
 	GetDiskUsage(context.Context, *GetDiskUsageRequest) (*GetDiskUsageResponse, error)
 	// New disk operations (multi-disk support)
-	GetDisk(context.Context, *GetDiskRequest) (*Disk, error)
+	GetDisk(context.Context, *GetDiskRequest) (*GetDiskResponse, error)
 	ListDisks(context.Context, *ListDisksRequest) (*ListDisksResponse, error)
 	GetPTPStatus(context.Context, *GetPTPStatusRequest) (*GetPTPStatusResponse, error)
 	GetEnvironment(context.Context, *GetEnvironmentRequest) (*GetEnvironmentResponse, error)
@@ -121,7 +121,7 @@ type UnimplementedMonitoringServiceServer struct{}
 func (UnimplementedMonitoringServiceServer) GetDiskUsage(context.Context, *GetDiskUsageRequest) (*GetDiskUsageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetDiskUsage not implemented")
 }
-func (UnimplementedMonitoringServiceServer) GetDisk(context.Context, *GetDiskRequest) (*Disk, error) {
+func (UnimplementedMonitoringServiceServer) GetDisk(context.Context, *GetDiskRequest) (*GetDiskResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetDisk not implemented")
 }
 func (UnimplementedMonitoringServiceServer) ListDisks(context.Context, *ListDisksRequest) (*ListDisksResponse, error) {
