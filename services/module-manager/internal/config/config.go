@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -220,17 +220,17 @@ func (c *Config) GetSystemdServiceName(resourceName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	if resourceType != "services" {
 		return "", fmt.Errorf("unsupported resource type: %s", resourceType)
 	}
-	
+
 	service, exists := c.Services.Services[resourceID]
 	if !exists {
 		return "", fmt.Errorf("service not found: %s", resourceID)
 	}
-	
-	
+
+
 	return service.SystemdName, nil
 }
 

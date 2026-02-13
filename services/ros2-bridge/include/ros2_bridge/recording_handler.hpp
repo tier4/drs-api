@@ -76,14 +76,14 @@ private:
     bool matchesTopicFilter(const std::string& topic_name, const std::string& filter);
 
     rclcpp::Node::SharedPtr node_;
-    
+
     // ROS2 publishers for recording control
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr start_publisher_;
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pause_publisher_;
-    
+
     // ROS2 subscriber for recording status
     rclcpp::Subscription<proto_recorder_msgs::msg::RecorderStatus>::SharedPtr status_subscriber_;
-    
+
     // Multi-ECU cache: hardware_id -> RecorderStatus
     std::mutex recordings_mutex_;
     std::unordered_map<std::string, proto_recorder_msgs::msg::RecorderStatus> recordings_cache_;

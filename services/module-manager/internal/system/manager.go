@@ -111,25 +111,25 @@ func (m *Manager) GetServiceInfo(serviceName string) (*ServiceInfo, error) {
 	info := &ServiceInfo{
 		Name: serviceName,
 	}
-	
+
 	// Get status
 	status, err := m.getServiceStatus(serviceName)
 	if err != nil {
 		return nil, err
 	}
 	info.Status = strings.TrimSpace(status)
-	
+
 	// Get enabled status
 	info.Enabled, _ = m.isServiceEnabled(serviceName)
-	
+
 	// Get description
 	info.Description, _ = m.getServiceDescription(serviceName)
-	
+
 	// Get uptime if active
 	if info.Status == "active" {
 		info.UptimeSeconds, _ = m.getServiceUptime(serviceName)
 	}
-	
+
 	return info, nil
 }
 
@@ -203,19 +203,19 @@ func (m *Manager) getServiceUptime(serviceName string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	
+
 	timestampStr := strings.TrimSpace(string(output))
 	if timestampStr == "" {
 		return 0, nil
 	}
-	
+
 	// Parse systemd timestamp (format: "Mon 2021-01-01 12:00:00 UTC")
 	layouts := []string{
 		"Mon 2006-01-02 15:04:05 MST",
 		time.RFC3339,
 		"2006-01-02 15:04:05",
 	}
-	
+
 	var startTime time.Time
 	for _, layout := range layouts {
 		if t, err := time.Parse(layout, timestampStr); err == nil {
@@ -223,11 +223,11 @@ func (m *Manager) getServiceUptime(serviceName string) (int64, error) {
 			break
 		}
 	}
-	
+
 	if startTime.IsZero() {
 		return 0, fmt.Errorf("could not parse timestamp: %s", timestampStr)
 	}
-	
+
 	uptime := time.Since(startTime)
 	return int64(uptime.Seconds()), nil
 }

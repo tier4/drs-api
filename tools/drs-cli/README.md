@@ -180,7 +180,7 @@ make build-all
 
 This creates binaries for:
 - Linux AMD64
-- Linux ARM64  
+- Linux ARM64
 - macOS AMD64
 
 ### Regenerating Proto Files

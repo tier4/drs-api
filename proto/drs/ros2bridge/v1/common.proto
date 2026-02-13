@@ -11,7 +11,7 @@ message Position {
   Header header = 1;                           // ROS2 header information
   NavSatStatus nav_sat_status = 2;             // Navigation satellite status
   double latitude = 3;                         // Latitude in degrees
-  double longitude = 4;                        // Longitude in degrees  
+  double longitude = 4;                        // Longitude in degrees
   double altitude = 5;                         // Altitude in meters
   repeated double position_covariance = 6;     // 3x3 covariance matrix (row-major)
   uint32 position_covariance_type = 7;         // Covariance type
@@ -29,18 +29,19 @@ message NavSatStatus {
   int32 service = 2;                           // SERVICE_* constants from sensor_msgs
 }
 
-// Recording resource - recording session information  
+// Recording resource - recording session information
 message Recording {
   Header header = 1;                          // ROS2 header information
   string hardware_id = 2;                     // Hardware/machine identification
   bool is_recording = 3;                      // Recording status
   ErrorLevel error_level = 4;                 // Overall error level
   repeated TopicStatus topic_statuses = 5;    // Topic status monitoring
-  
+
   enum ErrorLevel {
-    ERROR_LEVEL_OK = 0;                       // No errors
-    ERROR_LEVEL_WARN = 1;                     // Warning level
-    ERROR_LEVEL_ERROR = 2;                    // Error level
+    ERROR_LEVEL_UNSPECIFIED = 0;              // Unspecified or unknown
+    ERROR_LEVEL_OK = 1;                       // No errors
+    ERROR_LEVEL_WARN = 2;                     // Warning level
+    ERROR_LEVEL_ERROR = 3;                    // Error level
   }
 }
 
@@ -51,13 +52,13 @@ message TopicStatus {
   string message_type = 3;                     // ROS2 message type
   double rate_hz = 4;                          // Current rate in Hz
   RateStatus rate_status = 5;                  // Rate status assessment
-  
+
   enum RateStatus {
     RATE_STATUS_UNSPECIFIED = 0;
     RATE_STATUS_NORMAL = 1;                    // Normal rate
     RATE_STATUS_UNKNOWN = 2;                   // Unknown rate
     RATE_STATUS_TOO_LOW = 3;                   // Rate too low
-    RATE_STATUS_TOO_HIGH = 4;                  // Rate too high  
+    RATE_STATUS_TOO_HIGH = 4;                  // Rate too high
     RATE_STATUS_NO_MESSAGES = 5;               // No messages
   }
 }

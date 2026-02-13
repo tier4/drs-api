@@ -183,7 +183,7 @@ func (cm *ClientManager) GetModuleNames() []string {
 // HealthCheck performs a health check on all modules
 func (cm *ClientManager) HealthCheck() map[string]bool {
 	results := make(map[string]bool)
-	
+
 	for _, hostname := range cm.GetModuleNames() {
 		clients, err := cm.GetModuleClients(hostname)
 		if err != nil {

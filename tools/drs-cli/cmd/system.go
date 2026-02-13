@@ -18,7 +18,7 @@ var rebootCmd = &cobra.Command{
 	Short: "Reboot the system",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		delay, _ := cmd.Flags().GetInt32("delay")
-		
+
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
 			return err
@@ -51,7 +51,7 @@ var shutdownCmd = &cobra.Command{
 	Short: "Shutdown the system",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		delay, _ := cmd.Flags().GetInt32("delay")
-		
+
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
 			return err
@@ -83,7 +83,7 @@ func init() {
 	// Commands will be added to moduleCmd in module.go
 	systemCmd.AddCommand(rebootCmd)
 	systemCmd.AddCommand(shutdownCmd)
-	
+
 	// Add delay flag to both reboot and shutdown commands
 	rebootCmd.Flags().Int32P("delay", "d", 0, "delay in seconds before reboot")
 	shutdownCmd.Flags().Int32P("delay", "d", 0, "delay in seconds before shutdown")

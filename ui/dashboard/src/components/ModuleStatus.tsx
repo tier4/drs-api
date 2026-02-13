@@ -398,7 +398,9 @@ export function ModuleStatus({
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`text-sm font-medium ${getRecordingStatusColor(module.recordingStatus)}`}
+                          className={`text-sm font-medium ${getRecordingStatusColor(
+                            module.recordingStatus,
+                          )}`}
                         >
                           {module.recordingStatus.charAt(0).toUpperCase() +
                             module.recordingStatus.slice(1)}
@@ -419,7 +421,10 @@ export function ModuleStatus({
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`text-sm font-medium ${getPtpStatusColor(module.ptpStatus.offsetNs, module.ptpStatus.gmPresent)}`}
+                          className={`text-sm font-medium ${getPtpStatusColor(
+                            module.ptpStatus.offsetNs,
+                            module.ptpStatus.gmPresent,
+                          )}`}
                         >
                           {module.ptpStatus.gmPresent ? 'Synced' : 'No GM'}
                         </span>

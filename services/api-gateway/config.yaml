@@ -5,7 +5,7 @@ server:
   port: 8080
   read_timeout: 30s
   write_timeout: 30s
-  
+
 # API Gateway host module (will be restarted last)
 api_gateway_host: "ecu0"
 
@@ -15,18 +15,18 @@ modules:
     address: "192.168.20.1:50051"
     enabled_services:
       - "system"
-      - "ptp" 
+      - "ptp"
       - "services"
       - "disk"
-    
+
   ecu1:
     address: "192.168.20.2:50051"
     enabled_services:
       - "system"
       - "ptp"
-      - "services" 
+      - "services"
       - "disk"
-    
+
   nas:
     address: "192.168.10.100:50051"
     enabled_services:
@@ -42,7 +42,7 @@ grpc:
 ros2_bridge:
   address: "localhost:50052"
   enabled: true
-  
+
 # CORS settings for web dashboard
 cors:
   allowed_origins:

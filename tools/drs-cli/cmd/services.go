@@ -52,7 +52,7 @@ var getServiceCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		serviceName := args[0]
-		
+
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
 			return err
@@ -83,7 +83,7 @@ var startServiceCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		serviceName := args[0]
-		
+
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
 			return err
@@ -108,7 +108,7 @@ var stopServiceCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		serviceName := args[0]
-		
+
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
 			return err
@@ -133,7 +133,7 @@ var restartServiceCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		serviceName := args[0]
-		
+
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
 			return err
@@ -158,7 +158,7 @@ var enableServiceCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		serviceName := args[0]
-		
+
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
 			return err
@@ -183,7 +183,7 @@ var disableServiceCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		serviceName := args[0]
-		
+
 		c, err := client.NewClient(cfg.GetServerAddress(), cfg.GetTimeout())
 		if err != nil {
 			return err

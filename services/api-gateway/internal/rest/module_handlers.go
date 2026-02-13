@@ -62,7 +62,7 @@ func (h *ModuleHandler) GetAllModules(c *gin.Context) {
 // GetModule handles GET /modules/{hostname} - returns status of a single module
 func (h *ModuleHandler) GetModule(c *gin.Context) {
 	hostname := c.Param("hostname")
-	
+
 	status := h.getModuleStatus(hostname)
 	if status.Status == "ERROR" && status.StatusDetail.Services.DRSSensor == "" {
 		c.JSON(http.StatusNotFound, models.ErrorResponse{
@@ -95,7 +95,7 @@ func (h *ModuleHandler) getModuleStatus(hostname string) models.ModuleStatus {
 
 	// Get enabled services for this module
 	moduleConfig := h.clientManager.GetConfig().Modules[hostname]
-	
+
 	status := models.ModuleStatus{
 		Hostname:        hostname,
 		Status:          "OK",
@@ -122,7 +122,7 @@ func (h *ModuleHandler) getModuleStatus(hostname string) models.ModuleStatus {
 				if len(diskName) > 6 && diskName[:6] == "disks/" {
 					diskName = diskName[6:]
 				}
-				
+
 				status.Disks = append(status.Disks, models.DiskDetail{
 					Name:            diskName,
 					MountPath:       disk.MountPath,
@@ -132,7 +132,7 @@ func (h *ModuleHandler) getModuleStatus(hostname string) models.ModuleStatus {
 					TotalBytes:      disk.Usage.TotalBytes,
 				})
 			}
-			
+
 			// Populate legacy field with first disk or primary if available
 			if len(status.Disks) > 0 {
 				status.Disk = models.DiskInfo{
@@ -242,7 +242,7 @@ func (h *ModuleHandler) getRecordingStatus(hostname string) *models.RecordingInf
 			if recording.IsRecording {
 				status = "recording"
 			}
-			
+
 			// Map error level to data status
 			var dataStatus string
 			switch recording.ErrorLevel {
@@ -256,7 +256,7 @@ func (h *ModuleHandler) getRecordingStatus(hostname string) *models.RecordingInf
 				// If error level is not recognized, default to OK
 				dataStatus = "OK"
 			}
-			
+
 			return &models.RecordingInfo{
 				Status:     status,
 				DataStatus: dataStatus,

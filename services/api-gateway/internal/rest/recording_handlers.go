@@ -203,7 +203,7 @@ func (h *RecordingHandler) GetPTPStatus(c *gin.Context) {
 // GetTopicStatus handles GET /ecus/{hostname}/topics/status - returns topic status for a single ECU
 func (h *RecordingHandler) GetTopicStatus(c *gin.Context) {
 	hostname := c.Param("hostname")
-	
+
 	// Get ROS2 bridge clients
 	ros2Bridge, err := h.clientManager.GetROS2BridgeClients()
 	if err != nil {

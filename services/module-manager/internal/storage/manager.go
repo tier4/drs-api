@@ -55,7 +55,7 @@ func (m *Manager) GetAllDiskUsages(ctx context.Context) (map[string]*DiskUsage, 
 		wg.Add(1)
 		go func(d config.DiskEntry) {
 			defer wg.Done()
-			
+
 			// Create a child context with timeout for each disk check
 			// We use a short timeout to avoid blocking the whole request if a disk is hung
 			diskCtx, cancel := context.WithTimeout(ctx, 10*time.Millisecond)

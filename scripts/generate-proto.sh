@@ -55,30 +55,30 @@ done
 # Check if required tools are installed
 check_tools() {
     local missing_tools=()
-    
+
     # Always required
     if ! command -v protoc &> /dev/null; then
         missing_tools+=("protoc")
     fi
-    
+
     # Go tools (only required if generating Go code)
     if [[ "$GENERATE_GO" == "true" ]]; then
         if ! command -v protoc-gen-go &> /dev/null; then
             missing_tools+=("protoc-gen-go")
         fi
-        
+
         if ! command -v protoc-gen-go-grpc &> /dev/null; then
             missing_tools+=("protoc-gen-go-grpc")
         fi
     fi
-    
+
     # C++ tools (only required if generating C++ code)
     if [[ "$GENERATE_CPP" == "true" ]]; then
         if ! command -v grpc_cpp_plugin &> /dev/null; then
             missing_tools+=("grpc_cpp_plugin")
         fi
     fi
-    
+
     if [ ${#missing_tools[@]} -ne 0 ]; then
         echo "Error: Missing required tools: ${missing_tools[*]}"
         if [[ "$GENERATE_GO" == "true" && "$GENERATE_CPP" == "true" ]]; then
@@ -121,7 +121,7 @@ if [[ "$GENERATE_GO" == "true" ]]; then
         --go-grpc_out=${SERVICES_DIR}/module-manager/gen \
         --go-grpc_opt=paths=source_relative \
         ${PROTO_DIR}/drs/module/v1/*.proto
-    
+
     echo "Generating Go code for API gateway..."
     # Generate module proto files for API Gateway
     protoc -I ${PROTO_DIR} \
@@ -130,7 +130,7 @@ if [[ "$GENERATE_GO" == "true" ]]; then
         --go-grpc_out=${SERVICES_DIR}/api-gateway/gen \
         --go-grpc_opt=paths=source_relative \
         ${PROTO_DIR}/drs/module/v1/*.proto
-    
+
     # Generate ROS2 bridge proto files for API Gateway
     protoc -I ${PROTO_DIR} \
         --go_out=${SERVICES_DIR}/api-gateway/gen \
@@ -138,7 +138,7 @@ if [[ "$GENERATE_GO" == "true" ]]; then
         --go-grpc_out=${SERVICES_DIR}/api-gateway/gen \
         --go-grpc_opt=paths=source_relative \
         ${PROTO_DIR}/drs/ros2bridge/v1/*.proto
-    
+
     echo "Generating Go code for drs-cli..."
     # Generate module proto files for drs-cli
     protoc -I ${PROTO_DIR} \
@@ -147,7 +147,7 @@ if [[ "$GENERATE_GO" == "true" ]]; then
         --go-grpc_out=${SCRIPT_DIR}/../tools/drs-cli/gen \
         --go-grpc_opt=paths=source_relative \
         ${PROTO_DIR}/drs/module/v1/*.proto
-    
+
     # Generate ROS2 bridge proto files for drs-cli
     protoc -I ${PROTO_DIR} \
         --go_out=${SCRIPT_DIR}/../tools/drs-cli/gen \

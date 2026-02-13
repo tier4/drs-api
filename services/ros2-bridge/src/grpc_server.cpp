@@ -13,7 +13,7 @@ void GrpcServer::RegisterService(grpc::Service* service) {
     if (started_) {
         throw std::runtime_error("Cannot register service after server has started");
     }
-    
+
     builder_.RegisterService(service);
 }
 
@@ -21,16 +21,16 @@ bool GrpcServer::Start(const std::string& server_address) {
     if (started_) {
         return false;
     }
-    
+
     // Listen on the given address
     builder_.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-    
+
     // Build and start the server
     server_ = builder_.BuildAndStart();
     if (!server_) {
         return false;
     }
-    
+
     started_ = true;
     return true;
 }

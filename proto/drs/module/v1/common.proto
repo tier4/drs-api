@@ -11,7 +11,7 @@ message Service {
   bool enabled = 3;         // Whether service is enabled
   string description = 4;   // Service description
   int64 uptime_seconds = 5; // Uptime in seconds
-  
+
   enum ServiceState {
     SERVICE_STATE_UNSPECIFIED = 0;
     SERVICE_STATE_ACTIVE = 1;

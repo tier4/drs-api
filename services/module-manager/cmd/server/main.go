@@ -26,13 +26,13 @@ func main() {
 	// Load configuration
 	var cfg *config.Config
 	var err error
-	
+
 	if *configFile != "" {
 		cfg, err = config.LoadConfig(*configFile)
 	} else {
 		cfg, err = config.LoadConfigFromDefault()
 	}
-	
+
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
 	}
@@ -50,7 +50,7 @@ func main() {
 
 	s := grpc.NewServer()
 	service.RegisterServices(s, cfg)
-	
+
 	reflection.Register(s)
 
 	log.Printf("Starting gRPC server on port %d", serverPort)

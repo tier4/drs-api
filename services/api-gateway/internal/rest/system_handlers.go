@@ -57,7 +57,7 @@ func (h *SystemHandler) SystemShutdown(c *gin.Context) {
 // ModuleRestart handles POST /modules/{hostname}/restart - restarts a single module
 func (h *SystemHandler) ModuleRestart(c *gin.Context) {
 	hostname := c.Param("hostname")
-	
+
 	var req models.SystemOperationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
@@ -73,7 +73,7 @@ func (h *SystemHandler) ModuleRestart(c *gin.Context) {
 // ModuleShutdown handles POST /modules/{hostname}/shutdown - shuts down a single module
 func (h *SystemHandler) ModuleShutdown(c *gin.Context) {
 	hostname := c.Param("hostname")
-	
+
 	var req models.SystemOperationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
@@ -89,7 +89,7 @@ func (h *SystemHandler) ModuleShutdown(c *gin.Context) {
 // ServicesRestart handles POST /modules/{hostname}/services/restart - restarts services on module
 func (h *SystemHandler) ServicesRestart(c *gin.Context) {
 	hostname := c.Param("hostname")
-	
+
 	clients, err := h.clientManager.GetModuleClients(hostname)
 	if err != nil {
 		c.JSON(http.StatusNotFound, models.ErrorResponse{
@@ -122,12 +122,12 @@ func (h *SystemHandler) ServicesRestart(c *gin.Context) {
 		wg.Add(1)
 		go func(svcName string) {
 			defer wg.Done()
-			
+
 			// Try to restart the service
 			_, err := clients.ServiceManager.RestartService(ctx, &modulev1.RestartServiceRequest{
 				Name: "services/" + svcName,
 			})
-			
+
 			if err != nil {
 				results <- models.ServiceOperationResponse{
 					Success: false,
@@ -177,11 +177,11 @@ func (h *SystemHandler) ServicesRestart(c *gin.Context) {
 // performSystemOperation performs a system operation on all modules
 func (h *SystemHandler) performSystemOperation(c *gin.Context, operation string, delaySeconds int32) {
 	moduleNames := h.clientManager.GetModuleNames()
-	
+
 	// Separate API Gateway host from other modules
 	var apiGatewayHost string
 	var otherModules []string
-	
+
 	for _, hostname := range moduleNames {
 		if h.config.APIGatewayHost != "" && hostname == h.config.APIGatewayHost {
 			apiGatewayHost = hostname
@@ -189,7 +189,7 @@ func (h *SystemHandler) performSystemOperation(c *gin.Context, operation string,
 			otherModules = append(otherModules, hostname)
 		}
 	}
-	
+
 	var wg sync.WaitGroup
 	results := make(chan models.SystemOperationResponse, len(moduleNames))
 
@@ -198,7 +198,7 @@ func (h *SystemHandler) performSystemOperation(c *gin.Context, operation string,
 		wg.Add(1)
 		go func(hostname string) {
 			defer wg.Done()
-			
+
 			clients, err := h.clientManager.GetModuleClients(hostname)
 			if err != nil {
 				results <- models.SystemOperationResponse{
@@ -250,13 +250,13 @@ func (h *SystemHandler) performSystemOperation(c *gin.Context, operation string,
 
 	// Wait for all non-API Gateway operations to complete
 	wg.Wait()
-	
+
 	// Now send operation to API Gateway host if it exists
 	if apiGatewayHost != "" {
 		wg.Add(1)
 		go func(hostname string) {
 			defer wg.Done()
-			
+
 			clients, err := h.clientManager.GetModuleClients(hostname)
 			if err != nil {
 				results <- models.SystemOperationResponse{
@@ -310,10 +310,10 @@ func (h *SystemHandler) performSystemOperation(c *gin.Context, operation string,
 				}
 			}
 		}(apiGatewayHost)
-		
+
 		wg.Wait()
 	}
-	
+
 	// Close results channel
 	close(results)
 

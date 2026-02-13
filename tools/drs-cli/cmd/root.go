@@ -43,7 +43,7 @@ func init() {
 
 func initConfig() {
 	cfg = config.DefaultConfig()
-	
+
 	// Override with command line flags
 	if address != "" {
 		cfg.Server.Address = address

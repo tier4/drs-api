@@ -140,7 +140,7 @@ var getRecordingCmd = &cobra.Command{
 		fmt.Printf("Recording Status for %s:\n", recording.HardwareId)
 		fmt.Printf("  Is Recording: %t\n", recording.IsRecording)
 		fmt.Printf("  Error Level: %s\n", getErrorLevelString(recording.ErrorLevel))
-		
+
 		if recording.Header != nil && recording.Header.Stamp != nil {
 			timestamp := time.Unix(recording.Header.Stamp.Seconds, int64(recording.Header.Stamp.Nanos))
 			fmt.Printf("  Last Update: %s\n", timestamp.Format(time.RFC3339))
@@ -149,9 +149,9 @@ var getRecordingCmd = &cobra.Command{
 		if len(recording.TopicStatuses) > 0 {
 			fmt.Printf("  Topic Statuses (%d):\n", len(recording.TopicStatuses))
 			for _, topic := range recording.TopicStatuses {
-				fmt.Printf("    - %s: %.1f Hz (%s)\n", 
-					topic.TopicName, 
-					topic.RateHz, 
+				fmt.Printf("    - %s: %.1f Hz (%s)\n",
+					topic.TopicName,
+					topic.RateHz,
 					getRateStatusString(topic.RateStatus))
 			}
 		}

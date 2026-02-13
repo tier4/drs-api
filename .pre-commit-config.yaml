@@ -1,0 +1,52 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^(.*/)?gen/.*$
+      - id: end-of-file-fixer
+        exclude: ^(.*/)?gen/.*$
+      - id: check-yaml
+      - id: check-added-large-files
+
+  # Go Services Lint
+  # Note: Uses the locally installed ./bin/golangci-lint
+  - repo: local
+    hooks:
+      - id: golangci-lint-api-gateway
+        name: golangci-lint (api-gateway)
+        entry: bash -c "cd services/api-gateway && ../../bin/golangci-lint run ./..."
+        language: system
+        files: ^services/api-gateway/
+        pass_filenames: false
+      - id: golangci-lint-module-manager
+        name: golangci-lint (module-manager)
+        entry: bash -c "cd services/module-manager && ../../bin/golangci-lint run ./..."
+        language: system
+        files: ^services/module-manager/
+        pass_filenames: false
+
+  # UI Dashboard Lint & Format
+  # Running via local npm to ensure all project-specific dependencies/plugins from flat config are available
+  - repo: local
+    hooks:
+      - id: dashboard-lint
+        name: dashboard eslint
+        entry: bash -c "cd ui/dashboard && npm run lint"
+        language: system
+        files: ^ui/dashboard/
+        pass_filenames: false
+      - id: dashboard-format
+        name: dashboard prettier
+        entry: bash -c "cd ui/dashboard && npm run format:check"
+        language: system
+        files: ^ui/dashboard/
+        pass_filenames: false
+
+  # Protobuf Lint
+  - repo: https://github.com/bufbuild/buf
+    rev: v1.39.0
+    hooks:
+      - id: buf-lint
+        name: buf lint
+        args: ["proto"]
