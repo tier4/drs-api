@@ -19,7 +19,7 @@ SensingHandler::SensingHandler(rclcpp::Node::SharedPtr node)
 grpc::Status SensingHandler::GetPosition(
     grpc::ServerContext* /* context */,
     const drs::ros2bridge::v1::GetPositionRequest* /* request */,
-    drs::ros2bridge::v1::Position* response) {
+    drs::ros2bridge::v1::GetPositionResponse* response) {
 
     std::lock_guard<std::mutex> lock(position_mutex_);
 
@@ -36,7 +36,7 @@ grpc::Status SensingHandler::GetPosition(
                            "Position data is stale");
     }
 
-    convertNavSatFixToPosition(*cached_position_, response);
+    convertNavSatFixToPosition(*cached_position_, response->mutable_position());
     return grpc::Status::OK;
 }
 

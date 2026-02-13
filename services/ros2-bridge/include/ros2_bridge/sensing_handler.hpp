@@ -18,7 +18,7 @@ public:
     grpc::Status GetPosition(
         grpc::ServerContext* context,
         const drs::ros2bridge::v1::GetPositionRequest* request,
-        drs::ros2bridge::v1::Position* response) override;
+        drs::ros2bridge::v1::GetPositionResponse* response) override;
 
     grpc::Status ListNodes(
         grpc::ServerContext* context,

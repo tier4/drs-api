@@ -23,7 +23,7 @@ RecordingHandler::RecordingHandler(rclcpp::Node::SharedPtr node)
 grpc::Status RecordingHandler::GetRecording(
     grpc::ServerContext* /* context */,
     const drs::ros2bridge::v1::GetRecordingRequest* request,
-    drs::ros2bridge::v1::Recording* response) {
+    drs::ros2bridge::v1::GetRecordingResponse* response) {
 
     std::lock_guard<std::mutex> lock(recordings_mutex_);
 
@@ -44,7 +44,7 @@ grpc::Status RecordingHandler::GetRecording(
         }
     }
 
-    convertRecorderStatusToRecording(it->second, response);
+    convertRecorderStatusToRecording(it->second, response->mutable_recording());
     return grpc::Status::OK;
 }
 

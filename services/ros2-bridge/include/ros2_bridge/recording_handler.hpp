@@ -20,7 +20,7 @@ public:
     grpc::Status GetRecording(
         grpc::ServerContext* context,
         const drs::ros2bridge::v1::GetRecordingRequest* request,
-        drs::ros2bridge::v1::Recording* response) override;
+        drs::ros2bridge::v1::GetRecordingResponse* response) override;
 
     grpc::Status ListRecordings(
         grpc::ServerContext* context,
