@@ -13,13 +13,13 @@ import (
 )
 
 type Client struct {
-	conn               *grpc.ClientConn
-	serviceManager     modulev1.ServiceManagerServiceClient
-	systemControl      modulev1.SystemControlServiceClient
-	monitoring         modulev1.MonitoringServiceClient
-	recordingService   ros2bridgev1.RecordingServiceClient
-	sensingService     ros2bridgev1.SensingServiceClient
-	timeout            time.Duration
+	conn             *grpc.ClientConn
+	serviceManager   modulev1.ServiceManagerServiceClient
+	systemControl    modulev1.SystemControlServiceClient
+	monitoring       modulev1.MonitoringServiceClient
+	recordingService ros2bridgev1.RecordingServiceClient
+	sensingService   ros2bridgev1.SensingServiceClient
+	timeout          time.Duration
 }
 
 func NewClient(address string, timeout time.Duration) (*Client, error) {
@@ -29,13 +29,13 @@ func NewClient(address string, timeout time.Duration) (*Client, error) {
 	}
 
 	return &Client{
-		conn:               conn,
-		serviceManager:     modulev1.NewServiceManagerServiceClient(conn),
-		systemControl:      modulev1.NewSystemControlServiceClient(conn),
-		monitoring:         modulev1.NewMonitoringServiceClient(conn),
-		recordingService:   ros2bridgev1.NewRecordingServiceClient(conn),
-		sensingService:     ros2bridgev1.NewSensingServiceClient(conn),
-		timeout:            timeout,
+		conn:             conn,
+		serviceManager:   modulev1.NewServiceManagerServiceClient(conn),
+		systemControl:    modulev1.NewSystemControlServiceClient(conn),
+		monitoring:       modulev1.NewMonitoringServiceClient(conn),
+		recordingService: ros2bridgev1.NewRecordingServiceClient(conn),
+		sensingService:   ros2bridgev1.NewSensingServiceClient(conn),
+		timeout:          timeout,
 	}, nil
 }
 
@@ -61,7 +61,11 @@ func (c *Client) GetService(name string) (*modulev1.Service, error) {
 	defer cancel()
 
 	req := &modulev1.GetServiceRequest{Name: name}
-	return c.serviceManager.GetService(ctx, req)
+	resp, err := c.serviceManager.GetService(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Service, nil
 }
 
 func (c *Client) StartService(name string) (*modulev1.StartServiceResponse, error) {
@@ -130,6 +134,26 @@ func (c *Client) GetDiskUsage() (*modulev1.GetDiskUsageResponse, error) {
 	return c.monitoring.GetDiskUsage(ctx, req)
 }
 
+func (c *Client) GetDisk(name string) (*modulev1.Disk, error) {
+	ctx, cancel := c.GetContext()
+	defer cancel()
+
+	req := &modulev1.GetDiskRequest{Name: name}
+	resp, err := c.monitoring.GetDisk(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Disk, nil
+}
+
+func (c *Client) ListDisks() (*modulev1.ListDisksResponse, error) {
+	ctx, cancel := c.GetContext()
+	defer cancel()
+
+	req := &modulev1.ListDisksRequest{}
+	return c.monitoring.ListDisks(ctx, req)
+}
+
 func (c *Client) GetPTPStatus(includeRemote bool) (*modulev1.GetPTPStatusResponse, error) {
 	ctx, cancel := c.GetContext()
 	defer cancel()
@@ -152,7 +176,11 @@ func (c *Client) GetPosition() (*ros2bridgev1.Position, error) {
 	defer cancel()
 
 	req := &ros2bridgev1.GetPositionRequest{}
-	return c.sensingService.GetPosition(ctx, req)
+	resp, err := c.sensingService.GetPosition(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Position, nil
 }
 
 func (c *Client) ListNodes(filter string) (*ros2bridgev1.ListNodesResponse, error) {
@@ -201,7 +229,11 @@ func (c *Client) GetRecording(hardwareID string) (*ros2bridgev1.Recording, error
 	defer cancel()
 
 	req := &ros2bridgev1.GetRecordingRequest{HardwareId: hardwareID}
-	return c.recordingService.GetRecording(ctx, req)
+	resp, err := c.recordingService.GetRecording(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Recording, nil
 }
 
 func (c *Client) ListRecordings(filter string) (*ros2bridgev1.ListRecordingsResponse, error) {

@@ -18,7 +18,7 @@ public:
     grpc::Status GetPosition(
         grpc::ServerContext* context,
         const drs::ros2bridge::v1::GetPositionRequest* request,
-        drs::ros2bridge::v1::Position* response) override;
+        drs::ros2bridge::v1::GetPositionResponse* response) override;
 
     grpc::Status ListNodes(
         grpc::ServerContext* context,
@@ -39,7 +39,7 @@ private:
 
     rclcpp::Node::SharedPtr node_;
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr nav_sat_fix_sub_;
-    
+
     // Cached position data
     std::mutex position_mutex_;
     std::shared_ptr<sensor_msgs::msg::NavSatFix> cached_position_;

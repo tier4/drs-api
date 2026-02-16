@@ -12,7 +12,7 @@ var moduleCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(moduleCmd)
-	
+
 	// Add existing commands as subcommands of module
 	moduleCmd.AddCommand(servicesCmd)
 	moduleCmd.AddCommand(systemCmd)

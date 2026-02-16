@@ -27,13 +27,13 @@ func NewSystemControlService(cfg *config.Config) *SystemControlService {
 
 func (s *SystemControlService) Reboot(ctx context.Context, req *modulev1.RebootRequest) (*modulev1.RebootResponse, error) {
 	log.Printf("Reboot request received with delay: %d seconds", req.DelaySeconds)
-	
+
 	// Check if reboot API is enabled
 	if !s.config.System.EnableReboot {
 		log.Printf("Reboot API is disabled")
 		return nil, status.Error(codes.Unimplemented, "reboot API is disabled in configuration")
 	}
-	
+
 	err := s.systemManager.Reboot(int(req.DelaySeconds))
 	if err != nil {
 		log.Printf("Reboot failed: %v", err)
@@ -49,13 +49,13 @@ func (s *SystemControlService) Reboot(ctx context.Context, req *modulev1.RebootR
 
 func (s *SystemControlService) Shutdown(ctx context.Context, req *modulev1.ShutdownRequest) (*modulev1.ShutdownResponse, error) {
 	log.Printf("Shutdown request received with delay: %d seconds", req.DelaySeconds)
-	
+
 	// Check if shutdown API is enabled
 	if !s.config.System.EnableShutdown {
 		log.Printf("Shutdown API is disabled")
 		return nil, status.Error(codes.Unimplemented, "shutdown API is disabled in configuration")
 	}
-	
+
 	err := s.systemManager.Shutdown(int(req.DelaySeconds))
 	if err != nil {
 		log.Printf("Shutdown failed: %v", err)

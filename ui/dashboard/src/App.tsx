@@ -27,6 +27,7 @@ const mockModules: Module[] = [
     diskUsagePercentage: 75.0,
     diskFreeBytes: 268435456000, // 250GB
     diskTotalBytes: 1073741824000, // 1TB
+    disks: [],
   },
   {
     hostname: 'ecu1',
@@ -40,6 +41,7 @@ const mockModules: Module[] = [
     diskUsagePercentage: 90.0,
     diskFreeBytes: 107374182400, // 100GB
     diskTotalBytes: 1073741824000, // 1TB
+    disks: [],
   },
   {
     hostname: 'nas',
@@ -47,6 +49,7 @@ const mockModules: Module[] = [
     diskUsagePercentage: 25.0,
     diskFreeBytes: 805306368000, // 750GB
     diskTotalBytes: 1073741824000, // 1TB
+    disks: [],
   },
 ]
 
@@ -111,6 +114,14 @@ interface ApiModule {
       data_status: string
     }
   }
+  disks?: Array<{
+    name: string
+    mount_path: string
+    description: string
+    usage_percentage: number
+    free_bytes: number
+    total_bytes: number
+  }>
 }
 
 interface ApiPtpRemoteStatus {
@@ -204,6 +215,7 @@ function App() {
       diskUsagePercentage: apiModule.disk?.usage_percentage || 0,
       diskFreeBytes: apiModule.disk?.free_bytes || 0,
       diskTotalBytes: apiModule.disk?.total_bytes || 0,
+      disks: apiModule.disks || [],
     }
 
     // Only add services and recording for ecu modules, not for nas

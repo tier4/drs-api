@@ -11,7 +11,7 @@ message Service {
   bool enabled = 3;         // Whether service is enabled
   string description = 4;   // Service description
   int64 uptime_seconds = 5; // Uptime in seconds
-  
+
   enum ServiceState {
     SERVICE_STATE_UNSPECIFIED = 0;
     SERVICE_STATE_ACTIVE = 1;
@@ -28,6 +28,14 @@ message DiskUsage {
   uint64 used_bytes = 2;
   uint64 free_bytes = 3;
   double usage_percentage = 4;
+}
+
+// Disk resource information
+message Disk {
+  string name = 1;           // Resource name: disks/{disk_id}
+  string mount_path = 2;     // Mount path
+  DiskUsage usage = 3;       // Disk usage statistics
+  string description = 4;    // Description from config (optional)
 }
 
 // PTP status information

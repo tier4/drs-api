@@ -20,7 +20,7 @@ All services run on the same gRPC server and port (50051), allowing clients to u
 - **Reboot**: System restart (configurable delay)
 - **Shutdown**: System shutdown (configurable delay)
 
-### ServiceManagerService APIs  
+### ServiceManagerService APIs
 - **GetService**: Retrieve information for a specific service
 - **ListServices**: List configured services
 - **StartService**: Start a service
@@ -114,7 +114,7 @@ With the new service architecture, you can use gRPC clients to call specific ser
 # Example using grpcurl for MonitoringService
 grpcurl -plaintext localhost:50051 drs.module.v1.MonitoringService/GetDiskUsage
 
-# Example using grpcurl for SystemControlService  
+# Example using grpcurl for SystemControlService
 grpcurl -plaintext -d '{"delay_seconds": 60}' localhost:50051 drs.module.v1.SystemControlService/Reboot
 
 # Example using grpcurl for ServiceManagerService

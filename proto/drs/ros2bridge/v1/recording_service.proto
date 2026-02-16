@@ -8,10 +8,10 @@ option go_package = "./gen/drs/ros2bridge/v1;ros2bridgev1";
 
 service RecordingService {
   // Standard methods
-  rpc GetRecording(GetRecordingRequest) returns (Recording);
+  rpc GetRecording(GetRecordingRequest) returns (GetRecordingResponse);
   rpc ListRecordings(ListRecordingsRequest) returns (ListRecordingsResponse);
   rpc ListTopicStatuses(ListTopicStatusesRequest) returns (ListTopicStatusesResponse);
-  
+
   // Custom methods for recording control
   rpc StartRecording(StartRecordingRequest) returns (StartRecordingResponse);
   rpc StopRecording(StopRecordingRequest) returns (StopRecordingResponse);
@@ -22,6 +22,10 @@ service RecordingService {
 // Standard Get operation for recording status
 message GetRecordingRequest {
   string hardware_id = 1; // Hardware ID to get recording status for
+}
+
+message GetRecordingResponse {
+  Recording recording = 1;
 }
 
 // Standard List operation for recordings

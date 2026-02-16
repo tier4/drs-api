@@ -36,7 +36,7 @@ var getPositionCmd = &cobra.Command{
 		fmt.Printf("  Longitude: %.6f°\n", position.Longitude)
 		fmt.Printf("  Altitude:  %.3f m\n", position.Altitude)
 		fmt.Printf("  Frame ID:  %s\n", position.Header.FrameId)
-		
+
 		// Convert timestamp
 		if position.Header.Stamp != nil {
 			timestamp := time.Unix(position.Header.Stamp.Seconds, int64(position.Header.Stamp.Nanos))

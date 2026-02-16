@@ -1,6 +1,15 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 console.log('API Base URL:', API_BASE_URL)
 
+export interface DiskDetail {
+  name: string
+  mount_path: string
+  description: string
+  usage_percentage: number
+  free_bytes: number
+  total_bytes: number
+}
+
 export interface ModuleStatus {
   hostname: string
   address: string
@@ -18,7 +27,9 @@ export interface ModuleStatus {
       offset_ns: number
     }
   }
-  disk: {
+  disks: DiskDetail[]
+  // Legacy support
+  disk?: {
     usage_percentage: number
     free_bytes: number
     total_bytes: number

@@ -14,7 +14,7 @@ import (
 func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engine {
 	// Set gin mode
 	gin.SetMode(gin.ReleaseMode)
-	
+
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -22,7 +22,7 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 	// Setup CORS middleware
 	router.Use(func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		
+
 		// Check if wildcard is allowed
 		for _, allowedOrigin := range cfg.CORS.AllowedOrigins {
 			if allowedOrigin == "*" {
@@ -33,16 +33,16 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 				break
 			}
 		}
-		
+
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		
+
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
 		}
-		
+
 		c.Next()
 	})
 
@@ -69,7 +69,7 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 		// System control endpoints
 		v1.POST("/system/restart", systemHandler.SystemRestart)
 		v1.POST("/system/shutdown", systemHandler.SystemShutdown)
-		
+
 		// Per-module system control
 		v1.POST("/modules/:hostname/restart", systemHandler.ModuleRestart)
 		v1.POST("/modules/:hostname/shutdown", systemHandler.ModuleShutdown)
@@ -91,7 +91,7 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 		// Service management endpoints
 		v1.GET("/modules/:hostname/services", func(c *gin.Context) {
 			hostname := c.Param("hostname")
-			
+
 			clients, err := clientManager.GetModuleClients(hostname)
 			if err != nil {
 				c.JSON(404, gin.H{"error": "Module not found"})
@@ -118,7 +118,7 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 		v1.POST("/modules/:hostname/services/:service_name/start", func(c *gin.Context) {
 			hostname := c.Param("hostname")
 			serviceName := c.Param("service_name")
-			
+
 			clients, err := clientManager.GetModuleClients(hostname)
 			if err != nil {
 				c.JSON(404, gin.H{"error": "Module not found"})
@@ -151,7 +151,7 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 		v1.POST("/modules/:hostname/services/:service_name/stop", func(c *gin.Context) {
 			hostname := c.Param("hostname")
 			serviceName := c.Param("service_name")
-			
+
 			clients, err := clientManager.GetModuleClients(hostname)
 			if err != nil {
 				c.JSON(404, gin.H{"error": "Module not found"})
@@ -184,7 +184,7 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 		v1.POST("/modules/:hostname/services/:service_name/restart", func(c *gin.Context) {
 			hostname := c.Param("hostname")
 			serviceName := c.Param("service_name")
-			
+
 			clients, err := clientManager.GetModuleClients(hostname)
 			if err != nil {
 				c.JSON(404, gin.H{"error": "Module not found"})

@@ -36,6 +36,15 @@ import {
   RotateCw,
 } from 'lucide-react'
 
+export interface DiskInfo {
+  name: string
+  mount_path: string
+  description: string
+  usage_percentage: number
+  free_bytes: number
+  total_bytes: number
+}
+
 export interface Module {
   hostname: string
   moduleId?: string
@@ -44,11 +53,12 @@ export interface Module {
     drs_recorder?: string
   }
   recordingStatus?: string
-  // Empty string indicates modules without recording capability (e.g., NAS)
   dataStatus: 'OK' | 'WARN' | 'ERROR' | ''
-  diskUsagePercentage: number
-  diskFreeBytes: number
-  diskTotalBytes: number
+  disks: DiskInfo[]
+  // Legacy support
+  diskUsagePercentage?: number
+  diskFreeBytes?: number
+  diskTotalBytes?: number
   ptpStatus?: {
     gmPresent: boolean
     offsetNs: number
@@ -388,7 +398,9 @@ export function ModuleStatus({
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`text-sm font-medium ${getRecordingStatusColor(module.recordingStatus)}`}
+                          className={`text-sm font-medium ${getRecordingStatusColor(
+                            module.recordingStatus,
+                          )}`}
                         >
                           {module.recordingStatus.charAt(0).toUpperCase() +
                             module.recordingStatus.slice(1)}
@@ -409,7 +421,10 @@ export function ModuleStatus({
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`text-sm font-medium ${getPtpStatusColor(module.ptpStatus.offsetNs, module.ptpStatus.gmPresent)}`}
+                          className={`text-sm font-medium ${getPtpStatusColor(
+                            module.ptpStatus.offsetNs,
+                            module.ptpStatus.gmPresent,
+                          )}`}
                         >
                           {module.ptpStatus.gmPresent ? 'Synced' : 'No GM'}
                         </span>
@@ -418,29 +433,60 @@ export function ModuleStatus({
                   )}
 
                   {/* Disk Usage */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <HardDrive className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium">Disk Usage</span>
+                  {module.disks && module.disks.length > 0 ? (
+                    module.disks.map((disk, index) => (
+                      <div key={disk.name} className={index > 0 ? 'mt-3' : ''}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <HardDrive className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">
+                              {disk.description || disk.name}
+                            </span>
+                          </div>
+                          <span className="text-sm font-medium">
+                            {disk.usage_percentage.toFixed(0)}%
+                          </span>
+                        </div>
+                        <Progress
+                          value={disk.usage_percentage}
+                          className={`h-2 ${getDiskUsageColor(disk.usage_percentage)}`}
+                        />
+                        <div className="flex justify-between mt-1">
+                          <span className="text-xs text-muted-foreground">
+                            {formatBytes(disk.total_bytes - disk.free_bytes)} used
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatBytes(disk.total_bytes)} total
+                          </span>
+                        </div>
                       </div>
-                      <span className="text-sm font-medium">
-                        {module.diskUsagePercentage.toFixed(0)}%
-                      </span>
+                    ))
+                  ) : module.diskUsagePercentage !== undefined ? (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <HardDrive className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">Disk Usage</span>
+                        </div>
+                        <span className="text-sm font-medium">
+                          {module.diskUsagePercentage.toFixed(0)}%
+                        </span>
+                      </div>
+                      <Progress
+                        value={module.diskUsagePercentage}
+                        className={`h-2 ${getDiskUsageColor(module.diskUsagePercentage)}`}
+                      />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-xs text-muted-foreground">
+                          {formatBytes((module.diskTotalBytes || 0) - (module.diskFreeBytes || 0))}{' '}
+                          used
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatBytes(module.diskTotalBytes || 0)} total
+                        </span>
+                      </div>
                     </div>
-                    <Progress
-                      value={module.diskUsagePercentage}
-                      className={`h-2 ${getDiskUsageColor(module.diskUsagePercentage)}`}
-                    />
-                    <div className="flex justify-between mt-1">
-                      <span className="text-xs text-muted-foreground">
-                        {formatBytes(module.diskTotalBytes - module.diskFreeBytes)} used
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatBytes(module.diskTotalBytes)} total
-                      </span>
-                    </div>
-                  </div>
+                  ) : null}
                 </CardContent>
               </Card>
             )

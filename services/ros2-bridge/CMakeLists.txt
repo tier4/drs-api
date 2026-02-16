@@ -41,7 +41,7 @@ if(NOT EXISTS ${PROTO_GENERATED_DIR}/drs/ros2bridge/v1/common.pb.h)
 endif()
 
 # Add generated proto files
-file(GLOB_RECURSE PROTO_SOURCES 
+file(GLOB_RECURSE PROTO_SOURCES
   "${PROTO_GENERATED_DIR}/*.pb.cc"
   "${PROTO_GENERATED_DIR}/*.grpc.pb.cc"
 )
@@ -71,7 +71,7 @@ ament_target_dependencies(ros2_bridge_node
 )
 
 # Link libraries
-target_include_directories(ros2_bridge_node PRIVATE 
+target_include_directories(ros2_bridge_node PRIVATE
   ${PROTOBUF_INCLUDE_DIRS}
   ${GRPC_INCLUDE_DIRS}
 )

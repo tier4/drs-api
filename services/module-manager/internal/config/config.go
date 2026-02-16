@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/yaml.v3"
+	yaml "gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -22,8 +22,15 @@ type ServerConfig struct {
 }
 
 type DiskConfig struct {
-	Enabled     bool   `yaml:"enabled"`
-	MonitorPath string `yaml:"monitor_path"`
+	Enabled     bool        `yaml:"enabled"`
+	MonitorPath string      `yaml:"monitor_path"` // Deprecated: use Disks instead, kept for backward compatibility
+	Disks       []DiskEntry `yaml:"disks"`
+}
+
+type DiskEntry struct {
+	Name        string `yaml:"name"`        // disk_id used in resource name
+	MountPath   string `yaml:"mount_path"`  // mount path to monitor
+	Description string `yaml:"description"` // optional description
 }
 
 type ServicesConfig struct {
@@ -61,6 +68,7 @@ func LoadConfig(configPath string) (*Config, error) {
 		Disk: DiskConfig{
 			Enabled:     true,
 			MonitorPath: "/",
+			Disks:       []DiskEntry{}, // Will be populated from MonitorPath if empty during validation/loading
 		},
 		Services: ServicesConfig{
 			Enabled:  true,
@@ -150,8 +158,31 @@ func validateConfig(config *Config) error {
 	}
 
 	// Validate disk path
-	if config.Disk.MonitorPath == "" {
-		return fmt.Errorf("monitor_path cannot be empty")
+	// Validate disk path and setup backward compatibility
+	if config.Disk.Enabled {
+		// If Disks is empty but MonitorPath is set, migrate it to Disks
+		if len(config.Disk.Disks) == 0 && config.Disk.MonitorPath != "" {
+			config.Disk.Disks = []DiskEntry{
+				{
+					Name:        "root",
+					MountPath:   config.Disk.MonitorPath,
+					Description: "Primary Disk",
+				},
+			}
+		}
+
+		if len(config.Disk.Disks) == 0 {
+			return fmt.Errorf("no disks configured when disk monitoring is enabled")
+		}
+
+		for _, disk := range config.Disk.Disks {
+			if disk.Name == "" {
+				return fmt.Errorf("disk name cannot be empty")
+			}
+			if disk.MountPath == "" {
+				return fmt.Errorf("disk mount_path cannot be empty for disk %s", disk.Name)
+			}
+		}
 	}
 
 
@@ -189,17 +220,17 @@ func (c *Config) GetSystemdServiceName(resourceName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	if resourceType != "services" {
 		return "", fmt.Errorf("unsupported resource type: %s", resourceType)
 	}
-	
+
 	service, exists := c.Services.Services[resourceID]
 	if !exists {
 		return "", fmt.Errorf("service not found: %s", resourceID)
 	}
-	
-	
+
+
 	return service.SystemdName, nil
 }
 

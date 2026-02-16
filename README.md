@@ -114,7 +114,7 @@ disk:
   enabled: true
   monitor_path: "/"
 
-# Service management settings  
+# Service management settings
 services:
   enabled: true
   services:

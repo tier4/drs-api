@@ -76,10 +76,9 @@ func (cm *ClientManager) createModuleClients(hostname string) (*ModuleClients, e
 	}
 
 	// Create module-manager connection
-	conn, err := grpc.Dial(
+	conn, err := grpc.NewClient(
 		moduleConfig.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithTimeout(cm.config.GRPC.Timeout),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to module %s at %s: %v", hostname, moduleConfig.Address, err)
@@ -156,7 +155,7 @@ func (cm *ClientManager) GetROS2BridgeClients() (*ROS2BridgeClients, error) {
 	}
 
 	// Create connection
-	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to ROS2 bridge at %s: %v", address, err)
 	}
@@ -184,7 +183,7 @@ func (cm *ClientManager) GetModuleNames() []string {
 // HealthCheck performs a health check on all modules
 func (cm *ClientManager) HealthCheck() map[string]bool {
 	results := make(map[string]bool)
-	
+
 	for _, hostname := range cm.GetModuleNames() {
 		clients, err := cm.GetModuleClients(hostname)
 		if err != nil {
