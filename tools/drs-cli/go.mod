@@ -1,11 +1,11 @@
 module github.com/tier4/drs-api/tools/drs-cli
 
-go 1.21
+go 1.23
 
 require (
 	github.com/spf13/cobra v1.8.0
 	google.golang.org/grpc v1.65.0
-	google.golang.org/protobuf v1.34.1
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
