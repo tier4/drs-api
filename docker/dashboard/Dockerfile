@@ -5,7 +5,7 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 # Copy package files from ui/dashboard
-COPY ui/dashboard/package.json ui/dashboard/pnpm-lock.yaml ./
+COPY ui/dashboard/package.json ui/dashboard/pnpm-lock.yaml ui/dashboard/pnpm-workspace.yaml ./
 
 # Install dependencies
 RUN corepack enable && pnpm install --frozen-lockfile

@@ -22,6 +22,7 @@ pnpm バージョンは `package.json` の `packageManager` フィールドと C
 | `ui/dashboard/pnpm-lock.yaml` | 新規生成（`pnpm import` → `pnpm install`） |
 | `ui/dashboard/Dockerfile` | pnpm 対応（Corepack 有効化、コマンド更新） |
 | `docker/dashboard/Dockerfile` | 同上 |
+| `ui/dashboard/pnpm-workspace.yaml` | 新規作成（`minimumReleaseAge` 設定） |
 | `.github/workflows/dashboard.yml` | Corepack 有効化、cache・コマンド更新 |
 | `.github/dependabot.yml` | 変更不要 |
 
@@ -35,7 +36,7 @@ pnpm バージョンは `package.json` の `packageManager` フィールドと C
 
 ```json
 {
-  "packageManager": "pnpm@10.x.x"
+  "packageManager": "pnpm@10.33.0"
 }
 ```
 

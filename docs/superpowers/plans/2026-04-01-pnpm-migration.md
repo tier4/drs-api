@@ -19,6 +19,7 @@
 | `ui/dashboard/package-lock.json` | 削除 |
 | `ui/dashboard/Dockerfile` | pnpm 対応に更新 |
 | `docker/dashboard/Dockerfile` | pnpm 対応に更新 |
+| `ui/dashboard/pnpm-workspace.yaml` | 新規作成（`minimumReleaseAge` 設定） |
 | `.github/workflows/dashboard.yml` | Corepack 有効化・コマンド更新 |
 
 ---
