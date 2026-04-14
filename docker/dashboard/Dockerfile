@@ -5,10 +5,10 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 # Copy package files from ui/dashboard
-COPY ui/dashboard/package*.json ./
+COPY ui/dashboard/package.json ui/dashboard/pnpm-lock.yaml ui/dashboard/pnpm-workspace.yaml ./
 
 # Install dependencies
-RUN npm ci
+RUN corepack enable && pnpm install --frozen-lockfile
 
 # Copy source code from ui/dashboard
 COPY ui/dashboard/ ./
@@ -18,7 +18,7 @@ ARG VITE_API_BASE_URL=/api/v1
 
 # Build the application
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-RUN npm run build
+RUN pnpm run build
 
 # Production stage
 FROM nginx:alpine
