@@ -237,13 +237,14 @@ func (m *Manager) getServiceStatus(serviceName string) (string, error) {
 	cmd := exec.Command("systemctl", "is-active", serviceName)
 	output, err := cmd.Output()
 	if err != nil {
-		// Check if service exists
-		checkCmd := exec.Command("systemctl", "list-units", "--all", serviceName)
-		if _, checkErr := checkCmd.Output(); checkErr != nil {
-			return "not-found", fmt.Errorf("service not found: %s", serviceName)
+		// systemctl is-active exits non-zero for non-active states (inactive, failed,
+		// activating, deactivating) but still prints the actual state to stdout.
+		// "unknown" means the unit does not exist.
+		if status := strings.TrimSpace(string(output)); status != "" && status != "unknown" {
+			return status, nil
 		}
-		return "inactive", nil
+		return "not-found", fmt.Errorf("service not found: %s", serviceName)
 	}
 
-	return string(output), nil
+	return strings.TrimSpace(string(output)), nil
 }

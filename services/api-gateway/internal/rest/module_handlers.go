@@ -216,11 +216,12 @@ func (h *ModuleHandler) getServiceStatus(clients *grpc.ModuleClients, hostname s
 
 // deriveTransferStatus derives a composite Transfer status from timer and service states.
 // Priority: failed > transferring > scheduled > stopped.
+// Type=oneshot services report "activating" (not "active") while running, so both are treated as transferring.
 func deriveTransferStatus(timerState, serviceState string) string {
 	if timerState == "failed" || serviceState == "failed" {
 		return "failed"
 	}
-	if serviceState == "active" {
+	if serviceState == "active" || serviceState == "activating" {
 		return "transferring"
 	}
 	if timerState == "active" {
