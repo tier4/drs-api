@@ -21,6 +21,7 @@ const mockModules: Module[] = [
     services: {
       drs_sensor: 'active',
       drs_recorder: 'active',
+      drs_transfer: 'scheduled',
     },
     recordingStatus: 'recording',
     dataStatus: 'OK',
@@ -35,6 +36,7 @@ const mockModules: Module[] = [
     services: {
       drs_sensor: 'active',
       drs_recorder: 'failed',
+      drs_transfer: 'transferring',
     },
     recordingStatus: 'stopped',
     dataStatus: 'WARN',
@@ -442,6 +444,33 @@ function App() {
     }
   }
 
+  const handleStartTransfer = async (hostname: string) => {
+    try {
+      await apiService.startModuleTransfer(hostname)
+      console.log(`Started transfer for ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to start transfer for ${hostname}:`, error)
+    }
+  }
+
+  const handleStopTransfer = async (hostname: string) => {
+    try {
+      await apiService.stopModuleTransfer(hostname)
+      console.log(`Stopped transfer for ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to stop transfer for ${hostname}:`, error)
+    }
+  }
+
+  const handleRestartTransfer = async (hostname: string) => {
+    try {
+      await apiService.restartModuleTransfer(hostname)
+      console.log(`Restarted transfer for ${hostname}`)
+    } catch (error) {
+      console.error(`Failed to restart transfer for ${hostname}:`, error)
+    }
+  }
+
   const handleRestartMachine = async (hostname: string) => {
     try {
       await apiService.restartModule(hostname)
@@ -565,6 +594,9 @@ function App() {
                 onStartRecorder={handleStartRecorder}
                 onStopRecorder={handleStopRecorder}
                 onRestartRecorder={handleRestartRecorder}
+                onStartTransfer={handleStartTransfer}
+                onStopTransfer={handleStopTransfer}
+                onRestartTransfer={handleRestartTransfer}
                 onRestartMachine={handleRestartMachine}
                 onShutdownMachine={handleShutdownMachine}
               />
