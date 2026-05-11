@@ -189,21 +189,44 @@ func (h *ModuleHandler) getServiceStatus(clients *grpc.ModuleClients, hostname s
 	serviceStatus := models.ServiceStatus{
 		DRSSensor:   "unknown",
 		DRSRecorder: "unknown",
+		DRSTransfer: "unknown",
 	}
 
-	// Get list of services
+	// Get list of services; derive DRSTransfer only when the call succeeds so that
+	// a connectivity failure keeps "unknown" (matching DRSSensor/DRSRecorder behavior).
 	if listResp, err := clients.ServiceManager.ListServices(ctx, &modulev1.ListServicesRequest{}); err == nil {
+		var transferTimerState, transferServiceState string
 		for _, service := range listResp.Services {
 			switch service.Name {
 			case "services/drs_sensor":
 				serviceStatus.DRSSensor = h.convertServiceState(service.State)
 			case "services/drs_recorder":
 				serviceStatus.DRSRecorder = h.convertServiceState(service.State)
+			case "services/drs_transfer":
+				transferTimerState = h.convertServiceState(service.State)
+			case "services/drs_transfer_service":
+				transferServiceState = h.convertServiceState(service.State)
 			}
 		}
+		serviceStatus.DRSTransfer = deriveTransferStatus(transferTimerState, transferServiceState)
 	}
 
 	return serviceStatus
+}
+
+// deriveTransferStatus derives a composite Transfer status from timer and service states.
+// Priority: failed > transferring > scheduled > stopped.
+func deriveTransferStatus(timerState, serviceState string) string {
+	if timerState == "failed" || serviceState == "failed" {
+		return "failed"
+	}
+	if serviceState == "active" {
+		return "transferring"
+	}
+	if timerState == "active" {
+		return "scheduled"
+	}
+	return "stopped"
 }
 
 
@@ -292,7 +315,9 @@ func (h *ModuleHandler) convertServiceState(state modulev1.Service_ServiceState)
 // determineOverallStatus determines the overall status based on various factors
 func (h *ModuleHandler) determineOverallStatus(status models.ModuleStatus) string {
 	// Check if any critical services are failed
-	if status.StatusDetail.Services.DRSSensor == "failed" || status.StatusDetail.Services.DRSRecorder == "failed" {
+	if status.StatusDetail.Services.DRSSensor == "failed" ||
+		status.StatusDetail.Services.DRSRecorder == "failed" ||
+		status.StatusDetail.Services.DRSTransfer == "failed" {
 		return "ERROR"
 	}
 
@@ -303,6 +328,7 @@ func (h *ModuleHandler) determineOverallStatus(status models.ModuleStatus) strin
 	}
 
 	// Check if any services are inactive
+	// Note: DRSTransfer "stopped" is the normal idle state between timer runs and is intentionally not checked here.
 	if status.StatusDetail.Services.DRSSensor == "inactive" || status.StatusDetail.Services.DRSRecorder == "inactive" {
 		return "WARN"
 	}
