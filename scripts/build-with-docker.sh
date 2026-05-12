@@ -39,8 +39,8 @@ build_binaries() {
         sh -c "
             echo 'Installing dependencies...' && \
             apk add --no-cache bash protobuf protobuf-dev git make && \
-            go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && \
-            go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest && \
+            go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.6 && \
+            go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1 && \
 
             echo 'Generating proto files...' && \
             cd /workspace && \
