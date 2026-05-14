@@ -235,15 +235,24 @@ func (m *Manager) getServiceUptime(serviceName string) (int64, error) {
 // Common helper function
 func (m *Manager) getServiceStatus(serviceName string) (string, error) {
 	cmd := exec.Command("systemctl", "is-active", serviceName)
-	output, err := cmd.Output()
+	// CombinedOutput captures stderr so we can distinguish unit-missing from
+	// execution failures (systemctl unavailable, DBus error, permission denied).
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		// systemctl is-active exits non-zero for non-active states (inactive, failed,
 		// activating, deactivating) but still prints the actual state to stdout.
 		// "unknown" means the unit does not exist.
-		if status := strings.TrimSpace(string(output)); status != "" && status != "unknown" {
+		status := strings.TrimSpace(string(output))
+		switch status {
+		case "inactive", "failed", "activating", "deactivating":
 			return status, nil
+		case "unknown":
+			return "not-found", fmt.Errorf("service not found: %s", serviceName)
+		default:
+			// Empty output or unrecognised text means the command itself failed
+			// (e.g. systemctl unavailable, DBus error, permission denied).
+			return "unknown", fmt.Errorf("getServiceStatus %s: %w (output: %q)", serviceName, err, status)
 		}
-		return "not-found", fmt.Errorf("service not found: %s", serviceName)
 	}
 
 	return strings.TrimSpace(string(output)), nil
