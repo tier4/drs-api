@@ -190,6 +190,9 @@ func (s *ServiceManagerService) StopService(ctx context.Context, req *modulev1.S
 
 	// Stop secondary unit first if configured (ensures clean abort before disabling primary)
 	if serviceMapping.StopAlso != "" {
+		if !s.config.IsServiceAllowed(serviceMapping.StopAlso) {
+			return nil, status.Error(codes.Internal, fmt.Sprintf("stop_also unit %q is not in the service allowlist", serviceMapping.StopAlso))
+		}
 		log.Printf("Stopping secondary unit first: %s", serviceMapping.StopAlso)
 		if _, err2 := s.systemManager.ManageService(serviceMapping.StopAlso, "stop"); err2 != nil {
 			log.Printf("Warning: failed to stop secondary unit %s: %v", serviceMapping.StopAlso, err2)
@@ -230,6 +233,9 @@ func (s *ServiceManagerService) RestartService(ctx context.Context, req *modulev
 
 	// Stop secondary unit first if configured (best-effort: ensures clean restart)
 	if serviceMapping.StopAlso != "" {
+		if !s.config.IsServiceAllowed(serviceMapping.StopAlso) {
+			return nil, status.Error(codes.Internal, fmt.Sprintf("stop_also unit %q is not in the service allowlist", serviceMapping.StopAlso))
+		}
 		log.Printf("Stopping secondary unit before restart: %s", serviceMapping.StopAlso)
 		if _, err2 := s.systemManager.ManageService(serviceMapping.StopAlso, "stop"); err2 != nil {
 			log.Printf("Warning: failed to stop secondary unit %s before restart: %v", serviceMapping.StopAlso, err2)
