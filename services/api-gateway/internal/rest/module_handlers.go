@@ -190,7 +190,7 @@ func (h *ModuleHandler) getServiceStatus(clients *grpc.ModuleClients, hostname s
 		DRSSensor:       "unknown",
 		DRSRecorder:     "unknown",
 		DRSTransfer:     "unknown",
-		DRSTransferring: "stopped",
+		DRSTransferring: "unknown",
 	}
 
 	// Set both timer and service states independently; only when ListServices succeeds so that
@@ -209,7 +209,9 @@ func (h *ModuleHandler) getServiceStatus(clients *grpc.ModuleClients, hostname s
 				transferServiceState = h.convertServiceState(service.State)
 			}
 		}
-		serviceStatus.DRSTransferring = deriveTransferringStatus(transferServiceState)
+		if transferServiceState != "" {
+			serviceStatus.DRSTransferring = deriveTransferringStatus(transferServiceState)
+		}
 	}
 
 	return serviceStatus
