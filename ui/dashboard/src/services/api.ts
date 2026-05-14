@@ -18,7 +18,8 @@ export interface ModuleStatus {
     services: {
       drs_sensor: string
       drs_recorder: string
-      drs_transfer?: string // "unknown" | "failed" | "stopped" | "scheduled" | "transferring"
+      drs_transfer?: string // timer: "active" | "inactive" | "failed" | "unknown"
+      drs_transferring?: string // service: "transferring" | "stopped" | "failed"
     }
     recording: {
       status: string

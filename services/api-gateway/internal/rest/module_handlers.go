@@ -187,15 +187,16 @@ func (h *ModuleHandler) getServiceStatus(clients *grpc.ModuleClients, hostname s
 	defer cancel()
 
 	serviceStatus := models.ServiceStatus{
-		DRSSensor:   "unknown",
-		DRSRecorder: "unknown",
-		DRSTransfer: "unknown",
+		DRSSensor:       "unknown",
+		DRSRecorder:     "unknown",
+		DRSTransfer:     "unknown",
+		DRSTransferring: "stopped",
 	}
 
-	// Get list of services; derive DRSTransfer only when the call succeeds so that
+	// Set both timer and service states independently; only when ListServices succeeds so that
 	// a connectivity failure keeps "unknown" (matching DRSSensor/DRSRecorder behavior).
 	if listResp, err := clients.ServiceManager.ListServices(ctx, &modulev1.ListServicesRequest{}); err == nil {
-		var transferTimerState, transferServiceState string
+		var transferServiceState string
 		for _, service := range listResp.Services {
 			switch service.Name {
 			case "services/drs_sensor":
@@ -203,31 +204,28 @@ func (h *ModuleHandler) getServiceStatus(clients *grpc.ModuleClients, hostname s
 			case "services/drs_recorder":
 				serviceStatus.DRSRecorder = h.convertServiceState(service.State)
 			case "services/drs_transfer":
-				transferTimerState = h.convertServiceState(service.State)
+				serviceStatus.DRSTransfer = h.convertServiceState(service.State)
 			case "services/drs_transfer_service":
 				transferServiceState = h.convertServiceState(service.State)
 			}
 		}
-		serviceStatus.DRSTransfer = deriveTransferStatus(transferTimerState, transferServiceState)
+		serviceStatus.DRSTransferring = deriveTransferringStatus(transferServiceState)
 	}
 
 	return serviceStatus
 }
 
-// deriveTransferStatus derives a composite Transfer status from timer and service states.
-// Priority: failed > transferring > scheduled > stopped.
-// Type=oneshot services report "activating" (not "active") while running, so both are treated as transferring.
-func deriveTransferStatus(timerState, serviceState string) string {
-	if timerState == "failed" || serviceState == "failed" {
-		return "failed"
-	}
-	if serviceState == "active" || serviceState == "activating" {
+// deriveTransferringStatus maps drs-transfer.service systemd state to a UI-facing transferring state.
+// Type=oneshot reports "activating" (not "active") while running, so both are treated as transferring.
+func deriveTransferringStatus(serviceState string) string {
+	switch serviceState {
+	case "active", "activating":
 		return "transferring"
+	case "failed":
+		return "failed"
+	default:
+		return "stopped"
 	}
-	if timerState == "active" {
-		return "scheduled"
-	}
-	return "stopped"
 }
 
 
@@ -318,7 +316,8 @@ func (h *ModuleHandler) determineOverallStatus(status models.ModuleStatus) strin
 	// Check if any critical services are failed
 	if status.StatusDetail.Services.DRSSensor == "failed" ||
 		status.StatusDetail.Services.DRSRecorder == "failed" ||
-		status.StatusDetail.Services.DRSTransfer == "failed" {
+		status.StatusDetail.Services.DRSTransfer == "failed" ||
+		status.StatusDetail.Services.DRSTransferring == "failed" {
 		return "ERROR"
 	}
 
@@ -329,7 +328,7 @@ func (h *ModuleHandler) determineOverallStatus(status models.ModuleStatus) strin
 	}
 
 	// Check if any services are inactive
-	// Note: DRSTransfer "stopped" is the normal idle state between timer runs and is intentionally not checked here.
+	// Note: DRSTransfer "inactive" is the normal stopped state and is intentionally not checked here.
 	if status.StatusDetail.Services.DRSSensor == "inactive" || status.StatusDetail.Services.DRSRecorder == "inactive" {
 		return "WARN"
 	}

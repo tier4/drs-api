@@ -188,18 +188,18 @@ func (s *ServiceManagerService) StopService(ctx context.Context, req *modulev1.S
 		return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to get service mapping: %v", err))
 	}
 
+	// Stop secondary unit first if configured (ensures clean abort before disabling primary)
+	if serviceMapping.StopAlso != "" {
+		log.Printf("Stopping secondary unit first: %s", serviceMapping.StopAlso)
+		if _, err2 := s.systemManager.ManageService(serviceMapping.StopAlso, "stop"); err2 != nil {
+			log.Printf("Warning: failed to stop secondary unit %s: %v", serviceMapping.StopAlso, err2)
+		}
+	}
+
 	// Stop the primary unit
 	_, err = s.systemManager.ManageService(serviceMapping.SystemdName, "stop")
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to stop service: %v", err))
-	}
-
-	// Stop secondary unit if configured (best-effort: log failure but return success)
-	if serviceMapping.StopAlso != "" {
-		log.Printf("Stopping secondary unit: %s", serviceMapping.StopAlso)
-		if _, err2 := s.systemManager.ManageService(serviceMapping.StopAlso, "stop"); err2 != nil {
-			log.Printf("Warning: failed to stop secondary unit %s: %v", serviceMapping.StopAlso, err2)
-		}
 	}
 
 	// Get updated service info

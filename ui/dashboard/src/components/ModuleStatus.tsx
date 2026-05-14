@@ -51,7 +51,8 @@ export interface Module {
   services?: {
     drs_sensor?: string
     drs_recorder?: string
-    drs_transfer?: string
+    drs_transfer?: string // timer: active | inactive | failed
+    drs_transferring?: string // service: transferring | stopped | failed
   }
   recordingStatus?: string
   dataStatus: 'OK' | 'WARN' | 'ERROR' | ''
@@ -95,20 +96,14 @@ const getServiceIcon = (status?: string) => {
   }
 }
 
-const getTransferIcon = (status?: string) => {
-  if (!status) return { icon: Circle, color: 'text-gray-400' }
+const getTransferringIcon = (status?: string) => {
   switch (status) {
     case 'transferring':
-      return { icon: Activity, color: 'text-green-500' }
-    case 'scheduled':
-      return { icon: Clock, color: 'text-blue-500' }
+      return { icon: Activity, color: 'text-green-500', label: 'Transferring' }
     case 'failed':
-      return { icon: XCircle, color: 'text-red-500' }
-    case 'unknown':
-      return { icon: AlertCircle, color: 'text-yellow-500' }
-    case 'stopped':
+      return { icon: XCircle, color: 'text-red-500', label: 'Error' }
     default:
-      return { icon: Circle, color: 'text-gray-400' }
+      return { icon: Circle, color: 'text-gray-400', label: 'Stopped' }
   }
 }
 
@@ -276,10 +271,12 @@ export function ModuleStatus({
           {modules.map((module) => {
             const sensorIcon = getServiceIcon(module.services?.drs_sensor)
             const recorderIcon = getServiceIcon(module.services?.drs_recorder)
-            const transferIcon = getTransferIcon(module.services?.drs_transfer)
+            const transferIcon = getServiceIcon(module.services?.drs_transfer)
+            const transferringIcon = getTransferringIcon(module.services?.drs_transferring)
             const SensorIcon = sensorIcon.icon
             const RecorderIcon = recorderIcon.icon
             const TransferIcon = transferIcon.icon
+            const TransferringIcon = transferringIcon.icon
             const serviceGridCols =
               module.services?.drs_transfer !== undefined ? 'grid-cols-3' : 'grid-cols-2'
             const dataStatusInfo = getDataStatusIcon(module.dataStatus)
@@ -366,10 +363,7 @@ export function ModuleStatus({
                             <DropdownMenuLabel>Transfer Service</DropdownMenuLabel>
                             <DropdownMenuItem
                               onClick={() => handleServiceAction('start-transfer', module.hostname)}
-                              disabled={
-                                module.services.drs_transfer === 'scheduled' ||
-                                module.services.drs_transfer === 'transferring'
-                              }
+                              disabled={module.services.drs_transfer === 'active'}
                             >
                               <Play className="mr-2 h-4 w-4" />
                               Start
@@ -377,8 +371,8 @@ export function ModuleStatus({
                             <DropdownMenuItem
                               onClick={() => handleServiceAction('stop-transfer', module.hostname)}
                               disabled={
-                                module.services.drs_transfer === 'stopped' ||
-                                module.services.drs_transfer === 'failed'
+                                module.services.drs_transfer === 'inactive' &&
+                                module.services.drs_transferring === 'stopped'
                               }
                             >
                               <Square className="mr-2 h-4 w-4" />
@@ -488,6 +482,19 @@ export function ModuleStatus({
                           <DataStatusIcon className={`h-4 w-4 ${dataStatusInfo.color}`} />
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Transfer Service Status */}
+                  {module.services?.drs_transferring !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TransferringIcon className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Transferring</span>
+                      </div>
+                      <span className={`text-sm font-medium ${transferringIcon.color}`}>
+                        {transferringIcon.label}
+                      </span>
                     </div>
                   )}
 

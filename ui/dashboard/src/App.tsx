@@ -21,7 +21,8 @@ const mockModules: Module[] = [
     services: {
       drs_sensor: 'active',
       drs_recorder: 'active',
-      drs_transfer: 'scheduled',
+      drs_transfer: 'active', // timer: scheduled/armed
+      drs_transferring: 'stopped', // service: not currently running
     },
     recordingStatus: 'recording',
     dataStatus: 'OK',
@@ -36,7 +37,8 @@ const mockModules: Module[] = [
     services: {
       drs_sensor: 'active',
       drs_recorder: 'failed',
-      drs_transfer: 'transferring',
+      drs_transfer: 'active', // timer: scheduled/armed
+      drs_transferring: 'transferring', // service: actively moving files
     },
     recordingStatus: 'stopped',
     dataStatus: 'WARN',
