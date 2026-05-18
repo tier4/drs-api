@@ -51,6 +51,8 @@ export interface Module {
   services?: {
     drs_sensor?: string
     drs_recorder?: string
+    drs_transfer?: string // timer: active | inactive | activating | deactivating | failed | unknown
+    drs_transferring?: string // service: transferring | stopped | failed | unknown
   }
   recordingStatus?: string
   dataStatus: 'OK' | 'WARN' | 'ERROR' | ''
@@ -73,6 +75,9 @@ interface ModuleStatusProps {
   onStartRecorder?: (hostname: string) => void
   onStopRecorder?: (hostname: string) => void
   onRestartRecorder?: (hostname: string) => void
+  onStartTransfer?: (hostname: string) => void
+  onStopTransfer?: (hostname: string) => void
+  onRestartTransfer?: (hostname: string) => void
   onRestartMachine?: (hostname: string) => void
   onShutdownMachine?: (hostname: string) => void
 }
@@ -88,6 +93,17 @@ const getServiceIcon = (status?: string) => {
       return { icon: XCircle, color: 'text-red-500' }
     default:
       return { icon: AlertCircle, color: 'text-yellow-500' }
+  }
+}
+
+const getTransferringIcon = (status?: string) => {
+  switch (status) {
+    case 'transferring':
+      return { icon: Activity, color: 'text-green-500', label: 'Transferring' }
+    case 'failed':
+      return { icon: XCircle, color: 'text-red-500', label: 'Error' }
+    default:
+      return { icon: Circle, color: 'text-gray-400', label: 'Stopped' }
   }
 }
 
@@ -151,6 +167,9 @@ export function ModuleStatus({
   onStartRecorder,
   onStopRecorder,
   onRestartRecorder,
+  onStartTransfer,
+  onStopTransfer,
+  onRestartTransfer,
   onRestartMachine,
   onShutdownMachine,
 }: ModuleStatusProps) {
@@ -186,7 +205,10 @@ export function ModuleStatus({
       | 'restart-sensor'
       | 'start-recorder'
       | 'stop-recorder'
-      | 'restart-recorder',
+      | 'restart-recorder'
+      | 'start-transfer'
+      | 'stop-transfer'
+      | 'restart-transfer',
     hostname: string,
   ) => {
     switch (action) {
@@ -207,6 +229,15 @@ export function ModuleStatus({
         break
       case 'restart-recorder':
         onRestartRecorder?.(hostname)
+        break
+      case 'start-transfer':
+        onStartTransfer?.(hostname)
+        break
+      case 'stop-transfer':
+        onStopTransfer?.(hostname)
+        break
+      case 'restart-transfer':
+        onRestartTransfer?.(hostname)
         break
     }
   }
@@ -240,8 +271,14 @@ export function ModuleStatus({
           {modules.map((module) => {
             const sensorIcon = getServiceIcon(module.services?.drs_sensor)
             const recorderIcon = getServiceIcon(module.services?.drs_recorder)
+            const transferIcon = getServiceIcon(module.services?.drs_transfer)
+            const transferringIcon = getTransferringIcon(module.services?.drs_transferring)
             const SensorIcon = sensorIcon.icon
             const RecorderIcon = recorderIcon.icon
+            const TransferIcon = transferIcon.icon
+            const TransferringIcon = transferringIcon.icon
+            const serviceGridCols =
+              module.services?.drs_transfer !== undefined ? 'grid-cols-3' : 'grid-cols-2'
             const dataStatusInfo = getDataStatusIcon(module.dataStatus)
             const DataStatusIcon = dataStatusInfo?.icon
 
@@ -320,9 +357,39 @@ export function ModuleStatus({
                           </>
                         )}
 
-                        {(module.services?.drs_sensor || module.services?.drs_recorder) && (
-                          <DropdownMenuSeparator />
+                        {module.services?.drs_transfer !== undefined && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel>Transfer Service</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              onClick={() => handleServiceAction('start-transfer', module.hostname)}
+                              disabled={module.services.drs_transfer === 'active'}
+                            >
+                              <Play className="mr-2 h-4 w-4" />
+                              Start
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleServiceAction('stop-transfer', module.hostname)}
+                              disabled={
+                                module.services.drs_transfer === 'inactive' &&
+                                module.services.drs_transferring === 'stopped'
+                              }
+                            >
+                              <Square className="mr-2 h-4 w-4" />
+                              Stop
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleServiceAction('restart-transfer', module.hostname)
+                              }
+                            >
+                              <RotateCw className="mr-2 h-4 w-4" />
+                              Restart
+                            </DropdownMenuItem>
+                          </>
                         )}
+
+                        {module.services && <DropdownMenuSeparator />}
 
                         <DropdownMenuLabel>Machine</DropdownMenuLabel>
                         <DropdownMenuItem
@@ -376,7 +443,7 @@ export function ModuleStatus({
                         <Cpu className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm font-medium">Services</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 ml-6">
+                      <div className={`grid gap-2 ml-6 ${serviceGridCols}`}>
                         <div className="flex items-center gap-2">
                           <SensorIcon className={`h-4 w-4 ${sensorIcon.color}`} />
                           <span className="text-sm">Sensor</span>
@@ -385,6 +452,12 @@ export function ModuleStatus({
                           <RecorderIcon className={`h-4 w-4 ${recorderIcon.color}`} />
                           <span className="text-sm">Recorder</span>
                         </div>
+                        {module.services?.drs_transfer !== undefined && (
+                          <div className="flex items-center gap-2">
+                            <TransferIcon className={`h-4 w-4 ${transferIcon.color}`} />
+                            <span className="text-sm">Transfer</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -409,6 +482,19 @@ export function ModuleStatus({
                           <DataStatusIcon className={`h-4 w-4 ${dataStatusInfo.color}`} />
                         )}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Transfer Service Status */}
+                  {module.services?.drs_transferring !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <TransferringIcon className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium">Transferring</span>
+                      </div>
+                      <span className={`text-sm font-medium ${transferringIcon.color}`}>
+                        {transferringIcon.label}
+                      </span>
                     </div>
                   )}
 

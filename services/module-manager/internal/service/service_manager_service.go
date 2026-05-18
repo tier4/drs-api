@@ -182,14 +182,25 @@ func (s *ServiceManagerService) StopService(ctx context.Context, req *modulev1.S
 		return nil, status.Error(codes.Unimplemented, "service management API is disabled in configuration")
 	}
 
-	// Get systemd service name
-	systemdName, err := s.config.GetSystemdServiceName(req.Name)
+	// Get service mapping (needed for StopAlso)
+	serviceMapping, err := s.config.GetServiceMappingByResourceName(req.Name)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to get systemd service name: %v", err))
+		return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to get service mapping: %v", err))
 	}
 
-	// Stop the service
-	_, err = s.systemManager.ManageService(systemdName, "stop")
+	// Stop secondary unit first if configured (ensures clean abort before disabling primary)
+	if serviceMapping.StopAlso != "" {
+		if !s.config.IsServiceAllowed(serviceMapping.StopAlso) {
+			return nil, status.Error(codes.Internal, fmt.Sprintf("stop_also unit %q is not in the service allowlist", serviceMapping.StopAlso))
+		}
+		log.Printf("Stopping secondary unit first: %s", serviceMapping.StopAlso)
+		if _, err2 := s.systemManager.ManageService(serviceMapping.StopAlso, "stop"); err2 != nil {
+			log.Printf("Warning: failed to stop secondary unit %s: %v", serviceMapping.StopAlso, err2)
+		}
+	}
+
+	// Stop the primary unit
+	_, err = s.systemManager.ManageService(serviceMapping.SystemdName, "stop")
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to stop service: %v", err))
 	}
@@ -214,14 +225,25 @@ func (s *ServiceManagerService) RestartService(ctx context.Context, req *modulev
 		return nil, status.Error(codes.Unimplemented, "service management API is disabled in configuration")
 	}
 
-	// Get systemd service name
-	systemdName, err := s.config.GetSystemdServiceName(req.Name)
+	// Get service mapping (needed for StopAlso on restart)
+	serviceMapping, err := s.config.GetServiceMappingByResourceName(req.Name)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to get systemd service name: %v", err))
+		return nil, status.Error(codes.NotFound, fmt.Sprintf("failed to get service mapping: %v", err))
 	}
 
-	// Restart the service
-	_, err = s.systemManager.ManageService(systemdName, "restart")
+	// Stop secondary unit first if configured (best-effort: ensures clean restart)
+	if serviceMapping.StopAlso != "" {
+		if !s.config.IsServiceAllowed(serviceMapping.StopAlso) {
+			return nil, status.Error(codes.Internal, fmt.Sprintf("stop_also unit %q is not in the service allowlist", serviceMapping.StopAlso))
+		}
+		log.Printf("Stopping secondary unit before restart: %s", serviceMapping.StopAlso)
+		if _, err2 := s.systemManager.ManageService(serviceMapping.StopAlso, "stop"); err2 != nil {
+			log.Printf("Warning: failed to stop secondary unit %s before restart: %v", serviceMapping.StopAlso, err2)
+		}
+	}
+
+	// Restart the primary unit
+	_, err = s.systemManager.ManageService(serviceMapping.SystemdName, "restart")
 	if err != nil {
 		return nil, status.Error(codes.Internal, fmt.Sprintf("failed to restart service: %v", err))
 	}

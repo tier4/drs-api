@@ -40,6 +40,7 @@ type ServicesConfig struct {
 
 type ServiceMapping struct {
 	SystemdName string `yaml:"systemd_name"`
+	StopAlso    string `yaml:"stop_also"`
 	Description string `yaml:"description"`
 }
 
@@ -80,6 +81,15 @@ func LoadConfig(configPath string) (*Config, error) {
 				"drs_recorder": {
 					SystemdName: "drs_recorder.service",
 					Description: "Data recording service",
+				},
+				"drs_transfer": {
+					SystemdName: "drs-transfer.timer",
+					StopAlso:    "drs-transfer.service",
+					Description: "Data transfer service (timer)",
+				},
+				"drs_transfer_service": {
+					SystemdName: "drs-transfer.service",
+					Description: "Data transfer service (worker)",
 				},
 			},
 		},
@@ -216,22 +226,23 @@ func ParseResourceName(resourceName string) (resourceType, resourceID string, er
 
 // GetSystemdServiceName converts a resource name to systemd service name
 func (c *Config) GetSystemdServiceName(resourceName string) (string, error) {
-	resourceType, resourceID, err := ParseResourceName(resourceName)
+	mapping, err := c.GetServiceMappingByResourceName(resourceName)
 	if err != nil {
 		return "", err
 	}
+	return mapping.SystemdName, nil
+}
 
+// GetServiceMappingByResourceName returns service mapping for a resource name like "services/drs_sensor"
+func (c *Config) GetServiceMappingByResourceName(resourceName string) (ServiceMapping, error) {
+	resourceType, resourceID, err := ParseResourceName(resourceName)
+	if err != nil {
+		return ServiceMapping{}, err
+	}
 	if resourceType != "services" {
-		return "", fmt.Errorf("unsupported resource type: %s", resourceType)
+		return ServiceMapping{}, fmt.Errorf("unsupported resource type: %s", resourceType)
 	}
-
-	service, exists := c.Services.Services[resourceID]
-	if !exists {
-		return "", fmt.Errorf("service not found: %s", resourceID)
-	}
-
-
-	return service.SystemdName, nil
+	return c.GetServiceMapping(resourceID)
 }
 
 // GetServiceMapping returns service mapping for a resource ID

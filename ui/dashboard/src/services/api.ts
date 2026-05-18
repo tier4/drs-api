@@ -18,6 +18,8 @@ export interface ModuleStatus {
     services: {
       drs_sensor: string
       drs_recorder: string
+      drs_transfer?: string // timer: "active" | "inactive" | "activating" | "deactivating" | "failed" | "unknown"
+      drs_transferring?: string // service: "transferring" | "stopped" | "failed" | "unknown"
     }
     recording: {
       status: string
@@ -421,6 +423,66 @@ export class ApiService {
       return data.success || false
     } catch (error) {
       console.error(`Failed to shutdown module ${hostname}:`, error)
+      throw error
+    }
+  }
+
+  async startModuleTransfer(hostname: string): Promise<boolean> {
+    try {
+      const response = await this.fetchWithTimeout(
+        `${API_BASE_URL}/modules/${hostname}/services/drs_transfer/start`,
+        10000,
+        {
+          method: 'POST',
+        },
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data.success || false
+    } catch (error) {
+      console.error(`Failed to start transfer for ${hostname}:`, error)
+      throw error
+    }
+  }
+
+  async stopModuleTransfer(hostname: string): Promise<boolean> {
+    try {
+      const response = await this.fetchWithTimeout(
+        `${API_BASE_URL}/modules/${hostname}/services/drs_transfer/stop`,
+        10000,
+        {
+          method: 'POST',
+        },
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data.success || false
+    } catch (error) {
+      console.error(`Failed to stop transfer for ${hostname}:`, error)
+      throw error
+    }
+  }
+
+  async restartModuleTransfer(hostname: string): Promise<boolean> {
+    try {
+      const response = await this.fetchWithTimeout(
+        `${API_BASE_URL}/modules/${hostname}/services/drs_transfer/restart`,
+        10000,
+        {
+          method: 'POST',
+        },
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const data = await response.json()
+      return data.success || false
+    } catch (error) {
+      console.error(`Failed to restart transfer for ${hostname}:`, error)
       throw error
     }
   }

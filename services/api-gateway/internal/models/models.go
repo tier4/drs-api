@@ -25,8 +25,10 @@ type ModuleStatusDetail struct {
 
 // ServiceStatus represents the status of system services
 type ServiceStatus struct {
-	DRSSensor   string `json:"drs_sensor"`   // active, inactive, failed
-	DRSRecorder string `json:"drs_recorder"` // active, inactive, failed
+	DRSSensor       string `json:"drs_sensor"`       // active, inactive, failed
+	DRSRecorder     string `json:"drs_recorder"`     // active, inactive, failed
+	DRSTransfer     string `json:"drs_transfer"`     // active, inactive, failed (drs-transfer.timer state)
+	DRSTransferring string `json:"drs_transferring"` // transferring, stopped, failed (drs-transfer.service state)
 }
 
 // RecordingInfo represents recording status
