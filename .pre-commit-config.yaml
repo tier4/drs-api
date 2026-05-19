@@ -96,6 +96,23 @@ repos:
         # services/ros2-bridge/ when colcon builds in-tree.
         exclude: ^services/ros2-bridge/(build|install|log)/
 
+  # C++ Static Analysis
+  # cppcheck is invoked from the locally installed binary (Ubuntu/Debian:
+  # `sudo apt-get install -y cppcheck`). Suppressions are pulled from
+  # .cppcheck_suppressions at the repo root.
+  - repo: local
+    hooks:
+      - id: cppcheck
+        name: cppcheck
+        entry: bash -c 'if ! command -v cppcheck >/dev/null 2>&1; then echo "[error] Install cppcheck to run this hook"; exit 1; fi; cd services/ros2-bridge && cppcheck --enable=all --inline-suppr --suppressions-list=../../.cppcheck_suppressions --std=c++17 --error-exitcode=1 --quiet -I include src include'
+        language: system
+        types_or: [c++, c, cuda]
+        files: ^services/ros2-bridge/(src|include)/.*\.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
+        # Skip ROS2 build artifacts (build/, install/, log/) which may exist under
+        # services/ros2-bridge/ when colcon builds in-tree.
+        exclude: ^services/ros2-bridge/(build|install|log)/
+        pass_filenames: false
+
   # Markdown Lint
   # Uses igorshubovych/markdownlint-cli which ships the binary via npm, so no local install is required.
   # Config is auto-discovered from .markdownlint.yaml at the repo root.
