@@ -37,13 +37,13 @@ repos:
     hooks:
       - id: dashboard-lint
         name: dashboard eslint
-        entry: bash -c "cd ui/dashboard && pnpm run lint"
+        entry: bash -c 'if ! command -v pnpm >/dev/null 2>&1; then echo "[error] Install pnpm to run this hook"; exit 1; fi; cd ui/dashboard && pnpm run lint'
         language: system
         files: ^ui/dashboard/
         pass_filenames: false
       - id: dashboard-format
         name: dashboard prettier
-        entry: bash -c "cd ui/dashboard && pnpm run format:check"
+        entry: bash -c 'if ! command -v pnpm >/dev/null 2>&1; then echo "[error] Install pnpm to run this hook"; exit 1; fi; cd ui/dashboard && pnpm run format:check'
         language: system
         files: ^ui/dashboard/
         pass_filenames: false
