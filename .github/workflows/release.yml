@@ -16,9 +16,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: drs-api-gateway
+          - image: pkg-drs-api-gateway
             dockerfile: docker/api-gateway/Dockerfile
-          - image: drs-dashboard
+          - image: pkg-drs-dashboard
             dockerfile: docker/dashboard/Dockerfile
     steps:
       - name: Checkout code
@@ -50,6 +50,7 @@ jobs:
         with:
           context: .
           file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
