@@ -5,12 +5,22 @@ repos:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
-      - id: check-json
       - id: check-yaml
       - id: check-xml
       - id: detect-private-key
       - id: mixed-line-ending
       - id: check-merge-conflict
+
+  # JSON / JSONC syntax check
+  # Uses json5 (JSONC superset) so files with comments like tsconfig.*.json validate.
+  - repo: local
+    hooks:
+      - id: check-json
+        name: check json/jsonc
+        entry: python -c 'import sys, json5; [json5.load(open(p)) for p in sys.argv[1:]]'
+        language: python
+        additional_dependencies: [json5]
+        types: [json]
 
   # Go Services Lint
   # Note: pre-commit provisions golangci-lint in its own Go env via `language: golang`.
