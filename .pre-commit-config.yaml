@@ -86,3 +86,12 @@ repos:
     hooks:
       - id: markdownlint
         name: markdownlint
+
+  # Shell Script Lint
+  # Uses shellcheck-py which bundles the shellcheck binary, so no local install is required.
+  # Config is auto-discovered from .shellcheckrc at the repo root.
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        name: shellcheck

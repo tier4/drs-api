@@ -8,10 +8,12 @@ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 # Add Go bin to PATH if not already there
-if ! echo $PATH | grep -q "$(go env GOPATH)/bin"; then
+if ! echo "$PATH" | grep -q "$(go env GOPATH)/bin"; then
     echo "Adding Go bin to PATH..."
+    # shellcheck disable=SC2016  # literal $PATH/$(...) intended for .bashrc
     echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
-    export PATH=$PATH:$(go env GOPATH)/bin
+    GOPATH_BIN="$(go env GOPATH)/bin"
+    export PATH="$PATH:$GOPATH_BIN"
 fi
 
 # Check if protoc is installed
