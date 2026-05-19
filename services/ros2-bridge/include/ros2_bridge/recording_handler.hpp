@@ -1,5 +1,5 @@
-#ifndef ROS2_BRIDGE_RECORDING_HANDLER_HPP
-#define ROS2_BRIDGE_RECORDING_HANDLER_HPP
+#ifndef ROS2_BRIDGE_RECORDING_HANDLER_HPP_
+#define ROS2_BRIDGE_RECORDING_HANDLER_HPP_
 
 #include "drs/ros2bridge/v1/recording_service.grpc.pb.h"
 
@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <mutex>
+#include <string>
 #include <unordered_map>
 
 namespace ros2_bridge
@@ -90,4 +91,4 @@ private:
 
 }  // namespace ros2_bridge
 
-#endif  // ROS2_BRIDGE_RECORDING_HANDLER_HPP
+#endif  // ROS2_BRIDGE_RECORDING_HANDLER_HPP_

@@ -78,6 +78,16 @@ repos:
         name: clang-format
         files: ^services/ros2-bridge/.*\.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
 
+  # C++ Lint
+  # Uses cpplint/cpplint which ships via PyPI, so no local install is required.
+  # Config is auto-discovered from CPPLINT.cfg at the repo root.
+  - repo: https://github.com/cpplint/cpplint
+    rev: 2.0.2
+    hooks:
+      - id: cpplint
+        name: cpplint
+        files: ^services/ros2-bridge/(src|include)/.*\.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
+
   # Markdown Lint
   # Uses igorshubovych/markdownlint-cli which ships the binary via npm, so no local install is required.
   # Config is auto-discovered from .markdownlint.yaml at the repo root.
