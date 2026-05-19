@@ -89,6 +89,8 @@ repos:
     hooks:
       - id: cpplint
         name: cpplint
+        types_or: [c++, c, cuda]
+        args: [--quiet]
         files: ^services/ros2-bridge/(src|include)/.*\.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
         # Skip ROS2 build artifacts (build/, install/, log/) which may exist under
         # services/ros2-bridge/ when colcon builds in-tree.
