@@ -1,0 +1,27 @@
+run:
+  timeout: 5m
+
+linters:
+  # Defaults enabled: errcheck, gosimple, govet, ineffassign, staticcheck, unused
+  enable:
+    - bodyclose      # HTTP response body must be closed
+    - gofmt          # Standard Go formatter
+    - goimports      # Import grouping and unused-import detection
+    - misspell       # Common English misspellings
+    - unconvert      # Removes unnecessary type conversions
+    # TODO: re-enable after migrating existing fmt.Errorf to %w
+    # - errorlint    # Detects fmt.Errorf misuse with %w / errors.Is/As
+
+issues:
+  exclude-dirs:
+    - gen
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+
+linters-settings:
+  goimports:
+    local-prefixes: github.com/tier4/drs-api
+  misspell:
+    locale: US

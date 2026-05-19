@@ -72,7 +72,7 @@ func LoadConfig(configPath string) (*Config, error) {
 			Disks:       []DiskEntry{}, // Will be populated from MonitorPath if empty during validation/loading
 		},
 		Services: ServicesConfig{
-			Enabled:  true,
+			Enabled: true,
 			Services: map[string]ServiceMapping{
 				"drs_sensor": {
 					SystemdName: "drs_sensor.service",
@@ -194,7 +194,6 @@ func validateConfig(config *Config) error {
 			}
 		}
 	}
-
 
 	return nil
 }

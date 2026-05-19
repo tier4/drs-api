@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/tier4/drs-api/services/module-manager/internal/config"
-	modulev1 "github.com/tier4/drs-api/services/module-manager/gen/drs/module/v1"
-	"github.com/tier4/drs-api/services/module-manager/internal/system"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	modulev1 "github.com/tier4/drs-api/services/module-manager/gen/drs/module/v1"
+	"github.com/tier4/drs-api/services/module-manager/internal/config"
+	"github.com/tier4/drs-api/services/module-manager/internal/system"
 )
 
 type ServiceManagerService struct {
@@ -75,11 +76,11 @@ func (s *ServiceManagerService) GetService(ctx context.Context, req *modulev1.Ge
 
 	return &modulev1.GetServiceResponse{
 		Service: &modulev1.Service{
-			Name:           req.Name,
-			State:          state,
-			Enabled:        serviceInfo.Enabled,
-			Description:    serviceMapping.Description,
-			UptimeSeconds:  serviceInfo.UptimeSeconds,
+			Name:          req.Name,
+			State:         state,
+			Enabled:       serviceInfo.Enabled,
+			Description:   serviceMapping.Description,
+			UptimeSeconds: serviceInfo.UptimeSeconds,
 		},
 	}, nil
 }
@@ -128,11 +129,11 @@ func (s *ServiceManagerService) ListServices(ctx context.Context, req *modulev1.
 		}
 
 		services = append(services, &modulev1.Service{
-			Name:           fmt.Sprintf("services/%s", resourceID),
-			State:          state,
-			Enabled:        serviceInfo.Enabled,
-			Description:    serviceMapping.Description,
-			UptimeSeconds:  serviceInfo.UptimeSeconds,
+			Name:          fmt.Sprintf("services/%s", resourceID),
+			State:         state,
+			Enabled:       serviceInfo.Enabled,
+			Description:   serviceMapping.Description,
+			UptimeSeconds: serviceInfo.UptimeSeconds,
 		})
 	}
 

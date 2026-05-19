@@ -249,7 +249,7 @@ func (m *Manager) getServiceStatus(serviceName string) (string, error) {
 		case "unknown":
 			return "not-found", fmt.Errorf("service not found: %s", serviceName)
 		default:
-			// Empty output or unrecognised text means the command itself failed
+			// Empty output or unrecognized text means the command itself failed
 			// (e.g. systemctl unavailable, DBus error, permission denied).
 			return "unknown", fmt.Errorf("getServiceStatus %s: %w (output: %q)", serviceName, err, status)
 		}

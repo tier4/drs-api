@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
-	"github.com/tier4/drs-api/services/api-gateway/internal/models"
 	modulev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/module/v1"
 	ros2bridgev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/ros2bridge/v1"
+	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
+	"github.com/tier4/drs-api/services/api-gateway/internal/models"
 )
 
 // ModuleHandler handles module-related REST API endpoints
@@ -83,10 +83,10 @@ func (h *ModuleHandler) getModuleStatus(hostname string) models.ModuleStatus {
 	clients, err := h.clientManager.GetModuleClients(hostname)
 	if err != nil {
 		return models.ModuleStatus{
-			Hostname:    hostname,
-			Status:      "ERROR",
+			Hostname:     hostname,
+			Status:       "ERROR",
 			StatusDetail: models.ModuleStatusDetail{},
-			LastUpdated: time.Now(),
+			LastUpdated:  time.Now(),
 		}
 	}
 
@@ -229,7 +229,6 @@ func deriveTransferringStatus(serviceState string) string {
 		return "stopped"
 	}
 }
-
 
 // getRecordingStatus fetches recording status from ROS2 bridge
 func (h *ModuleHandler) getRecordingStatus(hostname string) *models.RecordingInfo {
