@@ -5,6 +5,7 @@ This project provides gRPC-based microservice APIs for system management and con
 ## Service Architecture
 
 ### 1. Module Manager Service
+
 - **Language**: Go
 - **Port**: 50051
 - **Package**: `drs.module.v1`
@@ -16,6 +17,7 @@ This project provides gRPC-based microservice APIs for system management and con
   - Configurable API endpoints per module requirements
 
 ### 2. ROS2 Bridge Service
+
 - **Language**: C++
 - **Port**: 50052
 - **Functions**:
@@ -24,7 +26,7 @@ This project provides gRPC-based microservice APIs for system management and con
 
 ## Directory Structure
 
-```
+```text
 drs-api/
 ├── proto/                     # gRPC definition files
 │   └── drs/
@@ -55,6 +57,7 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ```
 
 ### Notes
+
 - Module Manager service requires **native execution** (for shutdown/reboot/systemd operations)
 - For ARM64 deployment, use cross-compiled binaries
 - For older glibc environments, use static linked versions (`*-static`)
@@ -72,6 +75,7 @@ protoc --go_out=services/module-manager --go-grpc_out=services/module-manager pr
 ## Build and Run
 
 ### Module Manager (Go)
+
 Static linked versions work on older glibc environments.
 
 ```bash
@@ -103,6 +107,7 @@ make all-static
 ```
 
 ### Configuration
+
 The Module Manager service is highly configurable. Each API can be individually enabled/disabled based on module requirements:
 
 ```yaml
@@ -138,6 +143,7 @@ ptp:
 See `services/module-manager/README.md` for detailed configuration options.
 
 ### ROS2 Bridge (C++)
+
 ```bash
 cd services/ros2-bridge
 colcon build
@@ -148,7 +154,9 @@ ros2 run ros2_bridge ros2_bridge_node
 ## API Specifications
 
 ### Module Manager API
+
 The Module Manager service follows Cloud API Design Guide principles:
+
 - Resource-oriented design with standard methods
 - Fire-and-forget pattern for system operations (reboot/shutdown)
 - Direct resource returns without success/message wrappers
@@ -156,18 +164,22 @@ The Module Manager service follows Cloud API Design Guide principles:
 API details can be found in `proto/drs/module/v1/module.proto`.
 
 ### ROS2 Bridge API
+
 API specifications for ROS2 Bridge are in the respective proto files.
 
 ## Development
 
 ### API Design Principles
+
 - Follow [Google Cloud API Design Guide](https://cloud.google.com/apis/design)
 - Use resource-oriented design
 - Implement standard methods (Get, List, Create, Update, Delete) where applicable
 - Use proper error handling with gRPC status codes
 
 ### Module-Specific Deployments
+
 The Module Manager can be configured differently for each module type:
+
 - **Sensing Module**: Enable all APIs including PTP sync monitoring
 - **Storage Module**: Focus on disk monitoring, disable unnecessary APIs
 - **Control Module**: Enable service management for system-wide control

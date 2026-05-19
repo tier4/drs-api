@@ -26,7 +26,7 @@ docker-compose up -d
 docker run -p 3000:80 drs-dashboard
 ```
 
-The dashboard will be available at http://localhost:3000/
+The dashboard will be available at <http://localhost:3000/>
 
 ### Docker Features
 
@@ -39,7 +39,7 @@ The dashboard will be available at http://localhost:3000/
 
 ### Environment
 
-- **API Gateway**: http://192.168.20.10:8080/api/v1
+- **API Gateway**: <http://192.168.20.10:8080/api/v1>
 - **Container Port**: 3000 (host network)
 - **Network**: host
 
