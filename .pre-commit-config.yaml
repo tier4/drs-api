@@ -40,13 +40,13 @@ repos:
     hooks:
       - id: dashboard-lint
         name: dashboard eslint
-        entry: bash -c 'if ! command -v pnpm >/dev/null 2>&1; then echo "[error] Install pnpm to run this hook"; exit 1; fi; cd ui/dashboard && pnpm run lint'
+        entry: bash -c 'if ! command -v pnpm >/dev/null 2>&1; then echo "[error] Install pnpm to run this hook"; exit 1; fi; cd ui/dashboard && { [ -x node_modules/.bin/eslint ] || pnpm install --frozen-lockfile --prefer-offline; } && pnpm run lint'
         language: system
         files: ^ui/dashboard/.*\.(jsx?|tsx?|mjs|cjs)$
         pass_filenames: false
       - id: dashboard-format
         name: dashboard prettier
-        entry: bash -c 'if ! command -v pnpm >/dev/null 2>&1; then echo "[error] Install pnpm to run this hook"; exit 1; fi; cd ui/dashboard && pnpm run format:check'
+        entry: bash -c 'if ! command -v pnpm >/dev/null 2>&1; then echo "[error] Install pnpm to run this hook"; exit 1; fi; cd ui/dashboard && { [ -x node_modules/.bin/prettier ] || pnpm install --frozen-lockfile --prefer-offline; } && pnpm run format:check'
         language: system
         files: ^ui/dashboard/src/.*\.(jsx?|tsx?|json|css|md)$
         pass_filenames: false
