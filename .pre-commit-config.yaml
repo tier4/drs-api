@@ -57,7 +57,7 @@ repos:
     hooks:
       - id: buf-lint
         name: buf lint
-        args: ["proto"]
+        args: [proto]
 
   # Dockerfile Lint
   # Uses AleksaC/hadolint-py which bundles the hadolint binary so no local install is required.
@@ -103,6 +103,15 @@ repos:
       - id: markdownlint
         name: markdownlint
         args: [-c, .markdownlint.yaml, --fix]
+
+  # YAML Lint
+  # Uses adrienverge/yamllint which ships via PyPI, so no local install is required.
+  # Config is auto-discovered from .yamllint.yaml at the repo root.
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.37.1
+    hooks:
+      - id: yamllint
+        name: yamllint
 
   # Shell Script Lint
   # Uses shellcheck-py which bundles the shellcheck binary, so no local install is required.
