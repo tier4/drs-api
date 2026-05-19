@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
-	"github.com/tier4/drs-api/services/api-gateway/internal/models"
 	modulev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/module/v1"
 	ros2bridgev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/ros2bridge/v1"
+	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
+	"github.com/tier4/drs-api/services/api-gateway/internal/models"
 )
 
 // RecordingHandler handles recording control REST API endpoints
@@ -243,9 +243,9 @@ func (h *RecordingHandler) GetTopicStatus(c *gin.Context) {
 		}
 
 		topics = append(topics, models.TopicStatus{
-			TopicName:      topic.TopicName,
-			RateHz:         topic.RateHz,
-			Status:         status,
+			TopicName: topic.TopicName,
+			RateHz:    topic.RateHz,
+			Status:    status,
 		})
 	}
 

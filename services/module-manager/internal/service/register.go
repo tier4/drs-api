@@ -1,9 +1,10 @@
 package service
 
 import (
-	"github.com/tier4/drs-api/services/module-manager/internal/config"
-	modulev1 "github.com/tier4/drs-api/services/module-manager/gen/drs/module/v1"
 	"google.golang.org/grpc"
+
+	modulev1 "github.com/tier4/drs-api/services/module-manager/gen/drs/module/v1"
+	"github.com/tier4/drs-api/services/module-manager/internal/config"
 )
 
 func RegisterServices(s *grpc.Server, cfg *config.Config) {

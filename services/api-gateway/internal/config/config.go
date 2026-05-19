@@ -11,12 +11,12 @@ import (
 
 // Config represents the API Gateway configuration
 type Config struct {
-	Server          ServerConfig      `yaml:"server"`
-	Modules         map[string]Module `yaml:"modules"`
-	GRPC            GRPCConfig        `yaml:"grpc"`
-	ROS2Bridge      ROS2BridgeConfig  `yaml:"ros2_bridge"`
-	CORS            CORSConfig        `yaml:"cors"`
-	APIGatewayHost  string            `yaml:"api_gateway_host"`
+	Server         ServerConfig      `yaml:"server"`
+	Modules        map[string]Module `yaml:"modules"`
+	GRPC           GRPCConfig        `yaml:"grpc"`
+	ROS2Bridge     ROS2BridgeConfig  `yaml:"ros2_bridge"`
+	CORS           CORSConfig        `yaml:"cors"`
+	APIGatewayHost string            `yaml:"api_gateway_host"`
 }
 
 // ServerConfig represents the HTTP server configuration

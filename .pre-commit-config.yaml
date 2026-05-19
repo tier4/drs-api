@@ -10,19 +10,24 @@ repos:
       - id: check-added-large-files
 
   # Go Services Lint
-  # Note: Uses the locally installed ./bin/golangci-lint
+  # Note: pre-commit provisions golangci-lint in its own Go env via `language: golang`.
+  # No local ./bin/golangci-lint is required; first run installs it under ~/.cache/pre-commit/.
   - repo: local
     hooks:
       - id: golangci-lint-api-gateway
         name: golangci-lint (api-gateway)
-        entry: bash -c "cd services/api-gateway && ../../bin/golangci-lint run ./..."
-        language: system
+        entry: bash -c "cd services/api-gateway && golangci-lint run ./..."
+        language: golang
+        additional_dependencies:
+          - github.com/golangci/golangci-lint/cmd/golangci-lint@v1.62.2
         files: ^services/api-gateway/
         pass_filenames: false
       - id: golangci-lint-module-manager
         name: golangci-lint (module-manager)
-        entry: bash -c "cd services/module-manager && ../../bin/golangci-lint run ./..."
-        language: system
+        entry: bash -c "cd services/module-manager && golangci-lint run ./..."
+        language: golang
+        additional_dependencies:
+          - github.com/golangci/golangci-lint/cmd/golangci-lint@v1.62.2
         files: ^services/module-manager/
         pass_filenames: false
 

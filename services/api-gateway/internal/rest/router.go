@@ -5,9 +5,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	modulev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/module/v1"
 	"github.com/tier4/drs-api/services/api-gateway/internal/config"
 	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
-	modulev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/module/v1"
 )
 
 // Router sets up the HTTP router with all endpoints

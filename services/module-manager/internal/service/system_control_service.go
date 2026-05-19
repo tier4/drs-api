@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/tier4/drs-api/services/module-manager/internal/config"
-	modulev1 "github.com/tier4/drs-api/services/module-manager/gen/drs/module/v1"
-	"github.com/tier4/drs-api/services/module-manager/internal/system"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	modulev1 "github.com/tier4/drs-api/services/module-manager/gen/drs/module/v1"
+	"github.com/tier4/drs-api/services/module-manager/internal/config"
+	"github.com/tier4/drs-api/services/module-manager/internal/system"
 )
 
 type SystemControlService struct {
@@ -41,8 +42,8 @@ func (s *SystemControlService) Reboot(ctx context.Context, req *modulev1.RebootR
 	}
 
 	return &modulev1.RebootResponse{
-		Accepted: true,
-		Message: fmt.Sprintf("Reboot scheduled with %d seconds delay", req.DelaySeconds),
+		Accepted:       true,
+		Message:        fmt.Sprintf("Reboot scheduled with %d seconds delay", req.DelaySeconds),
 		ScheduledDelay: req.DelaySeconds,
 	}, nil
 }
@@ -63,8 +64,8 @@ func (s *SystemControlService) Shutdown(ctx context.Context, req *modulev1.Shutd
 	}
 
 	return &modulev1.ShutdownResponse{
-		Accepted: true,
-		Message: fmt.Sprintf("Shutdown scheduled with %d seconds delay", req.DelaySeconds),
+		Accepted:       true,
+		Message:        fmt.Sprintf("Shutdown scheduled with %d seconds delay", req.DelaySeconds),
 		ScheduledDelay: req.DelaySeconds,
 	}, nil
 }

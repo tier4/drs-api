@@ -9,10 +9,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/tier4/drs-api/services/module-manager/internal/config"
-	"github.com/tier4/drs-api/services/module-manager/internal/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+
+	"github.com/tier4/drs-api/services/module-manager/internal/config"
+	"github.com/tier4/drs-api/services/module-manager/internal/service"
 )
 
 var (

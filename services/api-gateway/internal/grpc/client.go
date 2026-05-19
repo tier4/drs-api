@@ -8,9 +8,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/tier4/drs-api/services/api-gateway/internal/config"
 	modulev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/module/v1"
 	ros2bridgev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/ros2bridge/v1"
+	"github.com/tier4/drs-api/services/api-gateway/internal/config"
 )
 
 // ClientManager manages gRPC connections to multiple modules
@@ -89,7 +89,6 @@ func (cm *ClientManager) createModuleClients(hostname string) (*ModuleClients, e
 		SystemControl:  modulev1.NewSystemControlServiceClient(conn),
 		Monitoring:     modulev1.NewMonitoringServiceClient(conn),
 	}
-
 
 	cm.connections[hostname] = conn
 	cm.clients[hostname] = clients
