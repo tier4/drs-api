@@ -15,7 +15,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # 許可するTypeを指定
+          # Allowed conventional-commit types
           types: |
             feat
             fix
@@ -25,5 +25,5 @@ jobs:
             perf
             test
             chore
-          # スコープは必須にしない
+          # Scope is not required
           requireScope: false
