@@ -93,6 +93,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
           files: |
             services/api-gateway/bin/api-gateway-amd64-static
             services/api-gateway/bin/api-gateway-arm64-static
