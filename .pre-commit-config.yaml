@@ -55,3 +55,12 @@ repos:
       - id: buf-lint
         name: buf lint
         args: ["proto"]
+
+  # Dockerfile Lint
+  # Uses AleksaC/hadolint-py which bundles the hadolint binary so no local install is required.
+  # Config is auto-discovered from .hadolint.yaml at the repo root.
+  - repo: https://github.com/AleksaC/hadolint-py
+    rev: v2.14.0
+    hooks:
+      - id: hadolint
+        name: hadolint
