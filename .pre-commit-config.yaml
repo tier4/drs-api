@@ -64,3 +64,13 @@ repos:
     hooks:
       - id: hadolint
         name: hadolint
+
+  # C++ Format
+  # Uses pre-commit/mirrors-clang-format which ships the binary via npm, so no local install is required.
+  # Style is auto-discovered from .clang-format at the repo root.
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v22.1.5
+    hooks:
+      - id: clang-format
+        name: clang-format
+        files: ^services/ros2-bridge/.*\.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
