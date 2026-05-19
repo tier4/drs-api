@@ -4,19 +4,19 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'services/api-gateway/**'
-      - 'services/module-manager/**'
-      - 'tools/drs-cli/**'
-      - 'proto/**'
-      - '.github/workflows/go-services.yml'
+      - services/api-gateway/**
+      - services/module-manager/**
+      - tools/drs-cli/**
+      - proto/**
+      - .github/workflows/go-services.yml
   pull_request:
     branches: [ main, develop ]
     paths:
-      - 'services/api-gateway/**'
-      - 'services/module-manager/**'
-      - 'tools/drs-cli/**'
-      - 'proto/**'
-      - '.github/workflows/go-services.yml'
+      - services/api-gateway/**
+      - services/module-manager/**
+      - tools/drs-cli/**
+      - proto/**
+      - .github/workflows/go-services.yml
 
 jobs:
   lint:

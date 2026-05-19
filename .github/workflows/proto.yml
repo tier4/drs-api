@@ -4,15 +4,15 @@ on:
   push:
     branches: [ main, develop ]
     paths:
-      - 'proto/**'
-      - 'scripts/generate-proto.sh'
-      - '.github/workflows/proto.yml'
+      - proto/**
+      - scripts/generate-proto.sh
+      - .github/workflows/proto.yml
   pull_request:
     branches: [ main, develop ]
     paths:
-      - 'proto/**'
-      - 'scripts/generate-proto.sh'
-      - '.github/workflows/proto.yml'
+      - proto/**
+      - scripts/generate-proto.sh
+      - .github/workflows/proto.yml
 
 jobs:
   validate:
