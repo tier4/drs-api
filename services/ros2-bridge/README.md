@@ -1,81 +1,81 @@
 # ROS2 Bridge Service
 
-ROS2ノードとgRPCサーバーを組み合わせたブリッジサービスです。
+Bridge service that combines ROS2 nodes with a gRPC server.
 
-## 前提条件
+## Prerequisites
 
-### ROS2環境
+### ROS2 Environment
 ```bash
-# ROS2 Humbleがインストールされていること
+# Ensure ROS2 Humble is installed
 source /opt/ros/humble/setup.bash
 ```
 
-### gRPC C++ライブラリ
+### gRPC C++ Libraries
 ```bash
 sudo apt-get install -y libgrpc++-dev protobuf-compiler-grpc
 ```
 
-## ビルド手順
+## Build Steps
 
-### 1. Proto定義からC++コードを生成
+### 1. Generate C++ Code from Proto Definitions
 ```bash
 cd ../../scripts
-./generate-proto.sh  # GoとC++の両方を生成
+./generate-proto.sh  # Generate both Go and C++ code
 ```
 
-### 2. ROS2パッケージとしてビルド
+### 2. Build as a ROS2 Package
 ```bash
 cd ../services/ros2-bridge
 
-# ROS2環境をセットアップ
+# Set up the ROS2 environment
 source /opt/ros/humble/setup.bash
 
-# colconでビルド
+# Build with colcon
 colcon build --packages-select ros2_bridge
 
-# セットアップスクリプトをsource
+# Source the setup script
 source install/setup.bash
 ```
 
-### 3. 実行
+### 3. Run
 ```bash
-# ROS2ノードとして実行
+# Run as a ROS2 node
 ros2 run ros2_bridge ros2_bridge_node
 
-# または直接実行
+# Or run directly
 ./install/ros2_bridge/lib/ros2_bridge/ros2_bridge_node
 ```
 
-## 設定
+## Configuration
 
-### gRPCポート変更
+### Change the gRPC Port
 ```bash
 ros2 run ros2_bridge ros2_bridge_node --ros-args -p grpc_port:=50052
 ```
 
-## API仕様
+## API Specification
 
-gRPCサービスは`proto/ros2bridge/v1/bridge.proto`で定義されています。
+The gRPC service is defined in `proto/ros2bridge/v1/bridge.proto`.
 
-### 主要機能
-- ROS2 topicの購読とgRPC経由での値取得
-- gRPC経由でのROS2 service呼び出し
-- リアルタイムでのtopic streaming
+### Main Features
+- Subscribe to ROS2 topics and retrieve values through gRPC
+- Call ROS2 services through gRPC
+- Stream topics in real time
 
-## トラブルシューティング
+## Troubleshooting
 
-### 1. gRPCライブラリが見つからない
+### 1. gRPC Libraries Not Found
 ```bash
 sudo apt-get install -y libgrpc++-dev
 ```
 
-### 2. protoファイルが生成されていない
+### 2. Proto Files Have Not Been Generated
 ```bash
 cd ../../scripts
 ./generate-proto-go.sh
 ```
 
-### 3. ROS2環境が見つからない
+### 3. ROS2 Environment Not Found
 ```bash
 source /opt/ros/humble/setup.bash
 ```
