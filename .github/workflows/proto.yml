@@ -71,9 +71,14 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Go plugins
+        # Pin to the exact versions that produced the committed gen files
+        # (visible in their `// versions:` headers). Note: docker/api-gateway
+        # /Dockerfile and scripts/build-with-docker.sh currently pin older
+        # versions (v1.36.6 / v1.5.1) — only the file-header comment differs,
+        # but they should be bumped to match in a follow-up.
         run: |
-          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.1
 
       - name: Generate Go code
         run: |
