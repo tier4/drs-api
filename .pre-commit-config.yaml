@@ -95,3 +95,10 @@ repos:
     hooks:
       - id: shellcheck
         name: shellcheck
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.7.0-1
+    hooks:
+      - id: shfmt
+        name: shfmt
+        args: [-w, -s, -i=4]

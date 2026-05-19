@@ -11,13 +11,13 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 if ! echo "$PATH" | grep -q "$(go env GOPATH)/bin"; then
     echo "Adding Go bin to PATH..."
     # shellcheck disable=SC2016  # literal $PATH/$(...) intended for .bashrc
-    echo 'export PATH=$PATH:$(go env GOPATH)/bin' >> ~/.bashrc
+    echo 'export PATH=$PATH:$(go env GOPATH)/bin' >>~/.bashrc
     GOPATH_BIN="$(go env GOPATH)/bin"
     export PATH="$PATH:$GOPATH_BIN"
 fi
 
 # Check if protoc is installed
-if ! command -v protoc &> /dev/null; then
+if ! command -v protoc &>/dev/null; then
     echo "protoc is not installed. Please install it first:"
     echo "  Ubuntu/Debian: sudo apt-get install -y protobuf-compiler"
     echo "  macOS: brew install protobuf"
@@ -25,7 +25,7 @@ if ! command -v protoc &> /dev/null; then
 fi
 
 # Check if grpc C++ plugin is installed
-if ! command -v grpc_cpp_plugin &> /dev/null; then
+if ! command -v grpc_cpp_plugin &>/dev/null; then
     echo "gRPC C++ plugin is not installed. Installing..."
     echo "  Ubuntu/Debian: sudo apt-get install -y libgrpc++-dev protobuf-compiler-grpc"
     echo "  macOS: brew install grpc"
@@ -34,6 +34,6 @@ fi
 echo "Installation complete!"
 echo ""
 echo "Installed tools:"
-command -v protoc-gen-go &> /dev/null && echo "✓ protoc-gen-go: $(protoc-gen-go --version)"
-command -v protoc-gen-go-grpc &> /dev/null && echo "✓ protoc-gen-go-grpc: installed"
-command -v grpc_cpp_plugin &> /dev/null && echo "✓ grpc_cpp_plugin: installed"
+command -v protoc-gen-go &>/dev/null && echo "✓ protoc-gen-go: $(protoc-gen-go --version)"
+command -v protoc-gen-go-grpc &>/dev/null && echo "✓ protoc-gen-go-grpc: installed"
+command -v grpc_cpp_plugin &>/dev/null && echo "✓ grpc_cpp_plugin: installed"

@@ -70,24 +70,24 @@ build_binaries() {
 
 # Execute based on target
 case "${TARGET}" in
-    module-manager)
-        build_binaries "module-manager" "services/module-manager" "cmd/server/main.go"
-        ;;
-    api-gateway)
-        build_binaries "api-gateway" "services/api-gateway" "cmd/server/main.go"
-        ;;
-    drs-cli)
-        build_binaries "drs-cli" "tools/drs-cli" "."
-        ;;
-    all)
-        build_binaries "module-manager" "services/module-manager" "cmd/server/main.go"
-        echo ""
-        build_binaries "api-gateway" "services/api-gateway" "cmd/server/main.go"
-        echo ""
-        build_binaries "drs-cli" "tools/drs-cli" "."
-        ;;
-    *)
-        echo "Error: Unknown target '${TARGET}'"
-        exit 1
-        ;;
+module-manager)
+    build_binaries "module-manager" "services/module-manager" "cmd/server/main.go"
+    ;;
+api-gateway)
+    build_binaries "api-gateway" "services/api-gateway" "cmd/server/main.go"
+    ;;
+drs-cli)
+    build_binaries "drs-cli" "tools/drs-cli" "."
+    ;;
+all)
+    build_binaries "module-manager" "services/module-manager" "cmd/server/main.go"
+    echo ""
+    build_binaries "api-gateway" "services/api-gateway" "cmd/server/main.go"
+    echo ""
+    build_binaries "drs-cli" "tools/drs-cli" "."
+    ;;
+*)
+    echo "Error: Unknown target '${TARGET}'"
+    exit 1
+    ;;
 esac
