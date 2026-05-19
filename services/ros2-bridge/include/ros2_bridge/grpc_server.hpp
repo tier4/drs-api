@@ -1,5 +1,5 @@
-#ifndef ROS2_BRIDGE_GRPC_SERVER_HPP
-#define ROS2_BRIDGE_GRPC_SERVER_HPP
+#ifndef ROS2_BRIDGE_GRPC_SERVER_HPP_
+#define ROS2_BRIDGE_GRPC_SERVER_HPP_
 
 #include <grpcpp/grpcpp.h>
 
@@ -35,4 +35,4 @@ private:
 
 }  // namespace ros2_bridge
 
-#endif  // ROS2_BRIDGE_GRPC_SERVER_HPP
+#endif  // ROS2_BRIDGE_GRPC_SERVER_HPP_

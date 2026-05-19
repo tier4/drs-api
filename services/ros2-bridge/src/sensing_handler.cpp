@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <regex>
+#include <string>
 
 namespace ros2_bridge
 {

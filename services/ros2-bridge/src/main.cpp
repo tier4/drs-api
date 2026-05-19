@@ -7,6 +7,7 @@
 #include <signal.h>
 
 #include <memory>
+#include <string>
 #include <thread>
 
 std::unique_ptr<ros2_bridge::GrpcServer> g_server;
@@ -81,7 +82,6 @@ int main(int argc, char ** argv)
     if (server_thread.joinable()) {
       server_thread.join();
     }
-
   } catch (const std::exception & e) {
     RCLCPP_ERROR(node->get_logger(), "Exception in main: %s", e.what());
     return 1;

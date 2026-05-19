@@ -2,6 +2,8 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <string>
+
 namespace ros2_bridge
 {
 
