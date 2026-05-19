@@ -74,3 +74,12 @@ repos:
       - id: clang-format
         name: clang-format
         files: ^services/ros2-bridge/.*\.(c|cc|cpp|cxx|h|hh|hpp|hxx)$
+
+  # Markdown Lint
+  # Uses igorshubovych/markdownlint-cli which ships the binary via npm, so no local install is required.
+  # Config is auto-discovered from .markdownlint.yaml at the repo root.
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.48.0
+    hooks:
+      - id: markdownlint
+        name: markdownlint

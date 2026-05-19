@@ -8,6 +8,7 @@ APIs can be individually enabled/disabled via configuration file, allowing custo
 The Module Manager now implements a service-oriented architecture with multiple gRPC services running on a single endpoint:
 
 ### Available Services
+
 - **ServiceManagerService**: systemd service management (start/stop/restart/enable/disable)
 - **SystemControlService**: system-level operations (reboot/shutdown)
 - **MonitoringService**: resource monitoring (disk usage, PTP synchronization)
@@ -17,10 +18,12 @@ All services run on the same gRPC server and port (50051), allowing clients to u
 ## Features
 
 ### SystemControlService APIs
+
 - **Reboot**: System restart (configurable delay)
 - **Shutdown**: System shutdown (configurable delay)
 
 ### ServiceManagerService APIs
+
 - **GetService**: Retrieve information for a specific service
 - **ListServices**: List configured services
 - **StartService**: Start a service
@@ -30,11 +33,14 @@ All services run on the same gRPC server and port (50051), allowing clients to u
 - **DisableService**: Disable service auto-start
 
 ### MonitoringService APIs
+
 - **GetDiskUsage**: Get disk usage information (single path)
 - **GetPTPStatus**: Get PTP (Precision Time Protocol) status information
 
 ### Individual API Control
+
 Each API can be individually enabled/disabled through configuration:
+
 - **MonitoringService**: disk.enabled and ptp.enabled settings control individual APIs
 - **SystemControlService**: system.enable_reboot and system.enable_shutdown settings
 - **ServiceManagerService**: services.enabled setting
@@ -43,7 +49,9 @@ Each API can be individually enabled/disabled through configuration:
 ## Configuration File
 
 ### Configuration File Location
+
 Configuration files are searched in the following order:
+
 1. `./config.yaml`
 2. `./config.yml`
 3. `<executable_directory>/config.yaml`
@@ -52,6 +60,7 @@ Configuration files are searched in the following order:
 6. `/etc/module-manager/config.yml`
 
 ### Configuration Example (config.yaml)
+
 ```yaml
 server:
   port: 50051
@@ -93,21 +102,25 @@ ptp:
 ## Usage
 
 ### Run with default configuration
+
 ```bash
 ./bin/module-manager
 ```
 
 ### Run with custom configuration file
+
 ```bash
 ./bin/module-manager -config=custom-config.yaml
 ```
 
 ### Run with specific port (overrides configuration file)
+
 ```bash
 ./bin/module-manager -port=50052
 ```
 
 ## API Usage Examples
+
 With the new service architecture, you can use gRPC clients to call specific services directly:
 
 ```bash
@@ -124,6 +137,7 @@ grpcurl -plaintext localhost:50051 drs.module.v1.ServiceManagerService/ListServi
 ## Module-Specific Configuration Examples
 
 ### Sensing Module Configuration
+
 ```yaml
 server:
   port: 50051
@@ -154,6 +168,7 @@ ptp:
 ```
 
 ### Storage Module Configuration
+
 ```yaml
 server:
   port: 50051
@@ -177,6 +192,7 @@ ptp:
 ```
 
 ### Control Module Configuration
+
 ```yaml
 server:
   port: 50051

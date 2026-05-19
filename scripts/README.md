@@ -25,20 +25,24 @@ Generates gRPC code for both Go (module-manager) and C++ (ros2-bridge) services.
 ### Requirements
 
 **For C++ code generation (ros2-bridge):**
+
 - `protoc` (Protocol Buffers compiler)
 - `grpc_cpp_plugin` (gRPC C++ plugin)
 
 Install on Ubuntu:
+
 ```bash
 sudo apt-get install protobuf-compiler libgrpc++-dev protobuf-compiler-grpc
 ```
 
 **For Go code generation (module-manager):**
+
 - `protoc` (Protocol Buffers compiler)
 - `protoc-gen-go` (Go protobuf plugin)
 - `protoc-gen-go-grpc` (Go gRPC plugin)
 
 Install Go plugins:
+
 ```bash
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
@@ -47,6 +51,7 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ### Examples
 
 **Building ros2-bridge without Go:**
+
 ```bash
 # Only generate C++ code (no Go tools required)
 ./scripts/generate-proto.sh --cpp-only
@@ -58,6 +63,7 @@ colcon build
 ```
 
 **Building module-manager without C++ tools:**
+
 ```bash
 # Only generate Go code (no C++ tools required)
 ./scripts/generate-proto.sh --go-only

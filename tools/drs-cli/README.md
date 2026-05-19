@@ -151,6 +151,7 @@ All ros2-bridge related commands are under the `ros2bridge` subcommand and requi
 When working with services, use the resource name format: `services/{service_id}`
 
 Examples:
+
 - `services/drs_sensor`
 - `services/drs_recorder`
 - `services/drs_control`
@@ -179,6 +180,7 @@ make build-all
 ```
 
 This creates binaries for:
+
 - Linux AMD64
 - Linux ARM64
 - macOS AMD64
@@ -242,7 +244,7 @@ make lint
 
 The CLI is structured to support multiple DRS services:
 
-```
+```text
 drs-cli
 ├── module          # module-manager service (port 50051)
 │   ├── services   # ServiceManagerService
@@ -262,7 +264,7 @@ This design ensures clean separation of concerns and easy addition of new servic
 
 ## Port Reference
 
-| Service | Port | Usage |
-|---------|------|-------|
-| module-manager | 50051 | `./bin/drs-cli module ...` (default) |
-| ros2-bridge | 50052 | `./bin/drs-cli --address localhost:50052 ros2bridge ...` |
+| Service        | Port  | Usage                                                    |
+|----------------|-------|----------------------------------------------------------|
+| module-manager | 50051 | `./bin/drs-cli module ...` (default)                     |
+| ros2-bridge    | 50052 | `./bin/drs-cli --address localhost:50052 ros2bridge ...` |
