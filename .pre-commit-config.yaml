@@ -3,11 +3,14 @@ repos:
     rev: v4.6.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^(.*/)?gen/.*$
+        args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
-        exclude: ^(.*/)?gen/.*$
+      - id: check-json
       - id: check-yaml
-      - id: check-added-large-files
+      - id: check-xml
+      - id: detect-private-key
+      - id: mixed-line-ending
+      - id: check-merge-conflict
 
   # Go Services Lint
   # Note: pre-commit provisions golangci-lint in its own Go env via `language: golang`.
@@ -39,13 +42,13 @@ repos:
         name: dashboard eslint
         entry: bash -c 'if ! command -v pnpm >/dev/null 2>&1; then echo "[error] Install pnpm to run this hook"; exit 1; fi; cd ui/dashboard && pnpm run lint'
         language: system
-        files: ^ui/dashboard/
+        files: ^ui/dashboard/.*\.(jsx?|tsx?|mjs|cjs)$
         pass_filenames: false
       - id: dashboard-format
         name: dashboard prettier
         entry: bash -c 'if ! command -v pnpm >/dev/null 2>&1; then echo "[error] Install pnpm to run this hook"; exit 1; fi; cd ui/dashboard && pnpm run format:check'
         language: system
-        files: ^ui/dashboard/
+        files: ^ui/dashboard/src/.*\.(jsx?|tsx?|json|css|md)$
         pass_filenames: false
 
   # Protobuf Lint
