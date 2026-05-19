@@ -2,34 +2,37 @@
 #define ROS2_BRIDGE_GRPC_SERVER_HPP
 
 #include <grpcpp/grpcpp.h>
+
 #include <memory>
 #include <string>
 
-namespace ros2_bridge {
+namespace ros2_bridge
+{
 
-class GrpcServer {
+class GrpcServer
+{
 public:
-    GrpcServer();
-    ~GrpcServer() = default;
+  GrpcServer();
+  ~GrpcServer() = default;
 
-    // Register a service with the server
-    void RegisterService(grpc::Service* service);
+  // Register a service with the server
+  void RegisterService(grpc::Service * service);
 
-    // Start the server on the specified port
-    bool Start(const std::string& server_address);
+  // Start the server on the specified port
+  bool Start(const std::string & server_address);
 
-    // Stop the server
-    void Stop();
+  // Stop the server
+  void Stop();
 
-    // Wait for the server to finish
-    void Wait();
+  // Wait for the server to finish
+  void Wait();
 
 private:
-    std::unique_ptr<grpc::Server> server_;
-    grpc::ServerBuilder builder_;
-    bool started_;
+  std::unique_ptr<grpc::Server> server_;
+  grpc::ServerBuilder builder_;
+  bool started_;
 };
 
-} // namespace ros2_bridge
+}  // namespace ros2_bridge
 
-#endif // ROS2_BRIDGE_GRPC_SERVER_HPP
+#endif  // ROS2_BRIDGE_GRPC_SERVER_HPP
