@@ -33,8 +33,8 @@ COPY services/api-gateway ./services/api-gateway
 
 # Build the binary
 WORKDIR /build/services/api-gateway
-ARG TARGETOS
-ARG TARGETARCH
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -installsuffix cgo -ldflags="-w -s" -o api-gateway cmd/server/main.go
 
 # Runtime stage

@@ -17,13 +17,13 @@ React + TypeScript dashboard for monitoring DRS (Data Recording System) modules.
 
 ```bash
 # Build Docker image
-docker build -t drs-dashboard .
+docker build -t pkg-drs-dashboard .
 
 # Run with Docker Compose
 docker-compose up -d
 
 # Or run directly
-docker run -p 3000:80 drs-dashboard
+docker run -p 3000:80 pkg-drs-dashboard
 ```
 
 The dashboard will be available at <http://localhost:3000/>

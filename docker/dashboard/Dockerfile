@@ -1,5 +1,5 @@
 # Multi-stage build
-FROM node:22-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
