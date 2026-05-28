@@ -23,7 +23,7 @@ docker build -t pkg-drs-dashboard .
 docker-compose up -d
 
 # Or run directly
-docker run -p 3000:80 pkg-drs-dashboard
+docker run -p 3000:3000 pkg-drs-dashboard
 ```
 
 The dashboard will be available at <http://localhost:3000/>
