@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.24-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git make
@@ -33,7 +33,9 @@ COPY services/api-gateway ./services/api-gateway
 
 # Build the binary
 WORKDIR /build/services/api-gateway
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o api-gateway cmd/server/main.go
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -installsuffix cgo -ldflags="-w -s" -o api-gateway cmd/server/main.go
 
 # Runtime stage
 FROM gcr.io/distroless/static:nonroot
