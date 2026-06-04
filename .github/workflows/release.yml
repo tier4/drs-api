@@ -111,9 +111,19 @@ jobs:
       - name: Create and push manifest
         working-directory: /tmp/digests/${{ matrix.image }}
         run: |
+          shopt -s nullglob
+          digest_files=(*)
+          if [[ ${#digest_files[@]} -lt 2 ]]; then
+            echo "Error: expected 2 platform digests, found ${#digest_files[@]}" >&2
+            exit 1
+          fi
+          refs=()
+          for f in "${digest_files[@]}"; do
+            refs+=("ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}@sha256:${f}")
+          done
           docker buildx imagetools create \
             $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf 'ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}@sha256:%s ' *)
+            "${refs[@]}"
 
       - name: Inspect manifest
         run: |
