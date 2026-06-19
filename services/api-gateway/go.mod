@@ -1,13 +1,12 @@
 module github.com/tier4/drs-api/services/api-gateway
 
-go 1.22
+go 1.23
 
 toolchain go1.24.4
 
 require (
 	github.com/gin-gonic/gin v1.10.0
 	google.golang.org/grpc v1.69.0
-	google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -37,4 +36,5 @@ require (
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 )
