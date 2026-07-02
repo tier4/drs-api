@@ -1,8 +1,6 @@
 module github.com/tier4/drs-api/services/module-manager
 
-go 1.22
-
-toolchain go1.24.4
+go 1.25.0
 
 require (
 	google.golang.org/grpc v1.69.0
@@ -11,8 +9,8 @@ require (
 )
 
 require (
-	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
+	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
 )
