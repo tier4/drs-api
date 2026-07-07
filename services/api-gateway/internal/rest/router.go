@@ -88,6 +88,10 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 		// Topic status endpoint
 		v1.GET("/modules/:hostname/topics/status", recordingHandler.GetTopicStatus)
 
+		// Topic data preview endpoints
+		v1.GET("/modules/:hostname/position", recordingHandler.GetPosition)
+		v1.GET("/modules/:hostname/camera/preview", recordingHandler.GetCameraPreview)
+
 		// Service management endpoints
 		v1.GET("/modules/:hostname/services", func(c *gin.Context) {
 			hostname := c.Param("hostname")

@@ -1,8 +1,36 @@
+import { useEffect, useRef, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle, AlertTriangle, CheckCircle2, Activity } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { AlertCircle, AlertTriangle, CheckCircle2, Activity, Eye, Pause, Play } from 'lucide-react'
+import { NavSatFixPreview } from '@/components/NavSatFixPreview'
+import { CameraPreview } from '@/components/CameraPreview'
+
+// message_type values with a built preview. Topics with any other type show
+// no inspect icon.
+const PREVIEWABLE_TYPES = {
+  'sensor_msgs/msg/NavSatFix': 'navsat',
+  'sensor_msgs/msg/CompressedImage': 'camera',
+} as const
+
+type PreviewKind = (typeof PREVIEWABLE_TYPES)[keyof typeof PREVIEWABLE_TYPES]
+
+function getPreviewKind(messageType: string): PreviewKind | null {
+  return PREVIEWABLE_TYPES[messageType as keyof typeof PREVIEWABLE_TYPES] ?? null
+}
+
+// An open preview (camera or nav_sat_fix) keeps polling the backend every 5s
+// as long as refresh is enabled - for camera topics this also keeps a ROS2
+// subscription (and, for remote cameras, a cross-ECU network relay) alive.
+// To avoid an operator leaving one open and forgetting about it, refresh
+// auto-disables after this long for every preview kind. For camera topics
+// the backend then unsubscribes ~30s after that (see
+// sweepIdleCameraSubscriptions in sensing_handler.cpp).
+const PREVIEW_AUTO_OFF_MS = 60_000
+
 export interface TopicStatus {
   topicName: string
+  messageType: string
   rateHz: number
   status: 'OK' | 'WARN' | 'ERROR'
 }
@@ -49,6 +77,68 @@ const formatRate = (rate: number): string => {
 }
 
 export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
+  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
+  const [refreshEnabled, setRefreshEnabled] = useState<Record<string, boolean>>({})
+  const previewAutoOffTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+
+  useEffect(() => {
+    const timers = previewAutoOffTimers.current
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer))
+      timers.clear()
+    }
+  }, [])
+
+  const schedulePreviewAutoOff = (key: string) => {
+    const existing = previewAutoOffTimers.current.get(key)
+    if (existing) clearTimeout(existing)
+    const timer = setTimeout(() => {
+      setRefreshEnabled((prev) => ({ ...prev, [key]: false }))
+      previewAutoOffTimers.current.delete(key)
+    }, PREVIEW_AUTO_OFF_MS)
+    previewAutoOffTimers.current.set(key, timer)
+  }
+
+  const clearPreviewAutoOff = (key: string) => {
+    const existing = previewAutoOffTimers.current.get(key)
+    if (existing) {
+      clearTimeout(existing)
+      previewAutoOffTimers.current.delete(key)
+    }
+  }
+
+  const toggleExpand = (key: string) => {
+    setExpandedKeys((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) {
+        next.delete(key)
+        clearPreviewAutoOff(key)
+      } else {
+        next.add(key)
+        setRefreshEnabled((prevEnabled) => {
+          const nextEnabled = prevEnabled[key] ?? true
+          if (nextEnabled) {
+            schedulePreviewAutoOff(key)
+          }
+          return { ...prevEnabled, [key]: nextEnabled }
+        })
+      }
+      return next
+    })
+  }
+
+  const toggleRefresh = (key: string) => {
+    setRefreshEnabled((prev) => {
+      const nextValue = !(prev[key] ?? true)
+      if (nextValue) {
+        schedulePreviewAutoOff(key)
+      } else {
+        clearPreviewAutoOff(key)
+      }
+      return { ...prev, [key]: nextValue }
+    })
+  }
+
   // Calculate summary statistics
   const totalTopics = moduleTopicStatuses.reduce((acc, m) => acc + m.topics.length, 0)
   const errorTopics = moduleTopicStatuses.reduce(
@@ -126,27 +216,75 @@ export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
                   {module.topics.map((topic) => {
                     const statusInfo = getStatusIcon(topic.status)
                     const StatusIcon = statusInfo.icon
+                    const previewKind = getPreviewKind(topic.messageType)
+                    const key = `${module.hostname}:${topic.topicName}`
+                    const isExpanded = expandedKeys.has(key)
+                    const isRefreshing = refreshEnabled[key] ?? true
 
                     return (
-                      <div
-                        key={topic.topicName}
-                        className="flex items-center justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
-                      >
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <StatusIcon className={`h-4 w-4 flex-shrink-0 ${statusInfo.color}`} />
-                          <span className="text-sm font-mono truncate" title={topic.topicName}>
-                            {topic.topicName}
-                          </span>
+                      <div key={topic.topicName} className="rounded-lg bg-muted/50">
+                        <div className="flex items-center justify-between p-2 hover:bg-muted/70 transition-colors">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <StatusIcon className={`h-4 w-4 flex-shrink-0 ${statusInfo.color}`} />
+                            <span className="text-sm font-mono truncate" title={topic.topicName}>
+                              {topic.topicName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium">{formatRate(topic.rateHz)} Hz</div>
+                            <Badge
+                              variant={getStatusColor(topic.status)}
+                              className="text-xs min-w-[50px] justify-center"
+                            >
+                              {topic.status}
+                            </Badge>
+                            {previewKind && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                title="Inspect data"
+                                onClick={() => toggleExpand(key)}
+                              >
+                                <Eye
+                                  className={`h-4 w-4 ${isExpanded ? 'text-primary' : 'text-muted-foreground'}`}
+                                />
+                              </Button>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-sm font-medium">{formatRate(topic.rateHz)} Hz</div>
-                          <Badge
-                            variant={getStatusColor(topic.status)}
-                            className="text-xs min-w-[50px] justify-center"
-                          >
-                            {topic.status}
-                          </Badge>
-                        </div>
+                        {isExpanded && previewKind && (
+                          <div className="p-2 pt-0 space-y-2">
+                            <div className="flex justify-end">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-6 text-xs gap-1"
+                                onClick={() => toggleRefresh(key)}
+                              >
+                                {isRefreshing ? (
+                                  <>
+                                    <Pause className="h-3 w-3" /> Pause
+                                  </>
+                                ) : (
+                                  <>
+                                    <Play className="h-3 w-3" /> Resume
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                            {previewKind === 'navsat' && (
+                              <NavSatFixPreview hostname={module.hostname} enabled={isRefreshing} />
+                            )}
+                            {previewKind === 'camera' && (
+                              <CameraPreview
+                                hostname={module.hostname}
+                                topicName={topic.topicName}
+                                enabled={isRefreshing}
+                              />
+                            )}
+                          </div>
+                        )}
                       </div>
                     )
                   })}

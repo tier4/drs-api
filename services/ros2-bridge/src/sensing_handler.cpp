@@ -1,10 +1,13 @@
 #include "ros2_bridge/sensing_handler.hpp"
 
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include <chrono>
 #include <regex>
 #include <string>
+#include <vector>
 
 namespace ros2_bridge
 {
@@ -15,6 +18,9 @@ SensingHandler::SensingHandler(rclcpp::Node::SharedPtr node) : node_(node)
   nav_sat_fix_sub_ = node_->create_subscription<sensor_msgs::msg::NavSatFix>(
     "/sensing/ins/oxts/nav_sat_fix", 10,
     std::bind(&SensingHandler::navSatFixCallback, this, std::placeholders::_1));
+
+  camera_idle_timer_ = node_->create_wall_timer(
+    kCameraIdleSweepInterval, std::bind(&SensingHandler::sweepIdleCameraSubscriptions, this));
 
   RCLCPP_INFO(node_->get_logger(), "SensingHandler initialized");
 }
@@ -37,6 +43,7 @@ grpc::Status SensingHandler::GetPosition(
     return grpc::Status(grpc::StatusCode::UNAVAILABLE, "Position data is stale");
   }
 
+  response->set_has_data(true);
   convertNavSatFixToPosition(*cached_position_, response->mutable_position());
   return grpc::Status::OK;
 }
@@ -104,6 +111,94 @@ void SensingHandler::convertNavSatFixToPosition(
     position->add_position_covariance(covariance);
   }
   position->set_position_covariance_type(nav_sat_fix.position_covariance_type);
+}
+
+grpc::Status SensingHandler::GetCameraPreview(
+  grpc::ServerContext * /* context */, const drs::ros2bridge::v1::GetCameraPreviewRequest * request,
+  drs::ros2bridge::v1::GetCameraPreviewResponse * response)
+{
+  const std::string & topic_name = request->topic_name();
+  if (topic_name.empty()) {
+    return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, "topic_name is required");
+  }
+
+  sensor_msgs::msg::CompressedImage::SharedPtr frame;
+  {
+    std::lock_guard<std::mutex> lock(camera_mutex_);
+
+    // Lazily subscribe on first request for this topic.
+    if (camera_subs_.find(topic_name) == camera_subs_.end()) {
+      camera_subs_[topic_name] = node_->create_subscription<sensor_msgs::msg::CompressedImage>(
+        topic_name, 10, [this, topic_name](const sensor_msgs::msg::CompressedImage::SharedPtr msg) {
+          cameraImageCallback(topic_name, msg);
+        });
+      RCLCPP_INFO(node_->get_logger(), "Lazily subscribed to camera topic: %s", topic_name.c_str());
+    }
+
+    // Mark this topic as actively viewed so the idle sweep doesn't drop it.
+    last_camera_request_[topic_name] = std::chrono::steady_clock::now();
+
+    auto it = cached_frames_.find(topic_name);
+    if (it != cached_frames_.end()) {
+      frame = it->second;
+    }
+  }
+
+  if (!frame) {
+    response->set_has_data(false);
+    return grpc::Status::OK;
+  }
+
+  // Decode the already-compressed frame, resize to 720p (never upscale), re-encode as JPEG.
+  cv::Mat encoded(
+    1, static_cast<int>(frame->data.size()), CV_8UC1, const_cast<uint8_t *>(frame->data.data()));
+  cv::Mat decoded = cv::imdecode(encoded, cv::IMREAD_COLOR);
+  if (decoded.empty()) {
+    RCLCPP_WARN(node_->get_logger(), "Failed to decode frame from topic: %s", topic_name.c_str());
+    response->set_has_data(false);
+    return grpc::Status::OK;
+  }
+
+  cv::Mat resized;
+  if (decoded.rows > 720) {
+    int new_width = static_cast<int>(std::lround(decoded.cols * (720.0 / decoded.rows)));
+    cv::resize(decoded, resized, cv::Size(new_width, 720));
+  } else {
+    resized = decoded;
+  }
+
+  std::vector<uchar> jpeg_bytes;
+  cv::imencode(".jpg", resized, jpeg_bytes);
+
+  response->set_has_data(true);
+  response->set_content_type("image/jpeg");
+  response->set_image_data(jpeg_bytes.data(), jpeg_bytes.size());
+  return grpc::Status::OK;
+}
+
+void SensingHandler::cameraImageCallback(
+  const std::string & topic_name, const sensor_msgs::msg::CompressedImage::SharedPtr msg)
+{
+  std::lock_guard<std::mutex> lock(camera_mutex_);
+  cached_frames_[topic_name] = msg;
+}
+
+void SensingHandler::sweepIdleCameraSubscriptions()
+{
+  std::lock_guard<std::mutex> lock(camera_mutex_);
+  const auto now = std::chrono::steady_clock::now();
+
+  for (auto it = last_camera_request_.begin(); it != last_camera_request_.end();) {
+    const std::string & topic_name = it->first;
+    if (now - it->second > kCameraIdleTimeout) {
+      RCLCPP_INFO(node_->get_logger(), "Unsubscribing idle camera topic: %s", topic_name.c_str());
+      camera_subs_.erase(topic_name);
+      cached_frames_.erase(topic_name);
+      it = last_camera_request_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 bool SensingHandler::matchesFilter(const std::string & node_name, const std::string & filter)

@@ -15,6 +15,7 @@
   <depend>sensor_msgs</depend>
   <depend>std_srvs</depend>
   <depend>proto_recorder_msgs</depend>
+  <depend>OpenCV</depend>
 
   <depend>protobuf</depend>
 

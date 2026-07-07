@@ -10,6 +10,9 @@ service SensingService {
   // Standard methods
   rpc GetPosition(GetPositionRequest) returns (GetPositionResponse);
   rpc ListNodes(ListNodesRequest) returns (ListNodesResponse);
+
+  // Custom method for camera preview
+  rpc GetCameraPreview(GetCameraPreviewRequest) returns (GetCameraPreviewResponse);
 }
 
 // Standard Get operation for position
@@ -18,7 +21,21 @@ message GetPositionRequest {
 }
 
 message GetPositionResponse {
-  Position position = 1;
+  bool has_data = 1;  // False if no nav_sat_fix message has been received yet, or it is stale
+  Position position = 2;
+}
+
+// Custom method to fetch a resized preview frame from a camera topic
+message GetCameraPreviewRequest {
+  // Full topic name, e.g. "/sensing/camera/camera0/image_raw/compressed".
+  // The bridge lazily subscribes to this topic on first request.
+  string topic_name = 1;
+}
+
+message GetCameraPreviewResponse {
+  bool has_data = 1;       // False if no frame has been received yet for this topic
+  string content_type = 2; // e.g. "image/jpeg"
+  bytes image_data = 3;    // Resized (720p) JPEG-encoded frame bytes
 }
 
 // Standard List operation for nodes
