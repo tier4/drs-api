@@ -126,9 +126,12 @@ grpc::Status SensingHandler::GetCameraPreview(
   {
     std::lock_guard<std::mutex> lock(camera_mutex_);
 
-    // Lazily subscribe on first request for this topic.
-    if (camera_subs_.find(topic_name) == camera_subs_.end()) {
-      camera_subs_[topic_name] = node_->create_subscription<sensor_msgs::msg::CompressedImage>(
+    // Lazily subscribe on first request for this topic. try_emplace avoids a
+    // second map lookup on the (common) already-subscribed path, and only
+    // constructs the subscription when insertion actually happens.
+    auto [sub_it, inserted] = camera_subs_.try_emplace(topic_name, nullptr);
+    if (inserted) {
+      sub_it->second = node_->create_subscription<sensor_msgs::msg::CompressedImage>(
         topic_name, 10, [this, topic_name](const sensor_msgs::msg::CompressedImage::SharedPtr msg) {
           cameraImageCallback(topic_name, msg);
         });
