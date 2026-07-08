@@ -12,6 +12,10 @@ import { PointCloudPreview } from '@/components/PointCloudPreview'
 const PREVIEWABLE_TYPES = {
   'sensor_msgs/msg/NavSatFix': 'navsat',
   'sensor_msgs/msg/CompressedImage': 'camera',
+  // Both map to 'pointcloud': seyond/msg/SeyondScan is what real hardware
+  // reports (verified via `ros2 topic type` on /sensing/lidar/front/seyond_packets);
+  // nebula_msgs/msg/NebulaPackets is kept for other decoder configs that use it.
+  'seyond/msg/SeyondScan': 'pointcloud',
   'nebula_msgs/msg/NebulaPackets': 'pointcloud',
 } as const
 
