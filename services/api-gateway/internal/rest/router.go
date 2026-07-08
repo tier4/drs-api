@@ -37,6 +37,9 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		// X-Has-Data is a custom response header read by the camera preview UI;
+		// browsers hide non-simple response headers from JS unless exposed.
+		c.Writer.Header().Set("Access-Control-Expose-Headers", "X-Has-Data")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)

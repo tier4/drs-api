@@ -41,10 +41,13 @@ export function NavSatFixPreview({ hostname, enabled }: NavSatFixPreviewProps) {
     if (!containerRef.current || mapRef.current) return
     const map = L.map(containerRef.current, {
       zoomControl: false,
-      attributionControl: false,
+      attributionControl: true,
     }).setView([0, 0], 18)
+    map.attributionControl.setPrefix(false)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map)
     mapRef.current = map
 

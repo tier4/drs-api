@@ -2,6 +2,7 @@ package rest
 
 import (
 	"net/http"
+	"regexp"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,12 @@ import (
 	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
 	"github.com/tier4/drs-api/services/api-gateway/internal/models"
 )
+
+// cameraTopicPattern restricts GetCameraPreview to camera topics under the
+// known /sensing/camera/ namespace (e.g. /sensing/camera/camera0/image_raw/compressed),
+// so the endpoint can't be used to lazily subscribe the bridge to arbitrary
+// ROS2 topics.
+var cameraTopicPattern = regexp.MustCompile(`^/sensing/camera/[^/]+/image_raw/compressed$`)
 
 // RecordingHandler handles recording control REST API endpoints
 type RecordingHandler struct {
@@ -316,6 +323,13 @@ func (h *RecordingHandler) GetCameraPreview(c *gin.Context) {
 		})
 		return
 	}
+	if !cameraTopicPattern.MatchString(topicName) {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error:   "invalid_topic",
+			Message: "topic must be a camera topic under /sensing/camera/",
+		})
+		return
+	}
 
 	ros2Bridge, ok := h.getBridgeOrRespond(c)
 	if !ok {
@@ -329,6 +343,13 @@ func (h *RecordingHandler) GetCameraPreview(c *gin.Context) {
 		TopicName: topicName,
 	})
 	if err != nil {
+		if grpcstatus.Code(err) == codes.InvalidArgument {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{
+				Error:   "invalid_topic",
+				Message: err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
 			Error:   "camera_preview_failed",
 			Message: err.Error(),

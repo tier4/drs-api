@@ -21,8 +21,10 @@ message GetPositionRequest {
 }
 
 message GetPositionResponse {
-  bool has_data = 1;  // False if no nav_sat_fix message has been received yet, or it is stale
-  Position position = 2;
+  // Keep position at field 1 (its number prior to this change) to preserve
+  // wire compatibility with any client/server built against the old schema.
+  Position position = 1;
+  bool has_data = 2;  // False if no nav_sat_fix message has been received yet, or it is stale
 }
 
 // Custom method to fetch a resized preview frame from a camera topic

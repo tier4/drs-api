@@ -59,9 +59,11 @@ func (*GetPositionRequest) Descriptor() ([]byte, []int) {
 }
 
 type GetPositionResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	HasData       bool                   `protobuf:"varint,1,opt,name=has_data,json=hasData,proto3" json:"has_data,omitempty"` // False if no nav_sat_fix message has been received yet, or it is stale
-	Position      *Position              `protobuf:"bytes,2,opt,name=position,proto3" json:"position,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Keep position at field 1 (its number prior to this change) to preserve
+	// wire compatibility with any client/server built against the old schema.
+	Position      *Position `protobuf:"bytes,1,opt,name=position,proto3" json:"position,omitempty"`
+	HasData       bool      `protobuf:"varint,2,opt,name=has_data,json=hasData,proto3" json:"has_data,omitempty"` // False if no nav_sat_fix message has been received yet, or it is stale
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -96,18 +98,18 @@ func (*GetPositionResponse) Descriptor() ([]byte, []int) {
 	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetPositionResponse) GetHasData() bool {
-	if x != nil {
-		return x.HasData
-	}
-	return false
-}
-
 func (x *GetPositionResponse) GetPosition() *Position {
 	if x != nil {
 		return x.Position
 	}
 	return nil
+}
+
+func (x *GetPositionResponse) GetHasData() bool {
+	if x != nil {
+		return x.HasData
+	}
+	return false
 }
 
 // Custom method to fetch a resized preview frame from a camera topic
@@ -313,9 +315,9 @@ const file_drs_ros2bridge_v1_sensing_service_proto_rawDesc = "" +
 	"\n" +
 	"'drs/ros2bridge/v1/sensing_service.proto\x12\x11drs.ros2bridge.v1\x1a\x1edrs/ros2bridge/v1/common.proto\"\x14\n" +
 	"\x12GetPositionRequest\"i\n" +
-	"\x13GetPositionResponse\x12\x19\n" +
-	"\bhas_data\x18\x01 \x01(\bR\ahasData\x127\n" +
-	"\bposition\x18\x02 \x01(\v2\x1b.drs.ros2bridge.v1.PositionR\bposition\"8\n" +
+	"\x13GetPositionResponse\x127\n" +
+	"\bposition\x18\x01 \x01(\v2\x1b.drs.ros2bridge.v1.PositionR\bposition\x12\x19\n" +
+	"\bhas_data\x18\x02 \x01(\bR\ahasData\"8\n" +
 	"\x17GetCameraPreviewRequest\x12\x1d\n" +
 	"\n" +
 	"topic_name\x18\x01 \x01(\tR\ttopicName\"w\n" +

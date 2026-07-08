@@ -14,6 +14,7 @@ export function CameraPreview({ hostname, topicName, enabled }: CameraPreviewPro
   const [hasData, setHasData] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const currentBlobUrlRef = useRef<string | null>(null)
+  const isFetchingRef = useRef(false)
 
   useEffect(() => {
     return () => {
@@ -25,6 +26,9 @@ export function CameraPreview({ hostname, topicName, enabled }: CameraPreviewPro
 
   useAutoRefresh(
     async () => {
+      // A slow request (>5s) could otherwise overlap with the next tick.
+      if (isFetchingRef.current) return
+      isFetchingRef.current = true
       try {
         const result = await apiService.getCameraPreview(hostname, topicName)
         setError(null)
@@ -38,6 +42,14 @@ export function CameraPreview({ hostname, topicName, enabled }: CameraPreviewPro
         }
       } catch {
         setError('Failed to fetch camera preview')
+        setHasData(false)
+        if (currentBlobUrlRef.current) {
+          URL.revokeObjectURL(currentBlobUrlRef.current)
+          currentBlobUrlRef.current = null
+        }
+        setBlobUrl(null)
+      } finally {
+        isFetchingRef.current = false
       }
     },
     { enabled, interval: 5000 },

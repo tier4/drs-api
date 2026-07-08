@@ -4,7 +4,9 @@
 #include <opencv2/imgproc.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <regex>
 #include <string>
 #include <vector>
@@ -164,14 +166,19 @@ grpc::Status SensingHandler::GetCameraPreview(
 
   cv::Mat resized;
   if (decoded.rows > 720) {
-    int new_width = static_cast<int>(std::lround(decoded.cols * (720.0 / decoded.rows)));
+    int new_width =
+      std::max(1, static_cast<int>(std::lround(decoded.cols * (720.0 / decoded.rows))));
     cv::resize(decoded, resized, cv::Size(new_width, 720));
   } else {
     resized = decoded;
   }
 
   std::vector<uchar> jpeg_bytes;
-  cv::imencode(".jpg", resized, jpeg_bytes);
+  if (!cv::imencode(".jpg", resized, jpeg_bytes)) {
+    RCLCPP_WARN(node_->get_logger(), "Failed to encode frame from topic: %s", topic_name.c_str());
+    response->set_has_data(false);
+    return grpc::Status::OK;
+  }
 
   response->set_has_data(true);
   response->set_content_type("image/jpeg");
