@@ -118,9 +118,10 @@ type TopicStatusResponse struct {
 
 // TopicStatus represents the status of a single topic
 type TopicStatus struct {
-	TopicName string  `json:"topic_name"`
-	RateHz    float64 `json:"rate_hz"`
-	Status    string  `json:"status"` // OK, WARN, ERROR
+	TopicName   string  `json:"topic_name"`
+	MessageType string  `json:"message_type"`
+	RateHz      float64 `json:"rate_hz"`
+	Status      string  `json:"status"` // OK, WARN, ERROR
 }
 
 // SystemOperationRequest represents a system operation request
@@ -153,4 +154,20 @@ type RecordingOperationResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 	Status  string `json:"status"`
+}
+
+// PositionResponse represents the response for GET /modules/{hostname}/position
+type PositionResponse struct {
+	HasData  bool      `json:"has_data"`
+	Position *Position `json:"position"`
+}
+
+// Position represents a GPS/INS fix (nav_sat_fix)
+type Position struct {
+	Latitude               float64   `json:"latitude"`
+	Longitude              float64   `json:"longitude"`
+	Altitude               float64   `json:"altitude"`
+	Status                 int32     `json:"status"` // raw sensor_msgs/NavSatStatus.status
+	PositionCovariance     []float64 `json:"position_covariance"`
+	PositionCovarianceType uint32    `json:"position_covariance_type"`
 }

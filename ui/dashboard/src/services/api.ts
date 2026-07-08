@@ -71,8 +71,28 @@ export interface PtpStatus {
 
 export interface TopicStatus {
   topic_name: string
+  message_type: string
   rate_hz: number
   status: 'OK' | 'WARN' | 'ERROR'
+}
+
+export interface Position {
+  latitude: number
+  longitude: number
+  altitude: number
+  status: number // raw sensor_msgs/NavSatStatus.status: -1 no fix, 0 fix, 1 SBAS, 2 GBAS
+  position_covariance: number[]
+  position_covariance_type: number
+}
+
+export interface PositionResponse {
+  has_data: boolean
+  position: Position | null
+}
+
+export interface CameraPreviewResult {
+  hasData: boolean
+  blobUrl: string | null
 }
 
 export class ApiService {
@@ -175,6 +195,38 @@ export class ApiService {
       return data.topics || []
     } catch (error) {
       console.error(`Failed to fetch topic status for ${hostname}:`, error)
+      throw error
+    }
+  }
+
+  async getPosition(hostname: string): Promise<PositionResponse> {
+    try {
+      const response = await this.fetchWithTimeout(`${API_BASE_URL}/modules/${hostname}/position`)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
+    } catch (error) {
+      console.error(`Failed to fetch position for ${hostname}:`, error)
+      throw error
+    }
+  }
+
+  async getCameraPreview(hostname: string, topicName: string): Promise<CameraPreviewResult> {
+    try {
+      const url = `${API_BASE_URL}/modules/${hostname}/camera/preview?topic=${encodeURIComponent(topicName)}`
+      const response = await this.fetchWithTimeout(url)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const hasData = response.headers.get('X-Has-Data') === 'true'
+      if (!hasData) {
+        return { hasData: false, blobUrl: null }
+      }
+      const blob = await response.blob()
+      return { hasData: true, blobUrl: URL.createObjectURL(blob) }
+    } catch (error) {
+      console.error(`Failed to fetch camera preview for ${hostname}/${topicName}:`, error)
       throw error
     }
   }

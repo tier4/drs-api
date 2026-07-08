@@ -153,22 +153,26 @@ const mockModuleTopicStatuses: ModuleTopicStatus[] = [
     hostname: 'ecu0',
     topics: [
       {
-        topicName: '/camera/image_raw',
+        topicName: '/sensing/camera/camera0/image_raw/compressed',
+        messageType: 'sensor_msgs/msg/CompressedImage',
         rateHz: 30.0,
         status: 'OK',
       },
       {
-        topicName: '/lidar/pointcloud',
+        topicName: '/sensing/lidar/pointcloud',
+        messageType: 'seyond_msgs/msg/SeyondPacket',
         rateHz: 9.8,
         status: 'WARN',
       },
       {
         topicName: '/imu/data',
+        messageType: 'sensor_msgs/msg/Imu',
         rateHz: 100.0,
         status: 'OK',
       },
       {
-        topicName: '/gps/fix',
+        topicName: '/sensing/ins/oxts/nav_sat_fix',
+        messageType: 'sensor_msgs/msg/NavSatFix',
         rateHz: 0.0,
         status: 'ERROR',
       },
@@ -178,17 +182,20 @@ const mockModuleTopicStatuses: ModuleTopicStatus[] = [
     hostname: 'ecu1',
     topics: [
       {
-        topicName: '/camera/image_raw',
+        topicName: '/sensing/camera/camera4/image_raw/compressed',
+        messageType: 'sensor_msgs/msg/CompressedImage',
         rateHz: 29.5,
         status: 'OK',
       },
       {
         topicName: '/radar/tracks',
+        messageType: 'radar_msgs/msg/RadarTracks',
         rateHz: 4.2,
         status: 'WARN',
       },
       {
         topicName: '/vehicle/velocity',
+        messageType: 'geometry_msgs/msg/TwistStamped',
         rateHz: 50.0,
         status: 'OK',
       },
@@ -361,6 +368,7 @@ function App() {
                 hostname: module.hostname,
                 topics: topics.map((topic) => ({
                   topicName: topic.topic_name,
+                  messageType: topic.message_type,
                   rateHz: topic.rate_hz,
                   status: topic.status,
                 })),

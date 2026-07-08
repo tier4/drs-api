@@ -59,8 +59,11 @@ func (*GetPositionRequest) Descriptor() ([]byte, []int) {
 }
 
 type GetPositionResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Position      *Position              `protobuf:"bytes,1,opt,name=position,proto3" json:"position,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Keep position at field 1 (its number prior to this change) to preserve
+	// wire compatibility with any client/server built against the old schema.
+	Position      *Position `protobuf:"bytes,1,opt,name=position,proto3" json:"position,omitempty"`
+	HasData       bool      `protobuf:"varint,2,opt,name=has_data,json=hasData,proto3" json:"has_data,omitempty"` // False if no nav_sat_fix message has been received yet, or it is stale
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -102,6 +105,120 @@ func (x *GetPositionResponse) GetPosition() *Position {
 	return nil
 }
 
+func (x *GetPositionResponse) GetHasData() bool {
+	if x != nil {
+		return x.HasData
+	}
+	return false
+}
+
+// Custom method to fetch a resized preview frame from a camera topic
+type GetCameraPreviewRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Full topic name, e.g. "/sensing/camera/camera0/image_raw/compressed".
+	// The bridge lazily subscribes to this topic on first request.
+	TopicName     string `protobuf:"bytes,1,opt,name=topic_name,json=topicName,proto3" json:"topic_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCameraPreviewRequest) Reset() {
+	*x = GetCameraPreviewRequest{}
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCameraPreviewRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCameraPreviewRequest) ProtoMessage() {}
+
+func (x *GetCameraPreviewRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCameraPreviewRequest.ProtoReflect.Descriptor instead.
+func (*GetCameraPreviewRequest) Descriptor() ([]byte, []int) {
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetCameraPreviewRequest) GetTopicName() string {
+	if x != nil {
+		return x.TopicName
+	}
+	return ""
+}
+
+type GetCameraPreviewResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	HasData       bool                   `protobuf:"varint,1,opt,name=has_data,json=hasData,proto3" json:"has_data,omitempty"`            // False if no frame has been received yet for this topic
+	ContentType   string                 `protobuf:"bytes,2,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"` // e.g. "image/jpeg"
+	ImageData     []byte                 `protobuf:"bytes,3,opt,name=image_data,json=imageData,proto3" json:"image_data,omitempty"`       // Resized (720p) JPEG-encoded frame bytes
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCameraPreviewResponse) Reset() {
+	*x = GetCameraPreviewResponse{}
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCameraPreviewResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCameraPreviewResponse) ProtoMessage() {}
+
+func (x *GetCameraPreviewResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCameraPreviewResponse.ProtoReflect.Descriptor instead.
+func (*GetCameraPreviewResponse) Descriptor() ([]byte, []int) {
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetCameraPreviewResponse) GetHasData() bool {
+	if x != nil {
+		return x.HasData
+	}
+	return false
+}
+
+func (x *GetCameraPreviewResponse) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *GetCameraPreviewResponse) GetImageData() []byte {
+	if x != nil {
+		return x.ImageData
+	}
+	return nil
+}
+
 // Standard List operation for nodes
 type ListNodesRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -113,7 +230,7 @@ type ListNodesRequest struct {
 
 func (x *ListNodesRequest) Reset() {
 	*x = ListNodesRequest{}
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[2]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -125,7 +242,7 @@ func (x *ListNodesRequest) String() string {
 func (*ListNodesRequest) ProtoMessage() {}
 
 func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[2]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -138,7 +255,7 @@ func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNodesRequest.ProtoReflect.Descriptor instead.
 func (*ListNodesRequest) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{2}
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ListNodesRequest) GetFilter() string {
@@ -157,7 +274,7 @@ type ListNodesResponse struct {
 
 func (x *ListNodesResponse) Reset() {
 	*x = ListNodesResponse{}
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[3]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -169,7 +286,7 @@ func (x *ListNodesResponse) String() string {
 func (*ListNodesResponse) ProtoMessage() {}
 
 func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[3]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -182,7 +299,7 @@ func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNodesResponse.ProtoReflect.Descriptor instead.
 func (*ListNodesResponse) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{3}
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ListNodesResponse) GetNodes() []*Node {
@@ -197,16 +314,26 @@ var File_drs_ros2bridge_v1_sensing_service_proto protoreflect.FileDescriptor
 const file_drs_ros2bridge_v1_sensing_service_proto_rawDesc = "" +
 	"\n" +
 	"'drs/ros2bridge/v1/sensing_service.proto\x12\x11drs.ros2bridge.v1\x1a\x1edrs/ros2bridge/v1/common.proto\"\x14\n" +
-	"\x12GetPositionRequest\"N\n" +
+	"\x12GetPositionRequest\"i\n" +
 	"\x13GetPositionResponse\x127\n" +
-	"\bposition\x18\x01 \x01(\v2\x1b.drs.ros2bridge.v1.PositionR\bposition\"*\n" +
+	"\bposition\x18\x01 \x01(\v2\x1b.drs.ros2bridge.v1.PositionR\bposition\x12\x19\n" +
+	"\bhas_data\x18\x02 \x01(\bR\ahasData\"8\n" +
+	"\x17GetCameraPreviewRequest\x12\x1d\n" +
+	"\n" +
+	"topic_name\x18\x01 \x01(\tR\ttopicName\"w\n" +
+	"\x18GetCameraPreviewResponse\x12\x19\n" +
+	"\bhas_data\x18\x01 \x01(\bR\ahasData\x12!\n" +
+	"\fcontent_type\x18\x02 \x01(\tR\vcontentType\x12\x1d\n" +
+	"\n" +
+	"image_data\x18\x03 \x01(\fR\timageData\"*\n" +
 	"\x10ListNodesRequest\x12\x16\n" +
 	"\x06filter\x18\x01 \x01(\tR\x06filter\"B\n" +
 	"\x11ListNodesResponse\x12-\n" +
-	"\x05nodes\x18\x01 \x03(\v2\x17.drs.ros2bridge.v1.NodeR\x05nodes2\xc6\x01\n" +
+	"\x05nodes\x18\x01 \x03(\v2\x17.drs.ros2bridge.v1.NodeR\x05nodes2\xb3\x02\n" +
 	"\x0eSensingService\x12\\\n" +
 	"\vGetPosition\x12%.drs.ros2bridge.v1.GetPositionRequest\x1a&.drs.ros2bridge.v1.GetPositionResponse\x12V\n" +
-	"\tListNodes\x12#.drs.ros2bridge.v1.ListNodesRequest\x1a$.drs.ros2bridge.v1.ListNodesResponseB&Z$./gen/drs/ros2bridge/v1;ros2bridgev1b\x06proto3"
+	"\tListNodes\x12#.drs.ros2bridge.v1.ListNodesRequest\x1a$.drs.ros2bridge.v1.ListNodesResponse\x12k\n" +
+	"\x10GetCameraPreview\x12*.drs.ros2bridge.v1.GetCameraPreviewRequest\x1a+.drs.ros2bridge.v1.GetCameraPreviewResponseB&Z$./gen/drs/ros2bridge/v1;ros2bridgev1b\x06proto3"
 
 var (
 	file_drs_ros2bridge_v1_sensing_service_proto_rawDescOnce sync.Once
@@ -220,24 +347,28 @@ func file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP() []byte {
 	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescData
 }
 
-var file_drs_ros2bridge_v1_sensing_service_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_drs_ros2bridge_v1_sensing_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_drs_ros2bridge_v1_sensing_service_proto_goTypes = []any{
-	(*GetPositionRequest)(nil),  // 0: drs.ros2bridge.v1.GetPositionRequest
-	(*GetPositionResponse)(nil), // 1: drs.ros2bridge.v1.GetPositionResponse
-	(*ListNodesRequest)(nil),    // 2: drs.ros2bridge.v1.ListNodesRequest
-	(*ListNodesResponse)(nil),   // 3: drs.ros2bridge.v1.ListNodesResponse
-	(*Position)(nil),            // 4: drs.ros2bridge.v1.Position
-	(*Node)(nil),                // 5: drs.ros2bridge.v1.Node
+	(*GetPositionRequest)(nil),       // 0: drs.ros2bridge.v1.GetPositionRequest
+	(*GetPositionResponse)(nil),      // 1: drs.ros2bridge.v1.GetPositionResponse
+	(*GetCameraPreviewRequest)(nil),  // 2: drs.ros2bridge.v1.GetCameraPreviewRequest
+	(*GetCameraPreviewResponse)(nil), // 3: drs.ros2bridge.v1.GetCameraPreviewResponse
+	(*ListNodesRequest)(nil),         // 4: drs.ros2bridge.v1.ListNodesRequest
+	(*ListNodesResponse)(nil),        // 5: drs.ros2bridge.v1.ListNodesResponse
+	(*Position)(nil),                 // 6: drs.ros2bridge.v1.Position
+	(*Node)(nil),                     // 7: drs.ros2bridge.v1.Node
 }
 var file_drs_ros2bridge_v1_sensing_service_proto_depIdxs = []int32{
-	4, // 0: drs.ros2bridge.v1.GetPositionResponse.position:type_name -> drs.ros2bridge.v1.Position
-	5, // 1: drs.ros2bridge.v1.ListNodesResponse.nodes:type_name -> drs.ros2bridge.v1.Node
+	6, // 0: drs.ros2bridge.v1.GetPositionResponse.position:type_name -> drs.ros2bridge.v1.Position
+	7, // 1: drs.ros2bridge.v1.ListNodesResponse.nodes:type_name -> drs.ros2bridge.v1.Node
 	0, // 2: drs.ros2bridge.v1.SensingService.GetPosition:input_type -> drs.ros2bridge.v1.GetPositionRequest
-	2, // 3: drs.ros2bridge.v1.SensingService.ListNodes:input_type -> drs.ros2bridge.v1.ListNodesRequest
-	1, // 4: drs.ros2bridge.v1.SensingService.GetPosition:output_type -> drs.ros2bridge.v1.GetPositionResponse
-	3, // 5: drs.ros2bridge.v1.SensingService.ListNodes:output_type -> drs.ros2bridge.v1.ListNodesResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
+	4, // 3: drs.ros2bridge.v1.SensingService.ListNodes:input_type -> drs.ros2bridge.v1.ListNodesRequest
+	2, // 4: drs.ros2bridge.v1.SensingService.GetCameraPreview:input_type -> drs.ros2bridge.v1.GetCameraPreviewRequest
+	1, // 5: drs.ros2bridge.v1.SensingService.GetPosition:output_type -> drs.ros2bridge.v1.GetPositionResponse
+	5, // 6: drs.ros2bridge.v1.SensingService.ListNodes:output_type -> drs.ros2bridge.v1.ListNodesResponse
+	3, // 7: drs.ros2bridge.v1.SensingService.GetCameraPreview:output_type -> drs.ros2bridge.v1.GetCameraPreviewResponse
+	5, // [5:8] is the sub-list for method output_type
+	2, // [2:5] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -255,7 +386,7 @@ func file_drs_ros2bridge_v1_sensing_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_drs_ros2bridge_v1_sensing_service_proto_rawDesc), len(file_drs_ros2bridge_v1_sensing_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

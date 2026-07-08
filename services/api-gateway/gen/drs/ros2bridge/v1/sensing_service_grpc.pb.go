@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SensingService_GetPosition_FullMethodName = "/drs.ros2bridge.v1.SensingService/GetPosition"
-	SensingService_ListNodes_FullMethodName   = "/drs.ros2bridge.v1.SensingService/ListNodes"
+	SensingService_GetPosition_FullMethodName      = "/drs.ros2bridge.v1.SensingService/GetPosition"
+	SensingService_ListNodes_FullMethodName        = "/drs.ros2bridge.v1.SensingService/ListNodes"
+	SensingService_GetCameraPreview_FullMethodName = "/drs.ros2bridge.v1.SensingService/GetCameraPreview"
 )
 
 // SensingServiceClient is the client API for SensingService service.
@@ -30,6 +31,8 @@ type SensingServiceClient interface {
 	// Standard methods
 	GetPosition(ctx context.Context, in *GetPositionRequest, opts ...grpc.CallOption) (*GetPositionResponse, error)
 	ListNodes(ctx context.Context, in *ListNodesRequest, opts ...grpc.CallOption) (*ListNodesResponse, error)
+	// Custom method for camera preview
+	GetCameraPreview(ctx context.Context, in *GetCameraPreviewRequest, opts ...grpc.CallOption) (*GetCameraPreviewResponse, error)
 }
 
 type sensingServiceClient struct {
@@ -60,6 +63,16 @@ func (c *sensingServiceClient) ListNodes(ctx context.Context, in *ListNodesReque
 	return out, nil
 }
 
+func (c *sensingServiceClient) GetCameraPreview(ctx context.Context, in *GetCameraPreviewRequest, opts ...grpc.CallOption) (*GetCameraPreviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetCameraPreviewResponse)
+	err := c.cc.Invoke(ctx, SensingService_GetCameraPreview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SensingServiceServer is the server API for SensingService service.
 // All implementations must embed UnimplementedSensingServiceServer
 // for forward compatibility.
@@ -67,6 +80,8 @@ type SensingServiceServer interface {
 	// Standard methods
 	GetPosition(context.Context, *GetPositionRequest) (*GetPositionResponse, error)
 	ListNodes(context.Context, *ListNodesRequest) (*ListNodesResponse, error)
+	// Custom method for camera preview
+	GetCameraPreview(context.Context, *GetCameraPreviewRequest) (*GetCameraPreviewResponse, error)
 	mustEmbedUnimplementedSensingServiceServer()
 }
 
@@ -82,6 +97,9 @@ func (UnimplementedSensingServiceServer) GetPosition(context.Context, *GetPositi
 }
 func (UnimplementedSensingServiceServer) ListNodes(context.Context, *ListNodesRequest) (*ListNodesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListNodes not implemented")
+}
+func (UnimplementedSensingServiceServer) GetCameraPreview(context.Context, *GetCameraPreviewRequest) (*GetCameraPreviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetCameraPreview not implemented")
 }
 func (UnimplementedSensingServiceServer) mustEmbedUnimplementedSensingServiceServer() {}
 func (UnimplementedSensingServiceServer) testEmbeddedByValue()                        {}
@@ -140,6 +158,24 @@ func _SensingService_ListNodes_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SensingService_GetCameraPreview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCameraPreviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SensingServiceServer).GetCameraPreview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SensingService_GetCameraPreview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SensingServiceServer).GetCameraPreview(ctx, req.(*GetCameraPreviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SensingService_ServiceDesc is the grpc.ServiceDesc for SensingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -154,6 +190,10 @@ var SensingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListNodes",
 			Handler:    _SensingService_ListNodes_Handler,
+		},
+		{
+			MethodName: "GetCameraPreview",
+			Handler:    _SensingService_GetCameraPreview_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -2,15 +2,24 @@ package rest
 
 import (
 	"net/http"
+	"regexp"
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/codes"
+	grpcstatus "google.golang.org/grpc/status"
 
 	modulev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/module/v1"
 	ros2bridgev1 "github.com/tier4/drs-api/services/api-gateway/gen/drs/ros2bridge/v1"
 	"github.com/tier4/drs-api/services/api-gateway/internal/grpc"
 	"github.com/tier4/drs-api/services/api-gateway/internal/models"
 )
+
+// cameraTopicPattern restricts GetCameraPreview to camera topics under the
+// known /sensing/camera/ namespace (e.g. /sensing/camera/camera0/image_raw/compressed),
+// so the endpoint can't be used to lazily subscribe the bridge to arbitrary
+// ROS2 topics.
+var cameraTopicPattern = regexp.MustCompile(`^/sensing/camera/[^/]+/image_raw/compressed$`)
 
 // RecordingHandler handles recording control REST API endpoints
 type RecordingHandler struct {
@@ -24,9 +33,9 @@ func NewRecordingHandler(clientManager *grpc.ClientManager) *RecordingHandler {
 	}
 }
 
-// GetRecordingStatus handles GET /recording/status - returns recording status of all modules
-func (h *RecordingHandler) GetRecordingStatus(c *gin.Context) {
-	// Get ROS2 bridge clients
+// getBridgeOrRespond fetches the ROS2 bridge clients, writing a 503 response
+// and returning false if the bridge is unavailable.
+func (h *RecordingHandler) getBridgeOrRespond(c *gin.Context) (*grpc.ROS2BridgeClients, bool) {
 	ros2Bridge, err := h.clientManager.GetROS2BridgeClients()
 	if err != nil {
 		c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
@@ -36,6 +45,15 @@ func (h *RecordingHandler) GetRecordingStatus(c *gin.Context) {
 				"error": err.Error(),
 			},
 		})
+		return nil, false
+	}
+	return ros2Bridge, true
+}
+
+// GetRecordingStatus handles GET /recording/status - returns recording status of all modules
+func (h *RecordingHandler) GetRecordingStatus(c *gin.Context) {
+	ros2Bridge, ok := h.getBridgeOrRespond(c)
+	if !ok {
 		return
 	}
 
@@ -204,16 +222,8 @@ func (h *RecordingHandler) GetPTPStatus(c *gin.Context) {
 func (h *RecordingHandler) GetTopicStatus(c *gin.Context) {
 	hostname := c.Param("hostname")
 
-	// Get ROS2 bridge clients
-	ros2Bridge, err := h.clientManager.GetROS2BridgeClients()
-	if err != nil {
-		c.JSON(http.StatusServiceUnavailable, models.ErrorResponse{
-			Error:   "ros2_bridge_unavailable",
-			Message: "ROS2 bridge is not available",
-			Details: map[string]interface{}{
-				"error": err.Error(),
-			},
-		})
+	ros2Bridge, ok := h.getBridgeOrRespond(c)
+	if !ok {
 		return
 	}
 
@@ -243,15 +253,118 @@ func (h *RecordingHandler) GetTopicStatus(c *gin.Context) {
 		}
 
 		topics = append(topics, models.TopicStatus{
-			TopicName: topic.TopicName,
-			RateHz:    topic.RateHz,
-			Status:    status,
+			TopicName:   topic.TopicName,
+			MessageType: topic.MessageType,
+			RateHz:      topic.RateHz,
+			Status:      status,
 		})
 	}
 
 	c.JSON(http.StatusOK, models.TopicStatusResponse{
 		Topics: topics,
 	})
+}
+
+// GetPosition handles GET /modules/{hostname}/position - returns the current
+// GPS/INS fix. The bridge serves one vehicle-wide position regardless of
+// :hostname (there is a single shared GPS/INS unit, network-visible to every
+// ECU's recorder via DDS) - this is intentional, not a routing bug.
+func (h *RecordingHandler) GetPosition(c *gin.Context) {
+	ros2Bridge, ok := h.getBridgeOrRespond(c)
+	if !ok {
+		return
+	}
+
+	ctx, cancel := h.clientManager.GetContext()
+	defer cancel()
+
+	resp, err := ros2Bridge.Sensing.GetPosition(ctx, &ros2bridgev1.GetPositionRequest{})
+	if err != nil {
+		if code := grpcstatus.Code(err); code == codes.NotFound || code == codes.Unavailable {
+			// No fix received yet, or the cached fix is stale - not an error.
+			c.JSON(http.StatusOK, models.PositionResponse{HasData: false})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "position_query_failed",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if !resp.HasData || resp.Position == nil {
+		c.JSON(http.StatusOK, models.PositionResponse{HasData: false})
+		return
+	}
+
+	c.JSON(http.StatusOK, models.PositionResponse{
+		HasData: true,
+		Position: &models.Position{
+			Latitude:               resp.Position.Latitude,
+			Longitude:              resp.Position.Longitude,
+			Altitude:               resp.Position.Altitude,
+			Status:                 resp.Position.NavSatStatus.GetStatus(),
+			PositionCovariance:     resp.Position.PositionCovariance,
+			PositionCovarianceType: resp.Position.PositionCovarianceType,
+		},
+	})
+}
+
+// GetCameraPreview handles GET /modules/{hostname}/camera/preview?topic=<name> -
+// returns a resized JPEG frame for the given camera topic. The response is
+// always Content-Type: image/jpeg; an X-Has-Data header signals whether a
+// real frame or a placeholder is being returned.
+func (h *RecordingHandler) GetCameraPreview(c *gin.Context) {
+	topicName := c.Query("topic")
+	if topicName == "" {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error:   "missing_topic",
+			Message: "topic query parameter is required",
+		})
+		return
+	}
+	if !cameraTopicPattern.MatchString(topicName) {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error:   "invalid_topic",
+			Message: "topic must be a camera topic under /sensing/camera/",
+		})
+		return
+	}
+
+	ros2Bridge, ok := h.getBridgeOrRespond(c)
+	if !ok {
+		return
+	}
+
+	ctx, cancel := h.clientManager.GetContext()
+	defer cancel()
+
+	resp, err := ros2Bridge.Sensing.GetCameraPreview(ctx, &ros2bridgev1.GetCameraPreviewRequest{
+		TopicName: topicName,
+	})
+	if err != nil {
+		if grpcstatus.Code(err) == codes.InvalidArgument {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{
+				Error:   "invalid_topic",
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "camera_preview_failed",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if !resp.HasData {
+		c.Header("X-Has-Data", "false")
+		c.Data(http.StatusOK, "image/jpeg", []byte{})
+		return
+	}
+
+	c.Header("X-Has-Data", "true")
+	c.Data(http.StatusOK, resp.ContentType, resp.ImageData)
 }
 
 // performRecordingOperation performs a recording operation via ROS2 bridge

@@ -13,6 +13,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(proto_recorder_msgs REQUIRED)
+find_package(OpenCV REQUIRED)
 
 # Find gRPC and Protobuf
 find_package(PkgConfig REQUIRED)
@@ -74,11 +75,13 @@ ament_target_dependencies(ros2_bridge_node
 target_include_directories(ros2_bridge_node PRIVATE
   ${PROTOBUF_INCLUDE_DIRS}
   ${GRPC_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 target_link_libraries(ros2_bridge_node
   ${PROTOBUF_LIBRARIES}
   ${GRPC_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   grpc++
   protobuf
 )
