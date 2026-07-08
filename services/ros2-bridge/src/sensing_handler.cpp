@@ -21,7 +21,11 @@ namespace ros2_bridge
 SensingHandler::SensingHandler(rclcpp::Node::SharedPtr node)
 : node_(node),
   camera_cache_(node_, kPreviewIdleTimeout),
-  point_cloud_cache_(node_, kPreviewIdleTimeout)
+  // LiDAR decoders publish PointCloud2 with best-effort reliability (large,
+  // high-rate sensor data); a reliable subscriber silently fails to connect
+  // to a best-effort publisher at the DDS level (no error, just no
+  // messages), so this must be at least as permissive as SensorDataQoS.
+  point_cloud_cache_(node_, kPreviewIdleTimeout, rclcpp::SensorDataQoS())
 {
   // Subscribe to NavSatFix topic
   nav_sat_fix_sub_ = node_->create_subscription<sensor_msgs::msg::NavSatFix>(

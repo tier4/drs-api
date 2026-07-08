@@ -22,8 +22,8 @@ class LazyTopicCache
 public:
   LazyTopicCache(
     rclcpp::Node::SharedPtr node, std::chrono::steady_clock::duration idle_timeout,
-    int qos_depth = 10)
-  : node_(node), idle_timeout_(idle_timeout), qos_depth_(qos_depth)
+    rclcpp::QoS qos = rclcpp::QoS(10))
+  : node_(node), idle_timeout_(idle_timeout), qos_(qos)
   {
   }
 
@@ -37,7 +37,7 @@ public:
     auto [sub_it, inserted] = subs_.try_emplace(topic_name, nullptr);
     if (inserted) {
       sub_it->second = node_->create_subscription<MsgT>(
-        topic_name, qos_depth_, [this, topic_name](const typename MsgT::SharedPtr msg) {
+        topic_name, qos_, [this, topic_name](const typename MsgT::SharedPtr msg) {
           std::lock_guard<std::mutex> cb_lock(mutex_);
           cached_[topic_name] = msg;
         });
@@ -86,7 +86,7 @@ public:
 private:
   rclcpp::Node::SharedPtr node_;
   std::chrono::steady_clock::duration idle_timeout_;
-  int qos_depth_;
+  rclcpp::QoS qos_;
 
   std::mutex mutex_;
   std::unordered_map<std::string, typename rclcpp::Subscription<MsgT>::SharedPtr> subs_;
