@@ -219,6 +219,137 @@ func (x *GetCameraPreviewResponse) GetImageData() []byte {
 	return nil
 }
 
+// Custom method to fetch a decimated preview frame from a LiDAR "_points"
+// topic, derived from the requested "_packets" topic name.
+type GetPointCloudPreviewRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Full "_packets" topic name, e.g. "/sensing/lidar/front/seyond_packets".
+	// The bridge derives the decoded "_points" topic and lazily subscribes.
+	TopicName string `protobuf:"bytes,1,opt,name=topic_name,json=topicName,proto3" json:"topic_name,omitempty"`
+	// Max points to return after decimation. Missing/zero/negative falls
+	// back to the server default (5000); always clamped to a 5000 ceiling
+	// regardless of what the client requests.
+	MaxPoints     int32 `protobuf:"varint,2,opt,name=max_points,json=maxPoints,proto3" json:"max_points,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPointCloudPreviewRequest) Reset() {
+	*x = GetPointCloudPreviewRequest{}
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPointCloudPreviewRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPointCloudPreviewRequest) ProtoMessage() {}
+
+func (x *GetPointCloudPreviewRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPointCloudPreviewRequest.ProtoReflect.Descriptor instead.
+func (*GetPointCloudPreviewRequest) Descriptor() ([]byte, []int) {
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetPointCloudPreviewRequest) GetTopicName() string {
+	if x != nil {
+		return x.TopicName
+	}
+	return ""
+}
+
+func (x *GetPointCloudPreviewRequest) GetMaxPoints() int32 {
+	if x != nil {
+		return x.MaxPoints
+	}
+	return 0
+}
+
+type GetPointCloudPreviewResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	HasData        bool                   `protobuf:"varint,1,opt,name=has_data,json=hasData,proto3" json:"has_data,omitempty"`                      // False if no frame has been received yet on the derived topic
+	DecoderRunning bool                   `protobuf:"varint,2,opt,name=decoder_running,json=decoderRunning,proto3" json:"decoder_running,omitempty"` // True if a publisher exists on the derived "_points" topic
+	ContentType    string                 `protobuf:"bytes,3,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`           // "application/octet-stream"
+	// Interleaved little-endian Float32Array, fixed 16 bytes/point:
+	// (x, y, z, intensity). intensity is 0.0 when no intensity-like field
+	// exists on the source PointCloud2, so the wire format never branches
+	// on field presence.
+	PointData     []byte `protobuf:"bytes,4,opt,name=point_data,json=pointData,proto3" json:"point_data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPointCloudPreviewResponse) Reset() {
+	*x = GetPointCloudPreviewResponse{}
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPointCloudPreviewResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPointCloudPreviewResponse) ProtoMessage() {}
+
+func (x *GetPointCloudPreviewResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPointCloudPreviewResponse.ProtoReflect.Descriptor instead.
+func (*GetPointCloudPreviewResponse) Descriptor() ([]byte, []int) {
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetPointCloudPreviewResponse) GetHasData() bool {
+	if x != nil {
+		return x.HasData
+	}
+	return false
+}
+
+func (x *GetPointCloudPreviewResponse) GetDecoderRunning() bool {
+	if x != nil {
+		return x.DecoderRunning
+	}
+	return false
+}
+
+func (x *GetPointCloudPreviewResponse) GetContentType() string {
+	if x != nil {
+		return x.ContentType
+	}
+	return ""
+}
+
+func (x *GetPointCloudPreviewResponse) GetPointData() []byte {
+	if x != nil {
+		return x.PointData
+	}
+	return nil
+}
+
 // Standard List operation for nodes
 type ListNodesRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -230,7 +361,7 @@ type ListNodesRequest struct {
 
 func (x *ListNodesRequest) Reset() {
 	*x = ListNodesRequest{}
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[4]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -242,7 +373,7 @@ func (x *ListNodesRequest) String() string {
 func (*ListNodesRequest) ProtoMessage() {}
 
 func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[4]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -255,7 +386,7 @@ func (x *ListNodesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNodesRequest.ProtoReflect.Descriptor instead.
 func (*ListNodesRequest) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{4}
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListNodesRequest) GetFilter() string {
@@ -274,7 +405,7 @@ type ListNodesResponse struct {
 
 func (x *ListNodesResponse) Reset() {
 	*x = ListNodesResponse{}
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[5]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -286,7 +417,7 @@ func (x *ListNodesResponse) String() string {
 func (*ListNodesResponse) ProtoMessage() {}
 
 func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[5]
+	mi := &file_drs_ros2bridge_v1_sensing_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -299,7 +430,7 @@ func (x *ListNodesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNodesResponse.ProtoReflect.Descriptor instead.
 func (*ListNodesResponse) Descriptor() ([]byte, []int) {
-	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{5}
+	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListNodesResponse) GetNodes() []*Node {
@@ -325,15 +456,27 @@ const file_drs_ros2bridge_v1_sensing_service_proto_rawDesc = "" +
 	"\bhas_data\x18\x01 \x01(\bR\ahasData\x12!\n" +
 	"\fcontent_type\x18\x02 \x01(\tR\vcontentType\x12\x1d\n" +
 	"\n" +
-	"image_data\x18\x03 \x01(\fR\timageData\"*\n" +
+	"image_data\x18\x03 \x01(\fR\timageData\"[\n" +
+	"\x1bGetPointCloudPreviewRequest\x12\x1d\n" +
+	"\n" +
+	"topic_name\x18\x01 \x01(\tR\ttopicName\x12\x1d\n" +
+	"\n" +
+	"max_points\x18\x02 \x01(\x05R\tmaxPoints\"\xa4\x01\n" +
+	"\x1cGetPointCloudPreviewResponse\x12\x19\n" +
+	"\bhas_data\x18\x01 \x01(\bR\ahasData\x12'\n" +
+	"\x0fdecoder_running\x18\x02 \x01(\bR\x0edecoderRunning\x12!\n" +
+	"\fcontent_type\x18\x03 \x01(\tR\vcontentType\x12\x1d\n" +
+	"\n" +
+	"point_data\x18\x04 \x01(\fR\tpointData\"*\n" +
 	"\x10ListNodesRequest\x12\x16\n" +
 	"\x06filter\x18\x01 \x01(\tR\x06filter\"B\n" +
 	"\x11ListNodesResponse\x12-\n" +
-	"\x05nodes\x18\x01 \x03(\v2\x17.drs.ros2bridge.v1.NodeR\x05nodes2\xb3\x02\n" +
+	"\x05nodes\x18\x01 \x03(\v2\x17.drs.ros2bridge.v1.NodeR\x05nodes2\xac\x03\n" +
 	"\x0eSensingService\x12\\\n" +
 	"\vGetPosition\x12%.drs.ros2bridge.v1.GetPositionRequest\x1a&.drs.ros2bridge.v1.GetPositionResponse\x12V\n" +
 	"\tListNodes\x12#.drs.ros2bridge.v1.ListNodesRequest\x1a$.drs.ros2bridge.v1.ListNodesResponse\x12k\n" +
-	"\x10GetCameraPreview\x12*.drs.ros2bridge.v1.GetCameraPreviewRequest\x1a+.drs.ros2bridge.v1.GetCameraPreviewResponseB&Z$./gen/drs/ros2bridge/v1;ros2bridgev1b\x06proto3"
+	"\x10GetCameraPreview\x12*.drs.ros2bridge.v1.GetCameraPreviewRequest\x1a+.drs.ros2bridge.v1.GetCameraPreviewResponse\x12w\n" +
+	"\x14GetPointCloudPreview\x12..drs.ros2bridge.v1.GetPointCloudPreviewRequest\x1a/.drs.ros2bridge.v1.GetPointCloudPreviewResponseB&Z$./gen/drs/ros2bridge/v1;ros2bridgev1b\x06proto3"
 
 var (
 	file_drs_ros2bridge_v1_sensing_service_proto_rawDescOnce sync.Once
@@ -347,28 +490,32 @@ func file_drs_ros2bridge_v1_sensing_service_proto_rawDescGZIP() []byte {
 	return file_drs_ros2bridge_v1_sensing_service_proto_rawDescData
 }
 
-var file_drs_ros2bridge_v1_sensing_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_drs_ros2bridge_v1_sensing_service_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_drs_ros2bridge_v1_sensing_service_proto_goTypes = []any{
-	(*GetPositionRequest)(nil),       // 0: drs.ros2bridge.v1.GetPositionRequest
-	(*GetPositionResponse)(nil),      // 1: drs.ros2bridge.v1.GetPositionResponse
-	(*GetCameraPreviewRequest)(nil),  // 2: drs.ros2bridge.v1.GetCameraPreviewRequest
-	(*GetCameraPreviewResponse)(nil), // 3: drs.ros2bridge.v1.GetCameraPreviewResponse
-	(*ListNodesRequest)(nil),         // 4: drs.ros2bridge.v1.ListNodesRequest
-	(*ListNodesResponse)(nil),        // 5: drs.ros2bridge.v1.ListNodesResponse
-	(*Position)(nil),                 // 6: drs.ros2bridge.v1.Position
-	(*Node)(nil),                     // 7: drs.ros2bridge.v1.Node
+	(*GetPositionRequest)(nil),           // 0: drs.ros2bridge.v1.GetPositionRequest
+	(*GetPositionResponse)(nil),          // 1: drs.ros2bridge.v1.GetPositionResponse
+	(*GetCameraPreviewRequest)(nil),      // 2: drs.ros2bridge.v1.GetCameraPreviewRequest
+	(*GetCameraPreviewResponse)(nil),     // 3: drs.ros2bridge.v1.GetCameraPreviewResponse
+	(*GetPointCloudPreviewRequest)(nil),  // 4: drs.ros2bridge.v1.GetPointCloudPreviewRequest
+	(*GetPointCloudPreviewResponse)(nil), // 5: drs.ros2bridge.v1.GetPointCloudPreviewResponse
+	(*ListNodesRequest)(nil),             // 6: drs.ros2bridge.v1.ListNodesRequest
+	(*ListNodesResponse)(nil),            // 7: drs.ros2bridge.v1.ListNodesResponse
+	(*Position)(nil),                     // 8: drs.ros2bridge.v1.Position
+	(*Node)(nil),                         // 9: drs.ros2bridge.v1.Node
 }
 var file_drs_ros2bridge_v1_sensing_service_proto_depIdxs = []int32{
-	6, // 0: drs.ros2bridge.v1.GetPositionResponse.position:type_name -> drs.ros2bridge.v1.Position
-	7, // 1: drs.ros2bridge.v1.ListNodesResponse.nodes:type_name -> drs.ros2bridge.v1.Node
+	8, // 0: drs.ros2bridge.v1.GetPositionResponse.position:type_name -> drs.ros2bridge.v1.Position
+	9, // 1: drs.ros2bridge.v1.ListNodesResponse.nodes:type_name -> drs.ros2bridge.v1.Node
 	0, // 2: drs.ros2bridge.v1.SensingService.GetPosition:input_type -> drs.ros2bridge.v1.GetPositionRequest
-	4, // 3: drs.ros2bridge.v1.SensingService.ListNodes:input_type -> drs.ros2bridge.v1.ListNodesRequest
+	6, // 3: drs.ros2bridge.v1.SensingService.ListNodes:input_type -> drs.ros2bridge.v1.ListNodesRequest
 	2, // 4: drs.ros2bridge.v1.SensingService.GetCameraPreview:input_type -> drs.ros2bridge.v1.GetCameraPreviewRequest
-	1, // 5: drs.ros2bridge.v1.SensingService.GetPosition:output_type -> drs.ros2bridge.v1.GetPositionResponse
-	5, // 6: drs.ros2bridge.v1.SensingService.ListNodes:output_type -> drs.ros2bridge.v1.ListNodesResponse
-	3, // 7: drs.ros2bridge.v1.SensingService.GetCameraPreview:output_type -> drs.ros2bridge.v1.GetCameraPreviewResponse
-	5, // [5:8] is the sub-list for method output_type
-	2, // [2:5] is the sub-list for method input_type
+	4, // 5: drs.ros2bridge.v1.SensingService.GetPointCloudPreview:input_type -> drs.ros2bridge.v1.GetPointCloudPreviewRequest
+	1, // 6: drs.ros2bridge.v1.SensingService.GetPosition:output_type -> drs.ros2bridge.v1.GetPositionResponse
+	7, // 7: drs.ros2bridge.v1.SensingService.ListNodes:output_type -> drs.ros2bridge.v1.ListNodesResponse
+	3, // 8: drs.ros2bridge.v1.SensingService.GetCameraPreview:output_type -> drs.ros2bridge.v1.GetCameraPreviewResponse
+	5, // 9: drs.ros2bridge.v1.SensingService.GetPointCloudPreview:output_type -> drs.ros2bridge.v1.GetPointCloudPreviewResponse
+	6, // [6:10] is the sub-list for method output_type
+	2, // [2:6] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -386,7 +533,7 @@ func file_drs_ros2bridge_v1_sensing_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_drs_ros2bridge_v1_sensing_service_proto_rawDesc), len(file_drs_ros2bridge_v1_sensing_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

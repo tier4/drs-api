@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button'
 import { AlertCircle, AlertTriangle, CheckCircle2, Activity, Eye, Pause, Play } from 'lucide-react'
 import { NavSatFixPreview } from '@/components/NavSatFixPreview'
 import { CameraPreview } from '@/components/CameraPreview'
+import { PointCloudPreview } from '@/components/PointCloudPreview'
 
 // message_type values with a built preview. Topics with any other type show
 // no inspect icon.
 const PREVIEWABLE_TYPES = {
   'sensor_msgs/msg/NavSatFix': 'navsat',
   'sensor_msgs/msg/CompressedImage': 'camera',
+  'nebula_msgs/msg/NebulaPackets': 'pointcloud',
 } as const
 
 type PreviewKind = (typeof PREVIEWABLE_TYPES)[keyof typeof PREVIEWABLE_TYPES]
@@ -278,6 +280,13 @@ export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
                             )}
                             {previewKind === 'camera' && (
                               <CameraPreview
+                                hostname={module.hostname}
+                                topicName={topic.topicName}
+                                enabled={isRefreshing}
+                              />
+                            )}
+                            {previewKind === 'pointcloud' && (
+                              <PointCloudPreview
                                 hostname={module.hostname}
                                 topicName={topic.topicName}
                                 enabled={isRefreshing}

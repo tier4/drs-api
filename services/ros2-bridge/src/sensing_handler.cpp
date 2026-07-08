@@ -4,9 +4,13 @@
 #include <opencv2/imgproc.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <sensor_msgs/point_cloud2_iterator.hpp>
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstring>
+#include <memory>
 #include <regex>
 #include <string>
 #include <vector>
@@ -14,15 +18,18 @@
 namespace ros2_bridge
 {
 
-SensingHandler::SensingHandler(rclcpp::Node::SharedPtr node) : node_(node)
+SensingHandler::SensingHandler(rclcpp::Node::SharedPtr node)
+: node_(node),
+  camera_cache_(node_, kPreviewIdleTimeout),
+  point_cloud_cache_(node_, kPreviewIdleTimeout)
 {
   // Subscribe to NavSatFix topic
   nav_sat_fix_sub_ = node_->create_subscription<sensor_msgs::msg::NavSatFix>(
     "/sensing/ins/oxts/nav_sat_fix", 10,
     std::bind(&SensingHandler::navSatFixCallback, this, std::placeholders::_1));
 
-  camera_idle_timer_ = node_->create_wall_timer(
-    kCameraIdleSweepInterval, std::bind(&SensingHandler::sweepIdleCameraSubscriptions, this));
+  preview_idle_timer_ = node_->create_wall_timer(
+    kPreviewIdleSweepInterval, std::bind(&SensingHandler::sweepIdlePreviewSubscriptions, this));
 
   RCLCPP_INFO(node_->get_logger(), "SensingHandler initialized");
 }
@@ -124,30 +131,7 @@ grpc::Status SensingHandler::GetCameraPreview(
     return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, "topic_name is required");
   }
 
-  sensor_msgs::msg::CompressedImage::SharedPtr frame;
-  {
-    std::lock_guard<std::mutex> lock(camera_mutex_);
-
-    // Lazily subscribe on first request for this topic. try_emplace avoids a
-    // second map lookup on the (common) already-subscribed path, and only
-    // constructs the subscription when insertion actually happens.
-    auto [sub_it, inserted] = camera_subs_.try_emplace(topic_name, nullptr);
-    if (inserted) {
-      sub_it->second = node_->create_subscription<sensor_msgs::msg::CompressedImage>(
-        topic_name, 10, [this, topic_name](const sensor_msgs::msg::CompressedImage::SharedPtr msg) {
-          cameraImageCallback(topic_name, msg);
-        });
-      RCLCPP_INFO(node_->get_logger(), "Lazily subscribed to camera topic: %s", topic_name.c_str());
-    }
-
-    // Mark this topic as actively viewed so the idle sweep doesn't drop it.
-    last_camera_request_[topic_name] = std::chrono::steady_clock::now();
-
-    auto it = cached_frames_.find(topic_name);
-    if (it != cached_frames_.end()) {
-      frame = it->second;
-    }
-  }
+  sensor_msgs::msg::CompressedImage::SharedPtr frame = camera_cache_.getOrSubscribe(topic_name);
 
   if (!frame) {
     response->set_has_data(false);
@@ -186,29 +170,161 @@ grpc::Status SensingHandler::GetCameraPreview(
   return grpc::Status::OK;
 }
 
-void SensingHandler::cameraImageCallback(
-  const std::string & topic_name, const sensor_msgs::msg::CompressedImage::SharedPtr msg)
+namespace
 {
-  std::lock_guard<std::mutex> lock(camera_mutex_);
-  cached_frames_[topic_name] = msg;
-}
 
-void SensingHandler::sweepIdleCameraSubscriptions()
+constexpr char kPacketsSuffix[] = "_packets";
+constexpr char kPointsSuffix[] = "_points";
+
+// Locates a PointField by name, or returns nullptr if absent.
+const sensor_msgs::msg::PointField * findField(
+  const sensor_msgs::msg::PointCloud2 & msg, const std::string & name)
 {
-  std::lock_guard<std::mutex> lock(camera_mutex_);
-  const auto now = std::chrono::steady_clock::now();
-
-  for (auto it = last_camera_request_.begin(); it != last_camera_request_.end();) {
-    const std::string & topic_name = it->first;
-    if (now - it->second > kCameraIdleTimeout) {
-      RCLCPP_INFO(node_->get_logger(), "Unsubscribing idle camera topic: %s", topic_name.c_str());
-      camera_subs_.erase(topic_name);
-      cached_frames_.erase(topic_name);
-      it = last_camera_request_.erase(it);
-    } else {
-      ++it;
+  for (const auto & field : msg.fields) {
+    if (field.name == name) {
+      return &field;
     }
   }
+  return nullptr;
+}
+
+// Per-field bounds check: the field must be FLOAT32 (PointCloud2Iterator<float>
+// throws if the field's actual datatype doesn't match the requested type, so
+// this also doubles as a crash guard against a decoder publishing a
+// same-named field with an unexpected datatype) and offset + sizeof(float)
+// must fit within point_step.
+bool fieldFitsInStep(const sensor_msgs::msg::PointField & field, uint32_t point_step)
+{
+  if (field.datatype != sensor_msgs::msg::PointField::FLOAT32) {
+    return false;
+  }
+  return static_cast<uint64_t>(field.offset) + sizeof(float) <= point_step;
+}
+
+}  // namespace
+
+std::string SensingHandler::derivePointsTopic(const std::string & packets_topic_name)
+{
+  const size_t suffix_len = std::strlen(kPacketsSuffix);
+  if (packets_topic_name.size() <= suffix_len) {
+    return "";
+  }
+  const size_t suffix_pos = packets_topic_name.size() - suffix_len;
+  if (packets_topic_name.compare(suffix_pos, suffix_len, kPacketsSuffix) != 0) {
+    return "";
+  }
+  return packets_topic_name.substr(0, suffix_pos) + kPointsSuffix;
+}
+
+grpc::Status SensingHandler::GetPointCloudPreview(
+  grpc::ServerContext * /* context */,
+  const drs::ros2bridge::v1::GetPointCloudPreviewRequest * request,
+  drs::ros2bridge::v1::GetPointCloudPreviewResponse * response)
+{
+  const std::string & topic_name = request->topic_name();
+  if (topic_name.empty()) {
+    return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT, "topic_name is required");
+  }
+
+  const std::string points_topic_name = derivePointsTopic(topic_name);
+  if (points_topic_name.empty()) {
+    return grpc::Status(
+      grpc::StatusCode::INVALID_ARGUMENT, "topic_name must end with \"_packets\"");
+  }
+
+  int32_t max_points = request->max_points();
+  if (max_points <= 0 || max_points > kMaxPointCloudPreviewPoints) {
+    max_points = kMaxPointCloudPreviewPoints;
+  }
+
+  sensor_msgs::msg::PointCloud2::SharedPtr frame =
+    point_cloud_cache_.getOrSubscribe(points_topic_name);
+  const bool decoder_running = point_cloud_cache_.publisherCount(points_topic_name) > 0;
+  response->set_decoder_running(decoder_running);
+
+  if (!frame) {
+    response->set_has_data(false);
+    return grpc::Status::OK;
+  }
+
+  // Two-level validation against a malformed/truncated message from a
+  // crashing decoder: (1) the buffer must be big enough for every row, (2)
+  // every field this handler reads must fit within point_step. Either
+  // failing is treated as "no data" rather than parsed further.
+  const uint64_t expected_size =
+    static_cast<uint64_t>(frame->row_step) * static_cast<uint64_t>(frame->height);
+  if (frame->data.size() < expected_size) {
+    RCLCPP_WARN(
+      node_->get_logger(), "PointCloud2 on %s has undersized buffer, discarding frame",
+      points_topic_name.c_str());
+    response->set_has_data(false);
+    return grpc::Status::OK;
+  }
+
+  const auto * x_field = findField(*frame, "x");
+  const auto * y_field = findField(*frame, "y");
+  const auto * z_field = findField(*frame, "z");
+  if (
+    !x_field || !y_field || !z_field || !fieldFitsInStep(*x_field, frame->point_step) ||
+    !fieldFitsInStep(*y_field, frame->point_step) ||
+    !fieldFitsInStep(*z_field, frame->point_step)) {
+    RCLCPP_WARN(
+      node_->get_logger(), "PointCloud2 on %s is missing/invalid x/y/z fields, discarding frame",
+      points_topic_name.c_str());
+    response->set_has_data(false);
+    return grpc::Status::OK;
+  }
+
+  const auto * intensity_field = findField(*frame, "intensity");
+  if (!intensity_field) {
+    intensity_field = findField(*frame, "reflectivity");
+  }
+  const bool has_intensity =
+    intensity_field && fieldFitsInStep(*intensity_field, frame->point_step);
+
+  const uint32_t max_points_u = static_cast<uint32_t>(max_points);
+  const uint32_t total_points = frame->width * frame->height;
+  const uint32_t stride =
+    total_points > max_points_u ? (total_points + max_points_u - 1) / max_points_u : 1;
+
+  sensor_msgs::PointCloud2ConstIterator<float> x_it(*frame, "x");
+  sensor_msgs::PointCloud2ConstIterator<float> y_it(*frame, "y");
+  sensor_msgs::PointCloud2ConstIterator<float> z_it(*frame, "z");
+  std::unique_ptr<sensor_msgs::PointCloud2ConstIterator<float>> intensity_it;
+  if (has_intensity) {
+    intensity_it =
+      std::make_unique<sensor_msgs::PointCloud2ConstIterator<float>>(*frame, intensity_field->name);
+  }
+
+  std::vector<float> packed;
+  packed.reserve(static_cast<size_t>(std::min(total_points, max_points_u)) * 4);
+
+  for (uint32_t i = 0; i < total_points && packed.size() < static_cast<size_t>(max_points_u) * 4;
+       ++i) {
+    if (i % stride == 0) {
+      packed.push_back(*x_it);
+      packed.push_back(*y_it);
+      packed.push_back(*z_it);
+      packed.push_back(has_intensity ? **intensity_it : 0.0f);
+    }
+    ++x_it;
+    ++y_it;
+    ++z_it;
+    if (has_intensity) {
+      ++(*intensity_it);
+    }
+  }
+
+  response->set_has_data(true);
+  response->set_content_type("application/octet-stream");
+  response->set_point_data(packed.data(), packed.size() * sizeof(float));
+  return grpc::Status::OK;
+}
+
+void SensingHandler::sweepIdlePreviewSubscriptions()
+{
+  camera_cache_.sweepIdle();
+  point_cloud_cache_.sweepIdle();
 }
 
 bool SensingHandler::matchesFilter(const std::string & node_name, const std::string & filter)

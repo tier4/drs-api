@@ -19,9 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SensingService_GetPosition_FullMethodName      = "/drs.ros2bridge.v1.SensingService/GetPosition"
-	SensingService_ListNodes_FullMethodName        = "/drs.ros2bridge.v1.SensingService/ListNodes"
-	SensingService_GetCameraPreview_FullMethodName = "/drs.ros2bridge.v1.SensingService/GetCameraPreview"
+	SensingService_GetPosition_FullMethodName          = "/drs.ros2bridge.v1.SensingService/GetPosition"
+	SensingService_ListNodes_FullMethodName            = "/drs.ros2bridge.v1.SensingService/ListNodes"
+	SensingService_GetCameraPreview_FullMethodName     = "/drs.ros2bridge.v1.SensingService/GetCameraPreview"
+	SensingService_GetPointCloudPreview_FullMethodName = "/drs.ros2bridge.v1.SensingService/GetPointCloudPreview"
 )
 
 // SensingServiceClient is the client API for SensingService service.
@@ -33,6 +34,8 @@ type SensingServiceClient interface {
 	ListNodes(ctx context.Context, in *ListNodesRequest, opts ...grpc.CallOption) (*ListNodesResponse, error)
 	// Custom method for camera preview
 	GetCameraPreview(ctx context.Context, in *GetCameraPreviewRequest, opts ...grpc.CallOption) (*GetCameraPreviewResponse, error)
+	// Custom method for LiDAR point cloud preview
+	GetPointCloudPreview(ctx context.Context, in *GetPointCloudPreviewRequest, opts ...grpc.CallOption) (*GetPointCloudPreviewResponse, error)
 }
 
 type sensingServiceClient struct {
@@ -73,6 +76,16 @@ func (c *sensingServiceClient) GetCameraPreview(ctx context.Context, in *GetCame
 	return out, nil
 }
 
+func (c *sensingServiceClient) GetPointCloudPreview(ctx context.Context, in *GetPointCloudPreviewRequest, opts ...grpc.CallOption) (*GetPointCloudPreviewResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPointCloudPreviewResponse)
+	err := c.cc.Invoke(ctx, SensingService_GetPointCloudPreview_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SensingServiceServer is the server API for SensingService service.
 // All implementations must embed UnimplementedSensingServiceServer
 // for forward compatibility.
@@ -82,6 +95,8 @@ type SensingServiceServer interface {
 	ListNodes(context.Context, *ListNodesRequest) (*ListNodesResponse, error)
 	// Custom method for camera preview
 	GetCameraPreview(context.Context, *GetCameraPreviewRequest) (*GetCameraPreviewResponse, error)
+	// Custom method for LiDAR point cloud preview
+	GetPointCloudPreview(context.Context, *GetPointCloudPreviewRequest) (*GetPointCloudPreviewResponse, error)
 	mustEmbedUnimplementedSensingServiceServer()
 }
 
@@ -100,6 +115,9 @@ func (UnimplementedSensingServiceServer) ListNodes(context.Context, *ListNodesRe
 }
 func (UnimplementedSensingServiceServer) GetCameraPreview(context.Context, *GetCameraPreviewRequest) (*GetCameraPreviewResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetCameraPreview not implemented")
+}
+func (UnimplementedSensingServiceServer) GetPointCloudPreview(context.Context, *GetPointCloudPreviewRequest) (*GetPointCloudPreviewResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPointCloudPreview not implemented")
 }
 func (UnimplementedSensingServiceServer) mustEmbedUnimplementedSensingServiceServer() {}
 func (UnimplementedSensingServiceServer) testEmbeddedByValue()                        {}
@@ -176,6 +194,24 @@ func _SensingService_GetCameraPreview_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SensingService_GetPointCloudPreview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPointCloudPreviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SensingServiceServer).GetPointCloudPreview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SensingService_GetPointCloudPreview_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SensingServiceServer).GetPointCloudPreview(ctx, req.(*GetPointCloudPreviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // SensingService_ServiceDesc is the grpc.ServiceDesc for SensingService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -194,6 +230,10 @@ var SensingService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCameraPreview",
 			Handler:    _SensingService_GetCameraPreview_Handler,
+		},
+		{
+			MethodName: "GetPointCloudPreview",
+			Handler:    _SensingService_GetPointCloudPreview_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
