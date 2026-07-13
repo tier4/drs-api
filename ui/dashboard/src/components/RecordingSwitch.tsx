@@ -1,4 +1,6 @@
 import { Switch } from '@/components/ui/switch'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 
 interface RecordingSwitchProps {
@@ -9,31 +11,26 @@ interface RecordingSwitchProps {
 
 export function RecordingSwitch({ isRecording, isLoading, onToggle }: RecordingSwitchProps) {
   return (
-    <div className="flex items-center space-x-2">
-      <span
-        className={`text-sm transition-all duration-200 ${
-          isLoading
-            ? 'text-muted-foreground/50'
-            : isRecording
-              ? 'text-red-600 font-medium'
-              : 'text-muted-foreground'
-        }`}
-      >
-        {isLoading ? 'Processing...' : isRecording ? 'Recording' : 'Stopped'}
-      </span>
-      <div className="relative">
-        <Switch
-          checked={isRecording}
-          onCheckedChange={onToggle}
-          disabled={isLoading}
-          className={isLoading ? 'opacity-70' : ''}
-        />
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-full">
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-          </div>
-        )}
-      </div>
-    </div>
+    <label
+      className={cn(
+        buttonVariants({ variant: isRecording ? 'destructive' : 'secondary' }),
+        'h-11 rounded-full cursor-pointer',
+        'has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50',
+        isLoading && 'opacity-70 cursor-not-allowed',
+      )}
+    >
+      <Switch
+        checked={isRecording}
+        onCheckedChange={onToggle}
+        disabled={isLoading}
+        className="sr-only !size-px !min-h-0 !min-w-0"
+      />
+      {isLoading ? (
+        <Loader2 className="size-3.5 animate-spin" />
+      ) : (
+        <span className={cn('size-2.5 rounded-full bg-current', isRecording && 'animate-pulse')} />
+      )}
+      {isLoading ? 'Processing...' : isRecording ? 'Recording' : 'Start Recording'}
+    </label>
   )
 }
