@@ -224,7 +224,8 @@ const std::unordered_map<std::string, int> kPositionToCameraNumber = {
 // Decimated extraction of x/y/z/intensity from a PointCloud2, applying the
 // same malformed-message guards as the removed GetPointCloudPreview did.
 // Returns false (leaving points/intensities untouched) if the cloud is
-// undersized or missing/invalid x/y/z fields.
+// undersized or missing/invalid x/y/z fields. max_points <= 0 means
+// unlimited: every point in the cloud is extracted.
 bool extractPointsAndIntensities(
   const sensor_msgs::msg::PointCloud2 & cloud, int32_t max_points,
   std::vector<cv::Point3f> & points, std::vector<float> & intensities)
@@ -250,10 +251,12 @@ bool extractPointsAndIntensities(
   }
   const bool has_intensity = intensity_field && fieldFitsInStep(*intensity_field, cloud.point_step);
 
-  const uint32_t max_points_u = static_cast<uint32_t>(max_points);
   const uint32_t total_points = cloud.width * cloud.height;
-  const uint32_t stride =
-    total_points > max_points_u ? (total_points + max_points_u - 1) / max_points_u : 1;
+  const bool unlimited = max_points <= 0;
+  const uint32_t max_points_u = unlimited ? total_points : static_cast<uint32_t>(max_points);
+  const uint32_t stride = !unlimited && total_points > max_points_u
+                            ? (total_points + max_points_u - 1) / max_points_u
+                            : 1;
 
   sensor_msgs::PointCloud2ConstIterator<float> x_it(cloud, "x");
   sensor_msgs::PointCloud2ConstIterator<float> y_it(cloud, "y");
@@ -343,10 +346,9 @@ grpc::Status SensingHandler::GetLidarCameraProjectionPreview(
   const std::string camera_optical_frame =
     "camera" + std::to_string(camera_number) + "/camera_optical_link";
 
-  int32_t max_points = request->max_points();
-  if (max_points <= 0 || max_points > kMaxPointCloudPreviewPoints) {
-    max_points = kMaxPointCloudPreviewPoints;
-  }
+  // max_points <= 0 (including the unset proto3 default) means unlimited:
+  // extractPointsAndIntensities projects every point in the cloud.
+  const int32_t max_points = request->max_points();
 
   sensor_msgs::msg::PointCloud2::SharedPtr cloud =
     point_cloud_cache_.getOrSubscribe(points_topic_name);

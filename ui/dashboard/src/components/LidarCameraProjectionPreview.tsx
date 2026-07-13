@@ -8,7 +8,8 @@ interface LidarCameraProjectionPreviewProps {
   enabled: boolean
 }
 
-const MAX_POINTS = 5000
+// 0 means unlimited: the bridge projects every point in the cloud.
+const MAX_POINTS = 0
 
 // Extracts the LiDAR position segment (e.g. "front") from a topic name
 // shaped like "/sensing/lidar/{position}/{vendor}_packets", for the alt

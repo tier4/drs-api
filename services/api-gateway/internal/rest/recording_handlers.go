@@ -29,10 +29,10 @@ var cameraTopicPattern = regexp.MustCompile(`^/sensing/camera/[^/]+/image_raw/co
 // "_points" topic by suffix substitution regardless of vendor SDK.
 var lidarTopicPattern = regexp.MustCompile(`^/sensing/lidar/[^/]+/[a-z]+_packets$`)
 
-// defaultMaxLidarCameraProjectionPreviewPoints is the fallback used when
-// max_points is missing, zero, or negative. The bridge also enforces this as
-// a hard ceiling server-side regardless of what the client requests.
-const defaultMaxLidarCameraProjectionPreviewPoints = 5000
+// defaultMaxLidarCameraProjectionPreviewPoints is used when max_points is
+// missing or negative. 0 means unlimited: the bridge projects every point
+// in the cloud.
+const defaultMaxLidarCameraProjectionPreviewPoints = 0
 
 // RecordingHandler handles recording control REST API endpoints
 type RecordingHandler struct {
@@ -406,7 +406,7 @@ func (h *RecordingHandler) GetLidarCameraProjectionPreview(c *gin.Context) {
 
 	maxPoints := defaultMaxLidarCameraProjectionPreviewPoints
 	if raw := c.Query("max_points"); raw != "" {
-		if parsed, err := strconv.Atoi(raw); err == nil && parsed > 0 {
+		if parsed, err := strconv.Atoi(raw); err == nil && parsed >= 0 {
 			maxPoints = parsed
 		}
 	}

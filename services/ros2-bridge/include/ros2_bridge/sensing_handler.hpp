@@ -87,9 +87,6 @@ private:
 
   LazyTopicCache<sensor_msgs::msg::CompressedImage> camera_cache_;
 
-  // Server-side ceiling on points projected per GetLidarCameraProjectionPreview
-  // call, regardless of what max_points the client requests.
-  static constexpr int32_t kMaxPointCloudPreviewPoints = 5000;
   LazyTopicCache<sensor_msgs::msg::PointCloud2> point_cloud_cache_;
 
   // camera_info is small, low-rate, and typically latched by the driver, so
