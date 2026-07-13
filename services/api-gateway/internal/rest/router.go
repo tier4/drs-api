@@ -95,7 +95,7 @@ func NewRouter(cfg *config.Config, clientManager *grpc.ClientManager) *gin.Engin
 		// Topic data preview endpoints
 		v1.GET("/modules/:hostname/position", recordingHandler.GetPosition)
 		v1.GET("/modules/:hostname/camera/preview", recordingHandler.GetCameraPreview)
-		v1.GET("/modules/:hostname/lidar/preview", recordingHandler.GetPointCloudPreview)
+		v1.GET("/modules/:hostname/lidar/preview", recordingHandler.GetLidarCameraProjectionPreview)
 
 		// Service management endpoints
 		v1.GET("/modules/:hostname/services", func(c *gin.Context) {

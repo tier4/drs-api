@@ -22,17 +22,17 @@ import (
 // ROS2 topics.
 var cameraTopicPattern = regexp.MustCompile(`^/sensing/camera/[^/]+/image_raw/compressed$`)
 
-// lidarTopicPattern restricts GetPointCloudPreview to raw LiDAR packet
-// topics under /sensing/lidar/ (e.g. /sensing/lidar/front/seyond_packets).
+// lidarTopicPattern restricts GetLidarCameraProjectionPreview to raw LiDAR
+// packet topics under /sensing/lidar/ (e.g. /sensing/lidar/front/seyond_packets).
 // Deliberately vendor-agnostic and broader than this feature's current
 // front/right/rear/left UI scope, since the bridge derives the decoded
 // "_points" topic by suffix substitution regardless of vendor SDK.
 var lidarTopicPattern = regexp.MustCompile(`^/sensing/lidar/[^/]+/[a-z]+_packets$`)
 
-// defaultMaxPointCloudPreviewPoints is the fallback used when max_points is
-// missing, zero, or negative. The bridge also enforces this as a hard
-// ceiling server-side regardless of what the client requests.
-const defaultMaxPointCloudPreviewPoints = 5000
+// defaultMaxLidarCameraProjectionPreviewPoints is the fallback used when
+// max_points is missing, zero, or negative. The bridge also enforces this as
+// a hard ceiling server-side regardless of what the client requests.
+const defaultMaxLidarCameraProjectionPreviewPoints = 5000
 
 // RecordingHandler handles recording control REST API endpoints
 type RecordingHandler struct {
@@ -380,14 +380,14 @@ func (h *RecordingHandler) GetCameraPreview(c *gin.Context) {
 	c.Data(http.StatusOK, resp.ContentType, resp.ImageData)
 }
 
-// GetPointCloudPreview handles GET /modules/{hostname}/lidar/preview?topic=<name>&max_points=<n> -
-// returns a decimated point cloud frame (interleaved x,y,z,intensity float32,
-// 16 bytes/point) for the given LiDAR "_packets" topic. The bridge derives
-// the decoded "_points" topic itself. The response is always
-// Content-Type: application/octet-stream; X-Has-Data and X-Decoder-Running
-// headers let the UI distinguish "decoder not started" from "waiting for
-// first frame."
-func (h *RecordingHandler) GetPointCloudPreview(c *gin.Context) {
+// GetLidarCameraProjectionPreview handles GET /modules/{hostname}/lidar/preview?topic=<name>&max_points=<n> -
+// returns a JPEG frame from the LiDAR position's corresponding camera with
+// projected LiDAR points composited on top, for the given LiDAR "_packets"
+// topic. The bridge derives the decoded "_points" topic, the LiDAR position,
+// and the corresponding camera itself. The response is always
+// Content-Type: image/jpeg; X-Has-Data and X-Decoder-Running headers let the
+// UI distinguish "decoder not started" from "waiting for first frame."
+func (h *RecordingHandler) GetLidarCameraProjectionPreview(c *gin.Context) {
 	topicName := c.Query("topic")
 	if topicName == "" {
 		c.JSON(http.StatusBadRequest, models.ErrorResponse{
@@ -404,7 +404,7 @@ func (h *RecordingHandler) GetPointCloudPreview(c *gin.Context) {
 		return
 	}
 
-	maxPoints := defaultMaxPointCloudPreviewPoints
+	maxPoints := defaultMaxLidarCameraProjectionPreviewPoints
 	if raw := c.Query("max_points"); raw != "" {
 		if parsed, err := strconv.Atoi(raw); err == nil && parsed > 0 {
 			maxPoints = parsed
@@ -419,7 +419,7 @@ func (h *RecordingHandler) GetPointCloudPreview(c *gin.Context) {
 	ctx, cancel := h.clientManager.GetContext()
 	defer cancel()
 
-	resp, err := ros2Bridge.Sensing.GetPointCloudPreview(ctx, &ros2bridgev1.GetPointCloudPreviewRequest{
+	resp, err := ros2Bridge.Sensing.GetLidarCameraProjectionPreview(ctx, &ros2bridgev1.GetLidarCameraProjectionPreviewRequest{
 		TopicName: topicName,
 		MaxPoints: int32(maxPoints),
 	})
@@ -432,7 +432,7 @@ func (h *RecordingHandler) GetPointCloudPreview(c *gin.Context) {
 			return
 		}
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
-			Error:   "point_cloud_preview_failed",
+			Error:   "lidar_camera_projection_preview_failed",
 			Message: err.Error(),
 		})
 		return
@@ -442,12 +442,12 @@ func (h *RecordingHandler) GetPointCloudPreview(c *gin.Context) {
 
 	if !resp.HasData {
 		c.Header("X-Has-Data", "false")
-		c.Data(http.StatusOK, "application/octet-stream", []byte{})
+		c.Data(http.StatusOK, "image/jpeg", []byte{})
 		return
 	}
 
 	c.Header("X-Has-Data", "true")
-	c.Data(http.StatusOK, resp.ContentType, resp.PointData)
+	c.Data(http.StatusOK, resp.ContentType, resp.ImageData)
 }
 
 // performRecordingOperation performs a recording operation via ROS2 bridge

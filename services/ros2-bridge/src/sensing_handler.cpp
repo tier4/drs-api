@@ -13,6 +13,7 @@
 #include <memory>
 #include <regex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace ros2_bridge
@@ -25,7 +26,9 @@ SensingHandler::SensingHandler(rclcpp::Node::SharedPtr node)
   // high-rate sensor data); a reliable subscriber silently fails to connect
   // to a best-effort publisher at the DDS level (no error, just no
   // messages), so this must be at least as permissive as SensorDataQoS.
-  point_cloud_cache_(node_, kPreviewIdleTimeout, rclcpp::SensorDataQoS())
+  point_cloud_cache_(node_, kPreviewIdleTimeout, rclcpp::SensorDataQoS()),
+  camera_info_cache_(node_, kPreviewIdleTimeout),
+  lidar_camera_projector_(node_)
 {
   // Subscribe to NavSatFix topic
   nav_sat_fix_sub_ = node_->create_subscription<sensor_msgs::msg::NavSatFix>(
@@ -205,6 +208,80 @@ bool fieldFitsInStep(const sensor_msgs::msg::PointField & field, uint32_t point_
   return static_cast<uint64_t>(field.offset) + sizeof(float) <= point_step;
 }
 
+// Fixed vehicle-hardware mapping from LiDAR position to the camera it's
+// projected onto. Deliberately hardcoded rather than derived from /tf_static
+// topology: each lidar_<position> frame has multiple camera children in the
+// real TF tree (verified against a production rosbag), so topology alone
+// can't disambiguate which camera is "the" intended one. TF is still used
+// afterwards to validate that this pairing actually resolves.
+const std::unordered_map<std::string, int> kPositionToCameraNumber = {
+  {"front", 1},
+  {"right", 2},
+  {"rear", 5},
+  {"left", 7},
+};
+
+// Decimated extraction of x/y/z/intensity from a PointCloud2, applying the
+// same malformed-message guards as the removed GetPointCloudPreview did.
+// Returns false (leaving points/intensities untouched) if the cloud is
+// undersized or missing/invalid x/y/z fields.
+bool extractPointsAndIntensities(
+  const sensor_msgs::msg::PointCloud2 & cloud, int32_t max_points,
+  std::vector<cv::Point3f> & points, std::vector<float> & intensities)
+{
+  const uint64_t expected_size =
+    static_cast<uint64_t>(cloud.row_step) * static_cast<uint64_t>(cloud.height);
+  if (cloud.data.size() < expected_size) {
+    return false;
+  }
+
+  const auto * x_field = findField(cloud, "x");
+  const auto * y_field = findField(cloud, "y");
+  const auto * z_field = findField(cloud, "z");
+  if (
+    !x_field || !y_field || !z_field || !fieldFitsInStep(*x_field, cloud.point_step) ||
+    !fieldFitsInStep(*y_field, cloud.point_step) || !fieldFitsInStep(*z_field, cloud.point_step)) {
+    return false;
+  }
+
+  const auto * intensity_field = findField(cloud, "intensity");
+  if (!intensity_field) {
+    intensity_field = findField(cloud, "reflectivity");
+  }
+  const bool has_intensity = intensity_field && fieldFitsInStep(*intensity_field, cloud.point_step);
+
+  const uint32_t max_points_u = static_cast<uint32_t>(max_points);
+  const uint32_t total_points = cloud.width * cloud.height;
+  const uint32_t stride =
+    total_points > max_points_u ? (total_points + max_points_u - 1) / max_points_u : 1;
+
+  sensor_msgs::PointCloud2ConstIterator<float> x_it(cloud, "x");
+  sensor_msgs::PointCloud2ConstIterator<float> y_it(cloud, "y");
+  sensor_msgs::PointCloud2ConstIterator<float> z_it(cloud, "z");
+  std::unique_ptr<sensor_msgs::PointCloud2ConstIterator<float>> intensity_it;
+  if (has_intensity) {
+    intensity_it =
+      std::make_unique<sensor_msgs::PointCloud2ConstIterator<float>>(cloud, intensity_field->name);
+  }
+
+  points.reserve(std::min(total_points, max_points_u));
+  intensities.reserve(std::min(total_points, max_points_u));
+
+  for (uint32_t i = 0; i < total_points && points.size() < static_cast<size_t>(max_points_u); ++i) {
+    if (i % stride == 0) {
+      points.emplace_back(*x_it, *y_it, *z_it);
+      intensities.push_back(has_intensity ? **intensity_it : 0.0f);
+    }
+    ++x_it;
+    ++y_it;
+    ++z_it;
+    if (has_intensity) {
+      ++(*intensity_it);
+    }
+  }
+  return true;
+}
+
 }  // namespace
 
 std::string SensingHandler::derivePointsTopic(const std::string & packets_topic_name)
@@ -220,10 +297,24 @@ std::string SensingHandler::derivePointsTopic(const std::string & packets_topic_
   return packets_topic_name.substr(0, suffix_pos) + kPointsSuffix;
 }
 
-grpc::Status SensingHandler::GetPointCloudPreview(
+std::string SensingHandler::deriveLidarPosition(const std::string & packets_topic_name)
+{
+  static const std::string kPrefix = "/sensing/lidar/";
+  if (packets_topic_name.compare(0, kPrefix.size(), kPrefix) != 0) {
+    return "";
+  }
+  const size_t start = kPrefix.size();
+  const size_t slash = packets_topic_name.find('/', start);
+  if (slash == std::string::npos) {
+    return "";
+  }
+  return packets_topic_name.substr(start, slash - start);
+}
+
+grpc::Status SensingHandler::GetLidarCameraProjectionPreview(
   grpc::ServerContext * /* context */,
-  const drs::ros2bridge::v1::GetPointCloudPreviewRequest * request,
-  drs::ros2bridge::v1::GetPointCloudPreviewResponse * response)
+  const drs::ros2bridge::v1::GetLidarCameraProjectionPreviewRequest * request,
+  drs::ros2bridge::v1::GetLidarCameraProjectionPreviewResponse * response)
 {
   const std::string & topic_name = request->topic_name();
   if (topic_name.empty()) {
@@ -236,92 +327,94 @@ grpc::Status SensingHandler::GetPointCloudPreview(
       grpc::StatusCode::INVALID_ARGUMENT, "topic_name must end with \"_packets\"");
   }
 
+  const std::string position = deriveLidarPosition(topic_name);
+  const auto camera_it = kPositionToCameraNumber.find(position);
+  if (camera_it == kPositionToCameraNumber.end()) {
+    return grpc::Status(
+      grpc::StatusCode::INVALID_ARGUMENT,
+      "topic_name's LiDAR position has no configured camera mapping");
+  }
+  const int camera_number = camera_it->second;
+  const std::string camera_topic_name =
+    "/sensing/camera/camera" + std::to_string(camera_number) + "/image_raw/compressed";
+  const std::string camera_info_topic_name =
+    "/sensing/camera/camera" + std::to_string(camera_number) + "/camera_info";
+  const std::string lidar_frame = "lidar_" + position;
+  const std::string camera_optical_frame =
+    "camera" + std::to_string(camera_number) + "/camera_optical_link";
+
   int32_t max_points = request->max_points();
   if (max_points <= 0 || max_points > kMaxPointCloudPreviewPoints) {
     max_points = kMaxPointCloudPreviewPoints;
   }
 
-  sensor_msgs::msg::PointCloud2::SharedPtr frame =
+  sensor_msgs::msg::PointCloud2::SharedPtr cloud =
     point_cloud_cache_.getOrSubscribe(points_topic_name);
   const bool decoder_running = point_cloud_cache_.publisherCount(points_topic_name) > 0;
   response->set_decoder_running(decoder_running);
 
-  if (!frame) {
+  if (!cloud) {
     response->set_has_data(false);
     return grpc::Status::OK;
   }
 
-  // Two-level validation against a malformed/truncated message from a
-  // crashing decoder: (1) the buffer must be big enough for every row, (2)
-  // every field this handler reads must fit within point_step. Either
-  // failing is treated as "no data" rather than parsed further.
-  const uint64_t expected_size =
-    static_cast<uint64_t>(frame->row_step) * static_cast<uint64_t>(frame->height);
-  if (frame->data.size() < expected_size) {
+  sensor_msgs::msg::CompressedImage::SharedPtr frame =
+    camera_cache_.getOrSubscribe(camera_topic_name);
+  sensor_msgs::msg::CameraInfo::SharedPtr camera_info =
+    camera_info_cache_.getOrSubscribe(camera_info_topic_name);
+  if (!frame || !camera_info) {
+    response->set_has_data(false);
+    return grpc::Status::OK;
+  }
+
+  std::vector<cv::Point3f> points;
+  std::vector<float> intensities;
+  if (!extractPointsAndIntensities(*cloud, max_points, points, intensities)) {
     RCLCPP_WARN(
-      node_->get_logger(), "PointCloud2 on %s has undersized buffer, discarding frame",
+      node_->get_logger(), "PointCloud2 on %s is malformed, discarding frame",
       points_topic_name.c_str());
     response->set_has_data(false);
     return grpc::Status::OK;
   }
 
-  const auto * x_field = findField(*frame, "x");
-  const auto * y_field = findField(*frame, "y");
-  const auto * z_field = findField(*frame, "z");
-  if (
-    !x_field || !y_field || !z_field || !fieldFitsInStep(*x_field, frame->point_step) ||
-    !fieldFitsInStep(*y_field, frame->point_step) ||
-    !fieldFitsInStep(*z_field, frame->point_step)) {
+  cv::Mat encoded(
+    1, static_cast<int>(frame->data.size()), CV_8UC1, const_cast<uint8_t *>(frame->data.data()));
+  cv::Mat decoded = cv::imdecode(encoded, cv::IMREAD_COLOR);
+  if (decoded.empty()) {
     RCLCPP_WARN(
-      node_->get_logger(), "PointCloud2 on %s is missing/invalid x/y/z fields, discarding frame",
-      points_topic_name.c_str());
+      node_->get_logger(), "Failed to decode frame from topic: %s", camera_topic_name.c_str());
     response->set_has_data(false);
     return grpc::Status::OK;
   }
 
-  const auto * intensity_field = findField(*frame, "intensity");
-  if (!intensity_field) {
-    intensity_field = findField(*frame, "reflectivity");
-  }
-  const bool has_intensity =
-    intensity_field && fieldFitsInStep(*intensity_field, frame->point_step);
-
-  const uint32_t max_points_u = static_cast<uint32_t>(max_points);
-  const uint32_t total_points = frame->width * frame->height;
-  const uint32_t stride =
-    total_points > max_points_u ? (total_points + max_points_u - 1) / max_points_u : 1;
-
-  sensor_msgs::PointCloud2ConstIterator<float> x_it(*frame, "x");
-  sensor_msgs::PointCloud2ConstIterator<float> y_it(*frame, "y");
-  sensor_msgs::PointCloud2ConstIterator<float> z_it(*frame, "z");
-  std::unique_ptr<sensor_msgs::PointCloud2ConstIterator<float>> intensity_it;
-  if (has_intensity) {
-    intensity_it =
-      std::make_unique<sensor_msgs::PointCloud2ConstIterator<float>>(*frame, intensity_field->name);
+  // Project at the camera_info's native resolution (unscaled K) before
+  // resizing, so no K-scaling arithmetic is needed.
+  if (!lidar_camera_projector_.projectOntoImage(
+        points, intensities, *camera_info, lidar_frame, camera_optical_frame, decoded)) {
+    response->set_has_data(false);
+    return grpc::Status::OK;
   }
 
-  std::vector<float> packed;
-  packed.reserve(static_cast<size_t>(std::min(total_points, max_points_u)) * 4);
+  cv::Mat resized;
+  if (decoded.rows > 720) {
+    int new_width =
+      std::max(1, static_cast<int>(std::lround(decoded.cols * (720.0 / decoded.rows))));
+    cv::resize(decoded, resized, cv::Size(new_width, 720));
+  } else {
+    resized = decoded;
+  }
 
-  for (uint32_t i = 0; i < total_points && packed.size() < static_cast<size_t>(max_points_u) * 4;
-       ++i) {
-    if (i % stride == 0) {
-      packed.push_back(*x_it);
-      packed.push_back(*y_it);
-      packed.push_back(*z_it);
-      packed.push_back(has_intensity ? **intensity_it : 0.0f);
-    }
-    ++x_it;
-    ++y_it;
-    ++z_it;
-    if (has_intensity) {
-      ++(*intensity_it);
-    }
+  std::vector<uchar> jpeg_bytes;
+  if (!cv::imencode(".jpg", resized, jpeg_bytes)) {
+    RCLCPP_WARN(
+      node_->get_logger(), "Failed to encode projected frame for topic: %s", topic_name.c_str());
+    response->set_has_data(false);
+    return grpc::Status::OK;
   }
 
   response->set_has_data(true);
-  response->set_content_type("application/octet-stream");
-  response->set_point_data(packed.data(), packed.size() * sizeof(float));
+  response->set_content_type("image/jpeg");
+  response->set_image_data(jpeg_bytes.data(), jpeg_bytes.size());
   return grpc::Status::OK;
 }
 
@@ -329,6 +422,7 @@ void SensingHandler::sweepIdlePreviewSubscriptions()
 {
   camera_cache_.sweepIdle();
   point_cloud_cache_.sweepIdle();
+  camera_info_cache_.sweepIdle();
 }
 
 bool SensingHandler::matchesFilter(const std::string & node_name, const std::string & filter)

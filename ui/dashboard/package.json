@@ -27,8 +27,7 @@
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.7.0",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.17",
-    "three": "^0.185.0"
+    "tailwindcss": "^4.1.17"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -41,7 +40,6 @@
     "@types/leaflet": "^1.9.21",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "@types/three": "^0.185.0",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",

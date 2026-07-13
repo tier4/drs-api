@@ -3,9 +3,11 @@
 
 #include "drs/ros2bridge/v1/sensing_service.grpc.pb.h"
 #include "ros2_bridge/lazy_topic_cache.hpp"
+#include "ros2_bridge/lidar_camera_projector.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/compressed_image.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -38,9 +40,10 @@ public:
     grpc::ServerContext * context, const drs::ros2bridge::v1::GetCameraPreviewRequest * request,
     drs::ros2bridge::v1::GetCameraPreviewResponse * response) override;
 
-  grpc::Status GetPointCloudPreview(
-    grpc::ServerContext * context, const drs::ros2bridge::v1::GetPointCloudPreviewRequest * request,
-    drs::ros2bridge::v1::GetPointCloudPreviewResponse * response) override;
+  grpc::Status GetLidarCameraProjectionPreview(
+    grpc::ServerContext * context,
+    const drs::ros2bridge::v1::GetLidarCameraProjectionPreviewRequest * request,
+    drs::ros2bridge::v1::GetLidarCameraProjectionPreviewResponse * response) override;
 
 private:
   // ROS2 callback for NavSatFix messages
@@ -57,6 +60,11 @@ private:
   // topic name via suffix substitution (vendor-agnostic). Returns empty on
   // a topic_name that doesn't end with "_packets".
   static std::string derivePointsTopic(const std::string & packets_topic_name);
+
+  // Extracts the LiDAR position segment (e.g. "front") from a topic name
+  // shaped like "/sensing/lidar/{position}/{vendor}_packets". Returns empty
+  // if topic_name doesn't match that shape.
+  static std::string deriveLidarPosition(const std::string & packets_topic_name);
 
   // Periodic sweep that unsubscribes topics with no preview request in the
   // last kPreviewIdleTimeout, across all preview caches.
@@ -79,10 +87,17 @@ private:
 
   LazyTopicCache<sensor_msgs::msg::CompressedImage> camera_cache_;
 
-  // Server-side ceiling on points returned per GetPointCloudPreview call,
-  // regardless of what max_points the client requests.
+  // Server-side ceiling on points projected per GetLidarCameraProjectionPreview
+  // call, regardless of what max_points the client requests.
   static constexpr int32_t kMaxPointCloudPreviewPoints = 5000;
   LazyTopicCache<sensor_msgs::msg::PointCloud2> point_cloud_cache_;
+
+  // camera_info is small, low-rate, and typically latched by the driver, so
+  // it shares the default reliable QoS used by camera_cache_ (verified
+  // against a real vehicle's camera_info QoS profile; see design doc).
+  LazyTopicCache<sensor_msgs::msg::CameraInfo> camera_info_cache_;
+
+  LidarCameraProjector lidar_camera_projector_;
 
   rclcpp::TimerBase::SharedPtr preview_idle_timer_;
 };

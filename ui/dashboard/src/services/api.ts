@@ -95,10 +95,10 @@ export interface CameraPreviewResult {
   blobUrl: string | null
 }
 
-export interface PointCloudPreviewResult {
+export interface LidarCameraProjectionPreviewResult {
   hasData: boolean
   decoderRunning: boolean
-  points: Float32Array | null
+  blobUrl: string | null
 }
 
 export class ApiService {
@@ -237,11 +237,11 @@ export class ApiService {
     }
   }
 
-  async getPointCloudPreview(
+  async getLidarCameraProjectionPreview(
     hostname: string,
     topicName: string,
     maxPoints?: number,
-  ): Promise<PointCloudPreviewResult> {
+  ): Promise<LidarCameraProjectionPreviewResult> {
     try {
       let url = `${API_BASE_URL}/modules/${hostname}/lidar/preview?topic=${encodeURIComponent(topicName)}`
       if (maxPoints) {
@@ -254,21 +254,15 @@ export class ApiService {
       const decoderRunning = response.headers.get('X-Decoder-Running') === 'true'
       const hasData = response.headers.get('X-Has-Data') === 'true'
       if (!hasData) {
-        return { hasData: false, decoderRunning, points: null }
+        return { hasData: false, decoderRunning, blobUrl: null }
       }
-      const buffer = await response.arrayBuffer()
-      // Fixed 16 bytes/point (x, y, z, intensity as float32). A mismatch means
-      // client/server are out of sync on the wire format - treat it as an
-      // error state rather than rendering the misaligned bytes as garbage
-      // points that could look like bad LiDAR data instead of an obvious bug.
-      if (buffer.byteLength % 16 !== 0) {
-        throw new Error(
-          `Point cloud payload byteLength ${buffer.byteLength} is not a multiple of 16`,
-        )
-      }
-      return { hasData: true, decoderRunning, points: new Float32Array(buffer) }
+      const blob = await response.blob()
+      return { hasData: true, decoderRunning, blobUrl: URL.createObjectURL(blob) }
     } catch (error) {
-      console.error(`Failed to fetch point cloud preview for ${hostname}/${topicName}:`, error)
+      console.error(
+        `Failed to fetch LiDAR camera projection preview for ${hostname}/${topicName}:`,
+        error,
+      )
       throw error
     }
   }
