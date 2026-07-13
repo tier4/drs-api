@@ -2,11 +2,15 @@
 #define ROS2_BRIDGE_SENSING_HANDLER_HPP_
 
 #include "drs/ros2bridge/v1/sensing_service.grpc.pb.h"
+#include "ros2_bridge/lazy_topic_cache.hpp"
+#include "ros2_bridge/lidar_camera_projector.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/compressed_image.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include <chrono>
 #include <memory>
@@ -36,6 +40,11 @@ public:
     grpc::ServerContext * context, const drs::ros2bridge::v1::GetCameraPreviewRequest * request,
     drs::ros2bridge::v1::GetCameraPreviewResponse * response) override;
 
+  grpc::Status GetLidarCameraProjectionPreview(
+    grpc::ServerContext * context,
+    const drs::ros2bridge::v1::GetLidarCameraProjectionPreviewRequest * request,
+    drs::ros2bridge::v1::GetLidarCameraProjectionPreviewResponse * response) override;
+
 private:
   // ROS2 callback for NavSatFix messages
   void navSatFixCallback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
@@ -47,14 +56,19 @@ private:
   // Filter nodes based on filter string
   bool matchesFilter(const std::string & node_name, const std::string & filter);
 
-  // ROS2 callback for camera CompressedImage messages, shared across all
-  // lazily-subscribed camera topics
-  void cameraImageCallback(
-    const std::string & topic_name, const sensor_msgs::msg::CompressedImage::SharedPtr msg);
+  // Derives the decoded "_points" topic name from a requested "_packets"
+  // topic name via suffix substitution (vendor-agnostic). Returns empty on
+  // a topic_name that doesn't end with "_packets".
+  static std::string derivePointsTopic(const std::string & packets_topic_name);
 
-  // Periodic sweep that unsubscribes camera topics with no GetCameraPreview
-  // request in the last kCameraIdleTimeout.
-  void sweepIdleCameraSubscriptions();
+  // Extracts the LiDAR position segment (e.g. "front") from a topic name
+  // shaped like "/sensing/lidar/{position}/{vendor}_packets". Returns empty
+  // if topic_name doesn't match that shape.
+  static std::string deriveLidarPosition(const std::string & packets_topic_name);
+
+  // Periodic sweep that unsubscribes topics with no preview request in the
+  // last kPreviewIdleTimeout, across all preview caches.
+  void sweepIdlePreviewSubscriptions();
 
   rclcpp::Node::SharedPtr node_;
   rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr nav_sat_fix_sub_;
@@ -64,23 +78,25 @@ private:
   std::shared_ptr<sensor_msgs::msg::NavSatFix> cached_position_;
   std::chrono::steady_clock::time_point last_position_update_;
 
-  // Lazily-created per-topic camera subscriptions (created on first
-  // GetCameraPreview request for that topic_name), the latest cached
-  // compressed frame, and the last time each topic was requested. A topic
-  // with no request for kCameraIdleTimeout is unsubscribed by
-  // sweepIdleCameraSubscriptions() so an ECU that relays another ECU's
-  // camera over the network doesn't keep paying for that stream forever
-  // after the dashboard stops looking at it.
-  static constexpr std::chrono::seconds kCameraIdleTimeout{30};
-  static constexpr std::chrono::seconds kCameraIdleSweepInterval{5};
+  // A topic with no preview request for kPreviewIdleTimeout is unsubscribed
+  // by sweepIdlePreviewSubscriptions() so an ECU that relays another ECU's
+  // sensor stream over the network doesn't keep paying for it forever after
+  // the dashboard stops looking at it.
+  static constexpr std::chrono::seconds kPreviewIdleTimeout{30};
+  static constexpr std::chrono::seconds kPreviewIdleSweepInterval{5};
 
-  std::mutex camera_mutex_;
-  std::unordered_map<
-    std::string, rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr>
-    camera_subs_;
-  std::unordered_map<std::string, sensor_msgs::msg::CompressedImage::SharedPtr> cached_frames_;
-  std::unordered_map<std::string, std::chrono::steady_clock::time_point> last_camera_request_;
-  rclcpp::TimerBase::SharedPtr camera_idle_timer_;
+  LazyTopicCache<sensor_msgs::msg::CompressedImage> camera_cache_;
+
+  LazyTopicCache<sensor_msgs::msg::PointCloud2> point_cloud_cache_;
+
+  // camera_info is small, low-rate, and typically latched by the driver, so
+  // it shares the default reliable QoS used by camera_cache_ (verified
+  // against a real vehicle's camera_info QoS profile; see design doc).
+  LazyTopicCache<sensor_msgs::msg::CameraInfo> camera_info_cache_;
+
+  LidarCameraProjector lidar_camera_projector_;
+
+  rclcpp::TimerBase::SharedPtr preview_idle_timer_;
 };
 
 }  // namespace ros2_bridge

@@ -95,6 +95,12 @@ export interface CameraPreviewResult {
   blobUrl: string | null
 }
 
+export interface LidarCameraProjectionPreviewResult {
+  hasData: boolean
+  decoderRunning: boolean
+  blobUrl: string | null
+}
+
 export class ApiService {
   private static instance: ApiService
 
@@ -227,6 +233,36 @@ export class ApiService {
       return { hasData: true, blobUrl: URL.createObjectURL(blob) }
     } catch (error) {
       console.error(`Failed to fetch camera preview for ${hostname}/${topicName}:`, error)
+      throw error
+    }
+  }
+
+  async getLidarCameraProjectionPreview(
+    hostname: string,
+    topicName: string,
+    maxPoints?: number,
+  ): Promise<LidarCameraProjectionPreviewResult> {
+    try {
+      let url = `${API_BASE_URL}/modules/${hostname}/lidar/preview?topic=${encodeURIComponent(topicName)}`
+      if (maxPoints) {
+        url += `&max_points=${encodeURIComponent(String(maxPoints))}`
+      }
+      const response = await this.fetchWithTimeout(url)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      const decoderRunning = response.headers.get('X-Decoder-Running') === 'true'
+      const hasData = response.headers.get('X-Has-Data') === 'true'
+      if (!hasData) {
+        return { hasData: false, decoderRunning, blobUrl: null }
+      }
+      const blob = await response.blob()
+      return { hasData: true, decoderRunning, blobUrl: URL.createObjectURL(blob) }
+    } catch (error) {
+      console.error(
+        `Failed to fetch LiDAR camera projection preview for ${hostname}/${topicName}:`,
+        error,
+      )
       throw error
     }
   }

@@ -14,6 +14,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(proto_recorder_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 # Find gRPC and Protobuf
 find_package(PkgConfig REQUIRED)
@@ -59,6 +61,7 @@ add_executable(ros2_bridge_node
   src/grpc_server.cpp
   src/sensing_handler.cpp
   src/recording_handler.cpp
+  src/lidar_camera_projector.cpp
   ${PROTO_SOURCES}
 )
 
@@ -69,6 +72,8 @@ ament_target_dependencies(ros2_bridge_node
   sensor_msgs
   std_srvs
   proto_recorder_msgs
+  tf2_ros
+  tf2_geometry_msgs
 )
 
 # Link libraries

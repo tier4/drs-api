@@ -5,12 +5,19 @@ import { Button } from '@/components/ui/button'
 import { AlertCircle, AlertTriangle, CheckCircle2, Activity, Eye, Pause, Play } from 'lucide-react'
 import { NavSatFixPreview } from '@/components/NavSatFixPreview'
 import { CameraPreview } from '@/components/CameraPreview'
+import { LidarCameraProjectionPreview } from '@/components/LidarCameraProjectionPreview'
 
 // message_type values with a built preview. Topics with any other type show
 // no inspect icon.
 const PREVIEWABLE_TYPES = {
   'sensor_msgs/msg/NavSatFix': 'navsat',
   'sensor_msgs/msg/CompressedImage': 'camera',
+  // Both map to 'lidar-camera-projection': seyond/msg/SeyondScan is what
+  // real hardware reports (verified via `ros2 topic type` on
+  // /sensing/lidar/front/seyond_packets); nebula_msgs/msg/NebulaPackets is
+  // kept for other decoder configs that use it.
+  'seyond/msg/SeyondScan': 'lidar-camera-projection',
+  'nebula_msgs/msg/NebulaPackets': 'lidar-camera-projection',
 } as const
 
 type PreviewKind = (typeof PREVIEWABLE_TYPES)[keyof typeof PREVIEWABLE_TYPES]
@@ -278,6 +285,13 @@ export function TopicRateStatus({ moduleTopicStatuses }: TopicRateStatusProps) {
                             )}
                             {previewKind === 'camera' && (
                               <CameraPreview
+                                hostname={module.hostname}
+                                topicName={topic.topicName}
+                                enabled={isRefreshing}
+                              />
+                            )}
+                            {previewKind === 'lidar-camera-projection' && (
+                              <LidarCameraProjectionPreview
                                 hostname={module.hostname}
                                 topicName={topic.topicName}
                                 enabled={isRefreshing}

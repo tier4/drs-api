@@ -13,6 +13,10 @@ service SensingService {
 
   // Custom method for camera preview
   rpc GetCameraPreview(GetCameraPreviewRequest) returns (GetCameraPreviewResponse);
+
+  // Custom method for LiDAR-onto-camera projection preview
+  rpc GetLidarCameraProjectionPreview(GetLidarCameraProjectionPreviewRequest)
+      returns (GetLidarCameraProjectionPreviewResponse);
 }
 
 // Standard Get operation for position
@@ -38,6 +42,29 @@ message GetCameraPreviewResponse {
   bool has_data = 1;       // False if no frame has been received yet for this topic
   string content_type = 2; // e.g. "image/jpeg"
   bytes image_data = 3;    // Resized (720p) JPEG-encoded frame bytes
+}
+
+// Custom method to fetch a preview frame with LiDAR points projected onto
+// the camera view for the corresponding vehicle position, derived from the
+// requested "_packets" topic name (e.g. "front" -> camera1).
+message GetLidarCameraProjectionPreviewRequest {
+  // Full "_packets" topic name, e.g. "/sensing/lidar/front/seyond_packets".
+  // The bridge derives the decoded "_points" topic, the position segment
+  // (e.g. "front"), and the corresponding camera topic to project onto.
+  string topic_name = 1;
+  // Max points to project. Missing/zero/negative falls back to the server
+  // default (5000); always clamped to a 5000 ceiling regardless of what the
+  // client requests.
+  int32 max_points = 2;
+}
+
+message GetLidarCameraProjectionPreviewResponse {
+  bool has_data = 1;         // False if no frame/camera_info/TF is available yet
+  bool decoder_running = 2;  // True if a publisher exists on the derived "_points" topic
+  string content_type = 3;   // "image/jpeg"
+  // JPEG-encoded camera frame (resized to 720p) with LiDAR points composited
+  // on top, JET-colored by intensity.
+  bytes image_data = 4;
 }
 
 // Standard List operation for nodes

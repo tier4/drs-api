@@ -3,6 +3,7 @@ package rest
 import (
 	"net/http"
 	"regexp"
+	"strconv"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,18 @@ import (
 // so the endpoint can't be used to lazily subscribe the bridge to arbitrary
 // ROS2 topics.
 var cameraTopicPattern = regexp.MustCompile(`^/sensing/camera/[^/]+/image_raw/compressed$`)
+
+// lidarTopicPattern restricts GetLidarCameraProjectionPreview to raw LiDAR
+// packet topics under /sensing/lidar/ (e.g. /sensing/lidar/front/seyond_packets).
+// Deliberately vendor-agnostic and broader than this feature's current
+// front/right/rear/left UI scope, since the bridge derives the decoded
+// "_points" topic by suffix substitution regardless of vendor SDK.
+var lidarTopicPattern = regexp.MustCompile(`^/sensing/lidar/[^/]+/[a-z]+_packets$`)
+
+// defaultMaxLidarCameraProjectionPreviewPoints is used when max_points is
+// missing or negative. 0 means unlimited: the bridge projects every point
+// in the cloud.
+const defaultMaxLidarCameraProjectionPreviewPoints = 0
 
 // RecordingHandler handles recording control REST API endpoints
 type RecordingHandler struct {
@@ -356,6 +369,76 @@ func (h *RecordingHandler) GetCameraPreview(c *gin.Context) {
 		})
 		return
 	}
+
+	if !resp.HasData {
+		c.Header("X-Has-Data", "false")
+		c.Data(http.StatusOK, "image/jpeg", []byte{})
+		return
+	}
+
+	c.Header("X-Has-Data", "true")
+	c.Data(http.StatusOK, resp.ContentType, resp.ImageData)
+}
+
+// GetLidarCameraProjectionPreview handles GET /modules/{hostname}/lidar/preview?topic=<name>&max_points=<n> -
+// returns a JPEG frame from the LiDAR position's corresponding camera with
+// projected LiDAR points composited on top, for the given LiDAR "_packets"
+// topic. The bridge derives the decoded "_points" topic, the LiDAR position,
+// and the corresponding camera itself. The response is always
+// Content-Type: image/jpeg; X-Has-Data and X-Decoder-Running headers let the
+// UI distinguish "decoder not started" from "waiting for first frame."
+func (h *RecordingHandler) GetLidarCameraProjectionPreview(c *gin.Context) {
+	topicName := c.Query("topic")
+	if topicName == "" {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error:   "missing_topic",
+			Message: "topic query parameter is required",
+		})
+		return
+	}
+	if !lidarTopicPattern.MatchString(topicName) {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{
+			Error:   "invalid_topic",
+			Message: "topic must be a LiDAR packets topic under /sensing/lidar/",
+		})
+		return
+	}
+
+	maxPoints := defaultMaxLidarCameraProjectionPreviewPoints
+	if raw := c.Query("max_points"); raw != "" {
+		if parsed, err := strconv.Atoi(raw); err == nil && parsed >= 0 {
+			maxPoints = parsed
+		}
+	}
+
+	ros2Bridge, ok := h.getBridgeOrRespond(c)
+	if !ok {
+		return
+	}
+
+	ctx, cancel := h.clientManager.GetContext()
+	defer cancel()
+
+	resp, err := ros2Bridge.Sensing.GetLidarCameraProjectionPreview(ctx, &ros2bridgev1.GetLidarCameraProjectionPreviewRequest{
+		TopicName: topicName,
+		MaxPoints: int32(maxPoints),
+	})
+	if err != nil {
+		if grpcstatus.Code(err) == codes.InvalidArgument {
+			c.JSON(http.StatusBadRequest, models.ErrorResponse{
+				Error:   "invalid_topic",
+				Message: err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
+			Error:   "lidar_camera_projection_preview_failed",
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.Header("X-Decoder-Running", strconv.FormatBool(resp.DecoderRunning))
 
 	if !resp.HasData {
 		c.Header("X-Has-Data", "false")
