@@ -92,3 +92,4 @@ mockery_output/
 # Backup files
 *.bak
 *.backup
+.gstack/
